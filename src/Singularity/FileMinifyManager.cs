@@ -9,14 +9,14 @@ using Microsoft.Framework.Runtime;
 
 namespace Singularity
 {
-    public sealed class FileCacheManager
+    public sealed class FileMinifyManager
     {
         private SingularityConfig _config;
         private IHostingEnvironment _env;
         private string _dataFolder;
         private IApplicationEnvironment _appEnv;
 
-        public FileCacheManager(SingularityConfig config, IHostingEnvironment env, IApplicationEnvironment appEnv)
+        public FileMinifyManager(SingularityConfig config, IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
             _appEnv = appEnv;
             _config = config;
@@ -24,7 +24,13 @@ namespace Singularity
             _dataFolder = config.DataFolder;
         }
 
-        public async Task SetFilePathAsync(JavaScriptFile file)
+        /// <summary>
+        /// If the current asset/request requires minification, this will check the cache for its existence, if it doesn't
+        /// exist, it will minify it and store the cache file. Lastly, it sets the file path for the JavaScript file.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        public async Task MinifyAndCacheFile(JavaScriptFile file)
         {
             if (!_config.IsDebug && file.Minify)
             {

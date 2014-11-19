@@ -39,9 +39,9 @@ namespace Singularity
     {
         private SingularityContext _context;
         private SingularityConfig _config;
-        private FileCacheManager _fileManager;
+        private FileMinifyManager _fileManager;
 
-        public SingularityHelper(SingularityContext context, SingularityConfig config, FileCacheManager fileManager)
+        public SingularityHelper(SingularityContext context, SingularityConfig config, FileMinifyManager fileManager)
         {
             _fileManager = fileManager;
             _context = context;
@@ -74,7 +74,10 @@ namespace Singularity
 
         public async Task RequiresJsAsync(JavaScriptFile file)
         {
-            await _fileManager.SetFilePathAsync(file);
+            //TODO: This probably isn't so good because if there's already a composite file stored and cached, we shouldn't even have to check 
+            // for files here. That could all be done at once in RenderJsHere if we could do that async!
+
+            await _fileManager.MinifyAndCacheFile(file);
             RequiresJs(file);
         }
 

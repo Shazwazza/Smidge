@@ -12,7 +12,7 @@ namespace Singularity
     {
         public static void AddSingularity(this IServiceCollection services)
         {
-            services.AddSingleton<FileCacheManager>();
+            services.AddSingleton<FileMinifyManager>();
             services.AddSingleton<SingularityConfig>();
             services.AddScoped<SingularityContext>();
             services.AddScoped<SingularityHelper>();            
