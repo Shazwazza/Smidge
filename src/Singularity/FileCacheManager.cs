@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Runtime;
 
 namespace Singularity
 {
@@ -13,21 +14,26 @@ namespace Singularity
         private SingularityConfig _config;
         private IHostingEnvironment _env;
         private string _dataFolder;
+        private IApplicationEnvironment _appEnv;
 
-        public FileCacheManager(SingularityConfig config, IHostingEnvironment env)
+        public FileCacheManager(SingularityConfig config, IHostingEnvironment env, IApplicationEnvironment appEnv)
         {
+            _appEnv = appEnv;
             _config = config;
             _env = env;
-            _dataFolder = config.Get("dataFolder").Replace("/", "\\");
+            _dataFolder = config.DataFolder;
         }
 
         public async Task SetFilePathAsync(JavaScriptFile file)
         {
-            if (!_config.Get<bool>("debug") && file.Minify)
+            if (!_config.IsDebug && file.Minify)
             {
                 //check if it's in cache
-                var hashName = file.FilePath.GenerateHash();
-                var cacheFile = Path.Combine(_env.WebRoot, _dataFolder, "Cache", _config.ServerName, hashName, ".js");
+                var hashName = file.FilePath.GenerateHash() + ".js";
+                var cacheDir = Path.Combine(_appEnv.ApplicationBasePath, _dataFolder, "Cache", _config.ServerName, _config.Version);
+                var cacheFile = Path.Combine(cacheDir, hashName);
+
+                Directory.CreateDirectory(cacheDir);
 
                 if (!File.Exists(cacheFile))
                 {
@@ -47,7 +53,7 @@ namespace Singularity
                     }
                 }               
 
-                file.FilePath = cacheFile;
+                file.FilePath = hashName;
             }
         }
 

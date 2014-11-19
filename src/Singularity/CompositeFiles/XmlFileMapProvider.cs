@@ -2,6 +2,7 @@
 using Microsoft.AspNet.FileSystems;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Framework.Runtime;
 using Singularity.Files;
 using System;
 using System.Collections.Generic;
@@ -39,21 +40,21 @@ namespace Singularity.CompositeFiles
         /// </summary>
         private string _fileMapFolder;
         private DirectoryInfo _xmlMapFolder;
-        private IHostingEnvironment _hostingEnvironment;
+        private IApplicationEnvironment _hostingEnvironment;
         private SingularityConfig _config;
 
-        public XmlFileMapProvider(IHostingEnvironment env, SingularityConfig config)
+        public XmlFileMapProvider(IApplicationEnvironment env, SingularityConfig config)
         {
             if (env == null) throw new ArgumentNullException(nameof(env));
             if (config == null) throw new ArgumentNullException(nameof(config));
 
             _config = config;
             _hostingEnvironment = env;
-            _fileMapFolder = _config.Get("dataFolder").Replace("/", "\\");
+            _fileMapFolder = _config.DataFolder;
 
             //_fileSystem = new PhysicalFileSystem(env.WebRoot);
 
-            _xmlMapFolder = new DirectoryInfo(Path.Combine(env.WebRoot, _fileMapFolder));
+            _xmlMapFolder = new DirectoryInfo(Path.Combine(env.ApplicationBasePath, _fileMapFolder));
 
             //Name the map file according to the machine name
             _xmlFile = new FileInfo(GetXmlMapPath());

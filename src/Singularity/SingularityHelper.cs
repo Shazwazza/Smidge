@@ -39,13 +39,11 @@ namespace Singularity
     {
         private SingularityContext _context;
         private SingularityConfig _config;
-        private IHostingEnvironment _env;
         private FileCacheManager _fileManager;
 
-        public SingularityHelper(SingularityContext context, SingularityConfig config, IHostingEnvironment env, FileCacheManager fileManager)
+        public SingularityHelper(SingularityContext context, SingularityConfig config, FileCacheManager fileManager)
         {
             _fileManager = fileManager;
-            _env = env;
             _context = context;
             _config = config;
         }
@@ -74,18 +72,15 @@ namespace Singularity
             return new HtmlString(result.ToString());
         }
 
-        public async Task<SingularityHelper> RequiresJsAsync(JavaScriptFile file)
+        public async Task RequiresJsAsync(JavaScriptFile file)
         {
             await _fileManager.SetFilePathAsync(file);
-
             RequiresJs(file);
-
-            return this;
         }
 
-        public async Task<SingularityHelper> RequiresJsAsync(string path)
+        public async Task RequiresJsAsync(string path)
         {
-            return await RequiresJsAsync(new JavaScriptFile(path));
+            await RequiresJsAsync(new JavaScriptFile(path));
         }
 
         public SingularityHelper RequiresJs(JavaScriptFile file)

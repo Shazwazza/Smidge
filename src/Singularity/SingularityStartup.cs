@@ -17,13 +17,15 @@ namespace Singularity
             services.AddScoped<SingularityContext>();
             services.AddScoped<SingularityHelper>();            
             services.AddSingleton<IFileMapProvider, XmlFileMapProvider>();
-            services.AddTransient<Base64UrlCreatorOptions>(x => new Base64UrlCreatorOptions
+            services.AddTransient<UrlCreatorOptions>(x => new UrlCreatorOptions
             {
                 MaxUrlLength = 2048,
-                RequestHandlerPath = "sg64",
-                Version = "1"
+                //RequestHandlerPath = "sg64"
+                RequestHandlerPath = "sgd"
             });
-            services.AddSingleton<IUrlCreator, Base64UrlCreator>();
+            //services.AddSingleton<IUrlCreator, Base64UrlCreator>();
+            services.AddSingleton<IUrlCreator, DelimitedUrlCreator>();
+            
         }
 
         public static void UseSingularity(this IApplicationBuilder app)
@@ -35,6 +37,11 @@ namespace Singularity
                     "SingularityBase64",
                     "sg64/{id?}",
                     new { controller = "Singularity", action = "Base64" });
+
+                routes.MapRoute(
+                    "SingularityDelimited",
+                    "sgd/{id?}",
+                    new { controller = "Singularity", action = "Delimited" });
             });
         }
     }

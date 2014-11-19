@@ -6,6 +6,18 @@ namespace Singularity
 
     public static class HttpExtensions
     {
+        public static void AddCompressionResponseHeader(this HttpContext context, CompressionType cType)
+        {
+            if (cType == CompressionType.deflate)
+            {
+                context.Response.Headers["Content-encoding"] = "deflate";
+            }
+            else if (cType == CompressionType.gzip)
+            {
+                context.Response.Headers["Content-encoding"] = "gzip";
+            }
+        }
+
         /// <summary>
         /// Check what kind of compression to use. Need to select the first available compression 
         /// from the header value as this is how .Net performs caching by compression so we need to follow

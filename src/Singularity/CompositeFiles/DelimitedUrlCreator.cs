@@ -7,13 +7,12 @@ using System.Linq;
 
 namespace Singularity.CompositeFiles
 {
-    
-    public class Base64UrlCreator : IUrlCreator
+    public class DelimitedUrlCreator : IUrlCreator
     {
         private SingularityConfig _config;
         private UrlCreatorOptions _options;
 
-        public Base64UrlCreator(UrlCreatorOptions options, SingularityConfig config)
+        public DelimitedUrlCreator(UrlCreatorOptions options, SingularityConfig config)
         {
             _options = options;
             _config = config;
@@ -23,7 +22,7 @@ namespace Singularity.CompositeFiles
         {
             var files = new List<string>();
             var currBuilder = new StringBuilder();
-            var base64Builder = new StringBuilder();
+            var delimitedBuilder = new StringBuilder();
             var builderCount = 1;
             var stringType = type.ToString();
 
@@ -32,11 +31,11 @@ namespace Singularity.CompositeFiles
             {
                 var current = remaining.Peek();
 
-                //update the base64 output to get the length
-                base64Builder.Append(current.FilePath.EncodeTo64());
+                //add the normal file path (generally this would already be hashed)
+                delimitedBuilder.Append(current.FilePath);
 
-                //test if the current base64 string exceeds the max length, if so we need to split
-                if ((base64Builder.Length
+                //test if the current string exceeds the max length, if so we need to split
+                if ((delimitedBuilder.Length
                      + _options.RequestHandlerPath.Length
                      + stringType.Length
                      + _config.Version.Length
@@ -47,61 +46,34 @@ namespace Singularity.CompositeFiles
                     //we need to do a check here, this is the first one and it's already exceeded the max length we cannot continue
                     if (currBuilder.Length == 0)
                     {
-                        throw new InvalidOperationException("The path for the single dependency: '" + current.FilePath + "' exceeds the max length (" + _options.MaxUrlLength + "), either reduce the single dependency's path length or increase the CompositeDependencyHandler.MaxHandlerUrlLength value");
+                        throw new InvalidOperationException("The path for the single dependency: '" + current.FilePath + "' exceeds the max length (" + _options.MaxUrlLength + "), either reduce the single dependency's path length or increase the MaxHandlerUrlLength value");
                     }
 
                     //flush the current output to the array
                     files.Add(currBuilder.ToString());
                     //create some new output
                     currBuilder = new StringBuilder();
-                    base64Builder = new StringBuilder();
+                    delimitedBuilder = new StringBuilder();
                     builderCount++;
                 }
                 else
                 {
                     //update the normal builder
-                    currBuilder.Append(current.FilePath + ";");
+                    currBuilder.Append(current.FilePath);
                     //remove from the queue
                     remaining.Dequeue();
                 }
             }
-
-            //foreach (var a in dependencies)
-            //{
-            //    //update the base64 output to get the length
-            //    base64Builder.Append(a.FilePath.EncodeTo64());
-
-            //    //test if the current base64 string exceeds the max length, if so we need to split
-            //    if ((base64Builder.Length
-            //        + compositeFileHandlerPath.Length
-            //        + stringType.Length
-            //        + version.Length
-            //        + 10)
-            //        >= (maxLength))
-            //    {
-            //        //add the current output to the array
-            //        files.Add(currBuilder.ToString());
-            //        //create some new output
-            //        currBuilder = new StringBuilder();
-            //        base64Builder = new StringBuilder();
-            //        builderCount++;
-            //    }
-
-            //    //update the normal builder
-            //    currBuilder.Append(a.FilePath + ";");
-            //}
 
             if (builderCount > files.Count)
             {
                 files.Add(currBuilder.ToString());
             }
 
-            //now, compress each url
             for (var i = 0; i < files.Count; i++)
             {
                 //append our version to the combined url 
-                var encodedFile = files[i].EncodeTo64Url();
-                files[i] = GetCompositeFileUrl(encodedFile, type);
+                files[i] = GetCompositeFileUrl(files[i], type);
             }
 
             return files.ToArray();
@@ -111,7 +83,7 @@ namespace Singularity.CompositeFiles
         {
             var url = new StringBuilder();
 
-            //Create a URL with a base64 query string
+            //Create a delimited URL query string
 
             const string handler = "{0}?s={1}&t={2}";
             url.Append(string.Format(handler,

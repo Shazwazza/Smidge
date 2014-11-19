@@ -1,4 +1,5 @@
 ﻿{
     "debug": false,
-    "dataFolder":  "App_Data/Singularity"
+    "dataFolder": "App_Data/Singularity",
+    "version":  "1"
 }

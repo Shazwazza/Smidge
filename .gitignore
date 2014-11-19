@@ -1,1 +1,9 @@
 artifacts/*
+Singularity.sln.ide/*
+*.suo
+*.kproj.user
+src/Singularity.Web/wwwroot/App_Data/Singularity/*
+src/Singularity.Web/wwwroot/bin/*
+src/Singularity.Web/bin/*
+tests/Singularity.Tests/bin/*
+src/Singularity.Web/App_Data/Singularity/*
