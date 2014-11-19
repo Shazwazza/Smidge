@@ -1,0 +1,15 @@
+﻿<html>
+<head>
+
+    @{ 
+        Singularity
+            .RequiresJs("Js/test1.js")
+            .RequiresJs("Js/test2.js");
+    }
+
+    @Singularity.RenderJsHere()
+</head>
+<body>
+    Hello world
+</body>
+</html>
