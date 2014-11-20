@@ -8,10 +8,9 @@ namespace Fuze
 {
     public class FuzeContext
     {
-        public FuzeContext(IUrlCreator urlCreator, IFileMapProvider fileMap)
+        public FuzeContext(IUrlCreator urlCreator)
         {
             UrlCreator = urlCreator;
-            FileMap = fileMap;
             Files = new HashSet<IWebFile>();
         }
 
@@ -25,7 +24,6 @@ namespace Fuze
             }
         }
 
-        public IFileMapProvider FileMap { get; private set; }
         public IUrlCreator UrlCreator { get; private set; }
     }
 }

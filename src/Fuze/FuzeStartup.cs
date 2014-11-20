@@ -17,7 +17,6 @@ namespace Fuze
             services.AddSingleton<FuzeConfig>();
             services.AddScoped<FuzeContext>();
             services.AddScoped<FuzeHelper>();            
-            services.AddSingleton<IFileMapProvider, XmlFileMapProvider>();
             services.AddTransient<UrlCreatorOptions>(x => new UrlCreatorOptions
             {
                 MaxUrlLength = 2048,
