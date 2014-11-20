@@ -42,14 +42,28 @@ namespace Fuze
         public async Task<HtmlString> RenderJsHereAsync()
         {
             var result = new StringBuilder();
+            var urls = await GenerateJsUrlsAsync();
+            foreach (var url in urls)
+            {
+                result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
+            }
+            return new HtmlString(result.ToString());
+        }
+
+        /// <summary>
+        /// Generates the list of URLs to render based on what is registered
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync()
+        {
+            var result = new List<string>();
 
             if (_config.IsDebug)
             {
                 foreach (var d in _context.JavaScriptFiles)
                 {
-                    result.AppendFormat("<script src='{0}' type='text/javascript'></script>", d.FilePath);
+                    result.Add(d.FilePath);
                 }
-                return new HtmlString(result.ToString());
             }
             else
             {
@@ -67,7 +81,7 @@ namespace Fuze
                     PathNameAlias = x.PathNameAlias
                 });
 
-                var urls = _context.UrlCreator.GetUrls(WebFileType.Javascript, cachedFiles);
+                var urls = _context.UrlCreator.GetUrls(WebFileType.Js, cachedFiles);
 
                 foreach (var u in urls)
                 {
@@ -76,17 +90,17 @@ namespace Fuze
                     if (!File.Exists(compositeFilePath))
                     {
                         //we need to do the minify on the original files
-                        foreach(var file in _context.JavaScriptFiles)
+                        foreach (var file in _context.JavaScriptFiles)
                         {
                             await _fileManager.MinifyAndCacheFileAsync(file);
                         }
                     }
 
-                    result.AppendFormat("<script src='{0}' type='text/javascript'></script>", u.Url);
-                }                
+                    result.Add(u.Url);
+                }
             }
 
-            return new HtmlString(result.ToString());
+            return result;
         }
 
         public FuzeHelper RequiresJs(JavaScriptFile file)

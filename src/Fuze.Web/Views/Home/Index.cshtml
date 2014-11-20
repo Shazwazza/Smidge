@@ -4,7 +4,9 @@
     @{ 
         Fuze
             .RequiresJs("Js/test1.js")
-            .RequiresJs("Js/test2.js");
+            .RequiresJs("Js/test2.js")
+            .RequiresJs("Js/test3.js")
+            .RequiresJs("Js/test4.js");
     }
 
     @await Fuze.RenderJsHereAsync()
@@ -12,5 +14,14 @@
 </head>
 <body>
     Hello world
+
+    <p>
+        <ul>
+            @foreach (var item in await Fuze.GenerateJsUrlsAsync())
+            {
+                <li>@item</li>
+            }
+        </ul>
+    </p>
 </body>
 </html>

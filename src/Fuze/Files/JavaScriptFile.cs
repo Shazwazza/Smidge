@@ -14,7 +14,7 @@ namespace Fuze.Files
         }
         public override WebFileType DependencyType
         {
-            get { return WebFileType.Javascript; }
+            get { return WebFileType.Js; }
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Fuze
         {
             switch (file.DependencyType)
             {
-                case WebFileType.Javascript:
+                case WebFileType.Js:
                     await ProcessJsFile(file);
                     break;
                 case WebFileType.Css:
@@ -65,8 +65,6 @@ namespace Fuze
                     await _fileSystemHelper.WriteContentsAsync(cacheFile, contents);
                 }
             }
-
-            file.FilePath = hashName;
         }
 
     }

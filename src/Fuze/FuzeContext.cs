@@ -20,7 +20,7 @@ namespace Fuze
         {
             get
             {
-                return Files.Where(x => x.DependencyType == WebFileType.Javascript);
+                return Files.Where(x => x.DependencyType == WebFileType.Js);
             }
         }
 

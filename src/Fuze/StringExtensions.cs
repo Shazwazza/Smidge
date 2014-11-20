@@ -81,31 +81,15 @@ namespace Fuze
         /// <returns></returns>
         public static string GenerateHash(this string str)
         {
-            try
-            {
-                return str.GenerateMd5();
-
-                //return CryptoConfig.AllowOnlyFipsAlgorithms
-                //    ? str.GenerateSha256Hash()
-                //    : str.GenerateMd5();
-            }
-            catch (Exception)
-            {
-                //default to MD5
-                return str.GenerateMd5();
-            }
+            return str.GenerateCrc();
+            //return str.GenerateMd5();            
         }
 
-        /// <summary>
-        /// Generate a SHA256 hash of a string
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static string GenerateSha256Hash(this string str)
+        public static string GenerateCrc(this string str)
         {
-            using (var hasher = System.Security.Cryptography.SHA256.Create())
+            using (var crc = new CRC32())
             {
-                var byteArray = hasher.ComputeHash(Encoding.Unicode.GetBytes(str));
+                var byteArray = crc.ComputeHash(Encoding.Unicode.GetBytes(str));
                 return byteArray.Aggregate("", (current, b) => current + b.ToString("x2"));
             }
         }
