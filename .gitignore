@@ -7,3 +7,4 @@ src/Fuze.Web/wwwroot/bin/*
 src/Fuze.Web/bin/*
 tests/Fuze.Tests/bin/*
 src/Fuze.Web/App_Data/Fuze/*
+*startup.prof
