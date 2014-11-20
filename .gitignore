@@ -1,9 +1,9 @@
 artifacts/*
-Singularity.sln.ide/*
+Fuze.sln.ide/*
 *.suo
 *.kproj.user
-src/Singularity.Web/wwwroot/App_Data/Singularity/*
-src/Singularity.Web/wwwroot/bin/*
-src/Singularity.Web/bin/*
-tests/Singularity.Tests/bin/*
-src/Singularity.Web/App_Data/Singularity/*
+src/Fuze.Web/wwwroot/App_Data/Fuze/*
+src/Fuze.Web/wwwroot/bin/*
+src/Fuze.Web/bin/*
+tests/Fuze.Tests/bin/*
+src/Fuze.Web/App_Data/Fuze/*

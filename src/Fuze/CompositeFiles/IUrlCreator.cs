@@ -1,0 +1,13 @@
+﻿using Fuze.Files;
+using System;
+using System.Collections.Generic;
+
+namespace Fuze.CompositeFiles
+{
+    public interface IUrlCreator
+    {
+        IEnumerable<FileSetUrl> GetUrls(
+            WebFileType type,
+            IEnumerable<IWebFile> dependencies);
+    }
+}

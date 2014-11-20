@@ -1,0 +1,16 @@
+﻿<html>
+<head>
+
+    @{ 
+        Fuze
+            .RequiresJs("Js/test1.js")
+            .RequiresJs("Js/test2.js");
+    }
+
+    @await Fuze.RenderJsHereAsync()
+
+</head>
+<body>
+    Hello world
+</body>
+</html>
