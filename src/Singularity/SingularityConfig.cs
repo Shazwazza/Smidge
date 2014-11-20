@@ -3,13 +3,18 @@ using Microsoft.Framework.ConfigurationModel;
 
 namespace Singularity
 {
-    public class SingularityConfig : Configuration, IConfiguration
+    /// <summary>
+    /// Singularity configuration
+    /// </summary>
+    public class SingularityConfig 
     {
+        private InternalConfig _config = new InternalConfig();
+
         public string ServerName
         {
             get
             {
-                return GetFileSafeMachineName(Get("COMPUTERNAME") ?? "Default");
+                return GetFileSafeMachineName(_config.Get("COMPUTERNAME") ?? "Default");
             }           
         }
 
@@ -17,7 +22,7 @@ namespace Singularity
         {
             get
             {
-                return this.Get<bool>("debug");
+                return _config.Get<bool>("debug");
             }
         }
 
@@ -25,7 +30,7 @@ namespace Singularity
         {
             get
             {
-                return Get("version") ?? "1";
+                return _config.Get("version") ?? "1";
             }
         }
 
@@ -33,15 +38,21 @@ namespace Singularity
         {
             get
             {
-                return (Get("dataFolder") ?? "App_Data/Singularity").Replace("/", "\\");
+                return (_config.Get("dataFolder") ?? "App_Data/Singularity").Replace("/", "\\");
             }
         }
 
-        public SingularityConfig()
+        /// <summary>
+        /// The internal configuration class that reads from the underlying files/environment
+        /// </summary>
+        private class InternalConfig : Configuration, IConfiguration
         {
-            this.AddJsonFile("singularity.json");
-            this.AddEnvironmentVariables();
-        }
+            public InternalConfig()
+            {
+                this.AddJsonFile("singularity.json");
+                this.AddEnvironmentVariables();
+            }
+        }        
 
         private string GetFileSafeMachineName(string name)
         {

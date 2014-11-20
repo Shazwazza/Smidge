@@ -11,17 +11,11 @@ namespace Singularity
 {
     public sealed class FileMinifyManager
     {
-        private SingularityConfig _config;
-        private IHostingEnvironment _env;
-        private string _dataFolder;
-        private IApplicationEnvironment _appEnv;
+        private FileSystemHelper _fileSystemHelper;
 
-        public FileMinifyManager(SingularityConfig config, IHostingEnvironment env, IApplicationEnvironment appEnv)
+        public FileMinifyManager(FileSystemHelper fileSystemHelper)
         {
-            _appEnv = appEnv;
-            _config = config;
-            _env = env;
-            _dataFolder = config.DataFolder;
+            _fileSystemHelper = fileSystemHelper;
         }
 
         /// <summary>
@@ -30,37 +24,49 @@ namespace Singularity
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public async Task MinifyAndCacheFile(JavaScriptFile file)
+        public async Task MinifyAndCacheFileAsync(IWebFile file)
         {
-            if (!_config.IsDebug && file.Minify)
+            switch (file.DependencyType)
             {
-                //check if it's in cache
-                var hashName = file.FilePath.GenerateHash() + ".js";
-                var cacheDir = Path.Combine(_appEnv.ApplicationBasePath, _dataFolder, "Cache", _config.ServerName, _config.Version);
-                var cacheFile = Path.Combine(cacheDir, hashName);
+                case WebFileType.Javascript:
+                    await ProcessJsFile(file);
+                    break;
+                case WebFileType.Css:
+                    break;
+                default:
+                    break;
+            }
+        }
 
-                Directory.CreateDirectory(cacheDir);
+        private async Task ProcessJsFile(IWebFile file)
+        {
+            //check if it's in cache
+            var hashName = file.FilePath.GenerateHash() + ".js";
+            var cacheDir = _fileSystemHelper.CurrentCacheFolder;
+            var cacheFile = Path.Combine(cacheDir, hashName);
 
-                if (!File.Exists(cacheFile))
+            Directory.CreateDirectory(cacheDir);
+
+            if (!File.Exists(cacheFile))
+            {
+                var filePath = _fileSystemHelper.MapPath(file.FilePath);
+                var contents = await _fileSystemHelper.ReadContentsAsync(filePath);
+
+                if (file.Minify)
                 {
-                    var filePath = Path.Combine(_env.WebRoot, file.FilePath).Replace("/", "\\");
-                    string contents;
-                    using (var fileStream = File.OpenRead(filePath))
-                    using (var reader = new StreamReader(fileStream))
-                    {
-                        contents = await reader.ReadToEndAsync();
-                    }
                     var minify = JsMin.CompressJS(contents);
 
                     //save it to the cache path
-                    using (var writer = File.CreateText(cacheFile))
-                    {
-                        await writer.WriteAsync(minify);
-                    }
-                }               
-
-                file.FilePath = hashName;
+                    await _fileSystemHelper.WriteContentsAsync(cacheFile, minify);
+                }
+                else
+                {
+                    //save the raw content to the cache path
+                    await _fileSystemHelper.WriteContentsAsync(cacheFile, contents);
+                }
             }
+
+            file.FilePath = hashName;
         }
 
     }

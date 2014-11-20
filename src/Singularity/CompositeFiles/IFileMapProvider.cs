@@ -37,7 +37,7 @@ namespace Singularity.CompositeFiles
         /// <param name="version"></param>
         void CreateUpdateMap(string fileKey,
             string compressionType,
-            IEnumerable<IDependentFile> dependentFiles,
+            IEnumerable<IWebFile> dependentFiles,
             string compositeFile,
             int version);
 
@@ -45,7 +45,7 @@ namespace Singularity.CompositeFiles
         /// Creates a new file map and file key for the dependent file list, this is used to create URLs with CompositeUrlType.MappedId 
         /// </summary>       
         string CreateNewMap(HttpContext http,
-                                   IEnumerable<IDependentFile> dependentFiles,
+                                   IEnumerable<IWebFile> dependentFiles,
                                    int version);
 
         

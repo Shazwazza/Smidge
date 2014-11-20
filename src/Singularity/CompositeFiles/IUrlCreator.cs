@@ -6,8 +6,8 @@ namespace Singularity.CompositeFiles
 {
     public interface IUrlCreator
     {
-        IEnumerable<string> GetUrls(
-            IDependentFileType type,
-            IEnumerable<IDependentFile> dependencies);
+        IEnumerable<FileSetUrl> GetUrls(
+            WebFileType type,
+            IEnumerable<IWebFile> dependencies);
     }
 }

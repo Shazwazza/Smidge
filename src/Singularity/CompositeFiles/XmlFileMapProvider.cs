@@ -163,7 +163,7 @@ namespace Singularity.CompositeFiles
         /// ]]>
         /// </example>
         public string CreateNewMap(HttpContext http,
-            IEnumerable<IDependentFile> dependentFiles,
+            IEnumerable<IWebFile> dependentFiles,
             int version)
         {
             if (http == null) throw new ArgumentNullException("http");
@@ -221,7 +221,7 @@ namespace Singularity.CompositeFiles
         /// </example>
         public void CreateUpdateMap(string fileKey,
             string compressionType,
-            IEnumerable<IDependentFile> dependentFiles,
+            IEnumerable<IWebFile> dependentFiles,
             string compositeFile,
             int version)
         {
@@ -295,7 +295,7 @@ namespace Singularity.CompositeFiles
             return items.FirstOrDefault();
         }
 
-        private XElement CreateFileNode(IEnumerable<IDependentFile> dependentFiles)
+        private XElement CreateFileNode(IEnumerable<IWebFile> dependentFiles)
         {
             var x = new XElement("files");
 

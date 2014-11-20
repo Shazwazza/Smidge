@@ -2,11 +2,13 @@
 <head>
 
     @{ 
-        await Singularity.RequiresJsAsync("Js/test1.js");
-        await Singularity.RequiresJsAsync("Js/test2.js");
+        Singularity
+            .RequiresJs("Js/test1.js")
+            .RequiresJs("Js/test2.js");
     }
 
-    @Singularity.RenderJsHere()
+    @await Singularity.RenderJsHereAsync(); 
+
 </head>
 <body>
     Hello world

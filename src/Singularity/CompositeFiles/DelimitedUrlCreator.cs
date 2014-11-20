@@ -18,15 +18,15 @@ namespace Singularity.CompositeFiles
             _config = config;
         }
 
-        public IEnumerable<string> GetUrls(IDependentFileType type, IEnumerable<IDependentFile> dependencies)
+        public IEnumerable<FileSetUrl> GetUrls(WebFileType type, IEnumerable<IWebFile> dependencies)
         {
-            var files = new List<string>();
+            var files = new List<FileSetUrl>();
             var currBuilder = new StringBuilder();
             var delimitedBuilder = new StringBuilder();
             var builderCount = 1;
             var stringType = type.ToString();
 
-            var remaining = new Queue<IDependentFile>(dependencies);
+            var remaining = new Queue<IWebFile>(dependencies);
             while (remaining.Any())
             {
                 var current = remaining.Peek();
@@ -50,7 +50,12 @@ namespace Singularity.CompositeFiles
                     }
 
                     //flush the current output to the array
-                    files.Add(currBuilder.ToString());
+                    var output = currBuilder.ToString();
+                    files.Add(new FileSetUrl
+                    {
+                        Key = output.GenerateHash(),
+                        Url = GetCompositeUrl(output, type)
+                    });
                     //create some new output
                     currBuilder = new StringBuilder();
                     delimitedBuilder = new StringBuilder();
@@ -67,19 +72,19 @@ namespace Singularity.CompositeFiles
 
             if (builderCount > files.Count)
             {
-                files.Add(currBuilder.ToString());
-            }
-
-            for (var i = 0; i < files.Count; i++)
-            {
-                //append our version to the combined url 
-                files[i] = GetCompositeFileUrl(files[i], type);
+                //flush the remaining output to the array
+                var output = currBuilder.ToString();
+                files.Add(new FileSetUrl
+                {
+                    Key = output.GenerateHash(),
+                    Url = GetCompositeUrl(output, type)
+                });
             }
 
             return files.ToArray();
         }
 
-        private string GetCompositeFileUrl(string fileKey, IDependentFileType type)
+        private string GetCompositeUrl(string fileKey, WebFileType type)
         {
             var url = new StringBuilder();
 

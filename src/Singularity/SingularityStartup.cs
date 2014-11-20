@@ -12,6 +12,7 @@ namespace Singularity
     {
         public static void AddSingularity(this IServiceCollection services)
         {
+            services.AddSingleton<FileSystemHelper>();
             services.AddSingleton<FileMinifyManager>();
             services.AddSingleton<SingularityConfig>();
             services.AddScoped<SingularityContext>();
@@ -20,28 +21,20 @@ namespace Singularity
             services.AddTransient<UrlCreatorOptions>(x => new UrlCreatorOptions
             {
                 MaxUrlLength = 2048,
-                //RequestHandlerPath = "sg64"
-                RequestHandlerPath = "sgd"
+                RequestHandlerPath = "sg"
             });
-            //services.AddSingleton<IUrlCreator, Base64UrlCreator>();
             services.AddSingleton<IUrlCreator, DelimitedUrlCreator>();
             
         }
 
         public static void UseSingularity(this IApplicationBuilder app)
         {
-
             app.UseMvc(routes =>
-            {
+            {               
                 routes.MapRoute(
-                    "SingularityBase64",
-                    "sg64/{id?}",
-                    new { controller = "Singularity", action = "Base64" });
-
-                routes.MapRoute(
-                    "SingularityDelimited",
-                    "sgd/{id?}",
-                    new { controller = "Singularity", action = "Delimited" });
+                    "Singularity",
+                    "sg/{id?}",
+                    new { controller = "Singularity", action = "Index" });
             });
         }
     }
