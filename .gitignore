@@ -8,3 +8,6 @@ src/Fuze.Web/bin/*
 tests/Fuze.Tests/bin/*
 src/Fuze.Web/App_Data/Fuze/*
 *startup.prof
+src/Smidge.Web/App_Data/Smidge/*
+src/Smidge.Web/wwwroot/bin/*
+Smidge.sln.ide/*

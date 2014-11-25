@@ -1,0 +1,24 @@
+{
+    "webroot": "wwwroot",
+    "version": "1.0.0-*",
+    "exclude": [
+        "wwwroot"
+    ],
+    "packExclude": [
+        "**.kproj",
+        "**.user",
+        "**.vspscc"
+    ],
+    "dependencies": {
+        "Microsoft.AspNet.StaticFiles": "1.0.0-beta1",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-beta1",
+        "Microsoft.AspNet.Mvc": "6.0.0-beta1",
+        "Microsoft.AspNet.Hosting": "1.0.0-beta1",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-beta1",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta1",
+        "Smidge": "1.0.0-*"
+    },
+    "frameworks": {
+        "aspnetcore50": { }
+    }
+}

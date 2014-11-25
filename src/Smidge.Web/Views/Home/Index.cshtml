@@ -1,0 +1,33 @@
+﻿<html>
+<head>
+
+    @{
+        Smidge
+            .RequiresJs("Js/test1.js")
+            .RequiresJs("Js/test2.js")
+            .RequiresJs("Js/test3.js")
+            .RequiresJs("Js/test4.js")
+            .RequiresCss("Css/test1.css")
+            .RequiresCss("Css/test2.css")
+            .RequiresCss("Css/test3.css")
+            .RequiresCss("Css/test4.css");
+    }
+
+    @await Smidge.RenderJsHereAsync()
+
+    @await Smidge.RenderCssHereAsync()
+
+</head>
+<body>
+    Hello world
+
+    <p>
+        <ul>
+            @foreach (var item in await Smidge.GenerateJsUrlsAsync())
+            {
+                <li>@item</li>
+            }
+        </ul>
+    </p>
+</body>
+</html>
