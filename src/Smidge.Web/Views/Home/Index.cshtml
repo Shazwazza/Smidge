@@ -14,6 +14,8 @@
     }
 
     @await Smidge.RenderJsHereAsync()
+    @await Smidge.RenderJsHereAsync("test-bundle-1")
+    @await Smidge.RenderJsHereAsync("test-bundle-2")
 
     @await Smidge.RenderCssHereAsync()
 
@@ -24,6 +26,12 @@
     <p>
         <ul>
             @foreach (var item in await Smidge.GenerateJsUrlsAsync())
+            {
+                <li>@item</li>
+            }
+        </ul>
+        <ul>
+            @foreach (var item in await Smidge.GenerateCssUrlsAsync())
             {
                 <li>@item</li>
             }

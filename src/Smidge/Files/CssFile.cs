@@ -10,7 +10,7 @@ namespace Smidge.Files
         }
         public CssFile(string path)
         {
-            FilePath = path;
+            FilePath = path.TrimStart(new[] { '~', '/' });
         }
 
         public override WebFileType DependencyType

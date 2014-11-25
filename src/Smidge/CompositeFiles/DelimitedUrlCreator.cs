@@ -20,6 +20,12 @@ namespace Smidge.CompositeFiles
             _config = config;
         }
 
+        public string GetUrl(string bundleName, WebFileType type)
+        {
+            //TODO: Make this a safe name!
+            return GetCompositeUrl(bundleName + ".b", type);
+        }
+
         public IEnumerable<FileSetUrl> GetUrls(WebFileType type, IEnumerable<IWebFile> dependencies)
         {
             var files = new List<FileSetUrl>();

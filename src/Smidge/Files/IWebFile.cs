@@ -7,9 +7,10 @@ namespace Smidge.Files
     {
         string FilePath { get; set; }
         WebFileType DependencyType { get; }
+
         //int Priority { get; set; }
         //int Group { get; set; }
-        string PathNameAlias { get; set; }
+        //string PathNameAlias { get; set; }
         //string ForceProvider { get; set; }
         //bool ForceBundle { get; set; }
 

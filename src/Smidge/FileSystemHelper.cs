@@ -40,8 +40,27 @@ namespace Smidge
         /// <returns></returns>
         internal string MapPath(string contentFile)
         {
-            return Path.Combine(WebRoot, contentFile).Replace("/", "\\");
+            return Path.Combine(WebRoot, contentFile)
+                .Replace("~/", "")
+                .Replace("/", "\\");
         }
+
+        /// <summary>
+        /// A rudimentary reverse map path function
+        /// </summary>
+        /// <param name="fullFilePath"></param>
+        /// <returns></returns>
+        internal string ReverseMapPath(string fullFilePath)
+        {
+            var reversed = fullFilePath.Substring(WebRoot.Length)
+                .Replace("\\", "//");
+            if (!reversed.StartsWith("/"))
+            {
+                reversed = "/" + reversed;
+            }
+            return reversed;
+        }
+
 
         internal async Task<string> ReadContentsAsync(string filePath)
         {

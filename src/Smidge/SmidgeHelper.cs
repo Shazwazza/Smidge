@@ -26,6 +26,8 @@ namespace Smidge
         private FileSystemHelper _fileSystemHelper;
         private IContextAccessor<HttpContext> _http;
         private IHasher _hasher;
+        private BundleManager _bundleManager;
+
 
 
         /// <summary>
@@ -36,8 +38,16 @@ namespace Smidge
         /// <param name="fileManager"></param>
         /// <param name="fileSystemHelper"></param>
         /// <param name="http"></param>
-        public SmidgeHelper(SmidgeContext context, SmidgeConfig config, FileMinifyManager fileManager, FileSystemHelper fileSystemHelper, IHasher hasher, IContextAccessor<HttpContext> http)
+        public SmidgeHelper(
+            SmidgeContext context, 
+            SmidgeConfig config, 
+            FileMinifyManager fileManager, 
+            FileSystemHelper fileSystemHelper, 
+            IHasher hasher, 
+            BundleManager bundleManager,
+            IContextAccessor<HttpContext> http)
         {
+            _bundleManager = bundleManager;
             _hasher = hasher;
             _fileManager = fileManager;
             _context = context;
@@ -46,12 +56,54 @@ namespace Smidge
             _http = http;
         }
 
+        public async Task<HtmlString> RenderJsHereAsync(string bundleName)
+        {
+            var result = new StringBuilder();
+            var bundleExists = _bundleManager.Exists(bundleName);
+            if (!bundleExists) return null;
+
+            if (_config.IsDebug)
+            {
+                var urls = new List<string>();
+                var files = _bundleManager.GetFiles(bundleName);
+                foreach (var d in files)
+                {
+                    urls.Add(d.FilePath);
+                }
+
+                foreach (var url in urls)
+                {
+                    result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
+                }
+                return new HtmlString(result.ToString());
+            }
+            else
+            {
+                var compression = _http.Value.GetClientCompression();
+                var url = _context.UrlCreator.GetUrl(bundleName, WebFileType.Js);
+
+                //now we need to determine if these files have already been minified
+                var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
+                if (!File.Exists(compositeFilePath))
+                {
+                    var files = _bundleManager.GetFiles(bundleName);
+                    //we need to do the minify on the original files
+                    foreach (var file in files)
+                    {
+                        await _fileManager.MinifyAndCacheFileAsync(file);
+                    }
+                }
+                result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
+                return new HtmlString(result.ToString());
+            }            
+        }
+
         /// <summary>
         /// Renders the JS tags
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
+        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
         public async Task<HtmlString> RenderJsHereAsync()
@@ -70,7 +122,7 @@ namespace Smidge
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
+        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
         public async Task<HtmlString> RenderCssHereAsync()
@@ -127,7 +179,7 @@ namespace Smidge
                 {
                     var file = fileCreator(_hasher.Hash(x.FilePath));
                     file.Minify = x.Minify;
-                    file.PathNameAlias = x.PathNameAlias;
+                    //file.PathNameAlias = x.PathNameAlias;
                     return file;
                 });
 
