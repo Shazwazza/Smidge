@@ -6,7 +6,7 @@ namespace Smidge
     /// <summary>
     /// Smidge configuration
     /// </summary>
-    public class SmidgeConfig 
+    public class SmidgeConfig : ISmidgeConfig
     {
         private InternalConfig _config = new InternalConfig();
 

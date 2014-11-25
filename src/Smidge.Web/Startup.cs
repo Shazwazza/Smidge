@@ -13,6 +13,7 @@ namespace Smidge.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
             services.AddSmidge(
                 new SmidgeOptions(), 
                 bundles =>

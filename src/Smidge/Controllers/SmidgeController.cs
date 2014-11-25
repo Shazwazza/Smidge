@@ -17,20 +17,19 @@ namespace Smidge.Controllers
     /// </summary>
     public class SmidgeController : Controller
     {
-        private SmidgeConfig _config;
+        private ISmidgeConfig _config;
         private IApplicationEnvironment _env;
         private FileSystemHelper _fileSystemHelper;
         private IHasher _hasher;
         private BundleManager _bundleManager;
-
-
+        
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="env"></param>
         /// <param name="config"></param>
-        public SmidgeController(IApplicationEnvironment env, SmidgeConfig config, FileSystemHelper fileSystemHelper, IHasher hasher, BundleManager bundleManager)
+        public SmidgeController(IApplicationEnvironment env, ISmidgeConfig config, FileSystemHelper fileSystemHelper, IHasher hasher, BundleManager bundleManager)
         {
             _hasher = hasher;
             _env = env;
@@ -97,8 +96,10 @@ namespace Smidge.Controllers
                 //get the file list from the fileset string, remember, each of the files listed here
                 // is a path to it's already minified version since that is done during file rendering
 
-                filePaths = fileset.Split(new[] { ext }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(filePath => Path.Combine(_fileSystemHelper.CurrentCacheFolder, filePath + ext));
+                filePaths = fileset.Split(new[] { ext }, StringSplitOptions.RemoveEmptyEntries).Select(filePath =>
+                    Path.Combine(
+                        _fileSystemHelper.CurrentCacheFolder,
+                        filePath + ext));
             }
 
             if (!filePaths.Any())

@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace Smidge.CompositeFiles
 {
-    public class DelimitedUrlCreator : IUrlCreator
+    public class DefaultUrlCreator : IUrlCreator
     {
-        private SmidgeConfig _config;
+        private ISmidgeConfig _config;
         private IHasher _hasher;
         private UrlCreatorOptions _options;
 
-        public DelimitedUrlCreator(UrlCreatorOptions options, SmidgeConfig config, IHasher hasher)
+        public DefaultUrlCreator(UrlCreatorOptions options, ISmidgeConfig config, IHasher hasher)
         {
             _hasher = hasher;
             _options = options;

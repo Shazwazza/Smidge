@@ -1,6 +1,6 @@
 ﻿{
     "version": "1.0.0-*",
-    "dependencies": {       
+    "dependencies": {
         "Microsoft.Framework.DependencyInjection": "1.0.0-beta1",
         "System.Text.RegularExpressions": "4.0.10-beta-22231",
         "Microsoft.AspNet.Http": "1.0.0-beta1",
@@ -12,8 +12,9 @@
         "System.Collections.Concurrent": "4.0.0-beta-22231"
     },
 
-    "frameworks" : {        
-        "aspnetcore50" : { 
+    "frameworks": {
+        "aspnet50" : {},
+        "aspnetcore50": {
             "dependencies": {
                 "System.Runtime": "4.0.20-beta-22231"
             }

@@ -9,10 +9,10 @@ namespace Smidge
     public sealed class FileSystemHelper
     {
         private IApplicationEnvironment _appEnv;
-        private SmidgeConfig _config;
+        private ISmidgeConfig _config;
         private IHostingEnvironment _hostingEnv;
 
-        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, SmidgeConfig config)
+        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config)
         {
             _appEnv = appEnv;
             _config = config;

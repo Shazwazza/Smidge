@@ -25,7 +25,7 @@ namespace Smidge
             services.AddSingleton<BundleManager>(provider => new BundleManager(provider.GetRequiredService<FileSystemHelper>(), createBundles));
             services.AddSingleton<FileSystemHelper>();
             services.AddSingleton<FileMinifyManager>();
-            services.AddSingleton<SmidgeConfig>();
+            services.AddSingleton<ISmidgeConfig, SmidgeConfig>();
             services.AddScoped<SmidgeContext>();
             services.AddScoped<SmidgeHelper>();
             services.AddTransient<UrlCreatorOptions>(x => new UrlCreatorOptions
@@ -33,7 +33,7 @@ namespace Smidge
                 MaxUrlLength = 2048,
                 RequestHandlerPath = "sg"
             });
-            services.AddSingleton<IUrlCreator, DelimitedUrlCreator>();
+            services.AddSingleton<IUrlCreator, DefaultUrlCreator>();
             
         }
 

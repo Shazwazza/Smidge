@@ -21,7 +21,7 @@ namespace Smidge
     public class SmidgeHelper
     {
         private SmidgeContext _context;
-        private SmidgeConfig _config;
+        private ISmidgeConfig _config;
         private FileMinifyManager _fileManager;
         private FileSystemHelper _fileSystemHelper;
         private IContextAccessor<HttpContext> _http;
@@ -39,8 +39,8 @@ namespace Smidge
         /// <param name="fileSystemHelper"></param>
         /// <param name="http"></param>
         public SmidgeHelper(
-            SmidgeContext context, 
-            SmidgeConfig config, 
+            SmidgeContext context,
+            ISmidgeConfig config, 
             FileMinifyManager fileManager, 
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 

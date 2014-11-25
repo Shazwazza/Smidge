@@ -1,17 +1,16 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
+        "Xunit.KRunner": "1.0.0-*",
         "Smidge": "1.0.0-*",
-        "Xunit.KRunner": "1.0.0-*"
+        "Moq": "4.2-*"
     },
     "commands": {
-        "test": "Xunit.KRunner"
+        "test": "Xunit.KRunner" 
     },
     "frameworks": {
-        "aspnetcore50": {
-            "dependencies": {
-                "System.Runtime": "4.0.20-beta-22231"
-            }
+        "aspnet50": {
+            
         }
     }
 }
