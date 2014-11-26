@@ -22,21 +22,81 @@ namespace Smidge.Controllers
         private FileSystemHelper _fileSystemHelper;
         private IHasher _hasher;
         private BundleManager _bundleManager;
-        
+        private IUrlManager _urlManager;
+
+
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="env"></param>
         /// <param name="config"></param>
-        public SmidgeController(IApplicationEnvironment env, ISmidgeConfig config, FileSystemHelper fileSystemHelper, IHasher hasher, BundleManager bundleManager)
+        public SmidgeController(
+            IApplicationEnvironment env, 
+            ISmidgeConfig config, 
+            FileSystemHelper fileSystemHelper, 
+            IHasher hasher, 
+            BundleManager bundleManager,
+            IUrlManager urlManager)
         {
+            _urlManager = urlManager;
             _hasher = hasher;
             _env = env;
             _config = config;
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
         }      
+
+        public async Task<FileResult> Bundle(string id)
+        {
+            var compression = Context.GetClientCompression();
+
+            var parsed = _urlManager.ParsePath(id);
+
+            string mime;
+            string ext;
+            switch (parsed.WebType)
+            {
+                case WebFileType.Js:
+                    ext = ".js";
+                    mime = "text/javascript";
+                    break;
+                case WebFileType.Css:
+                default:
+                    ext = ".css";
+                    mime = "text/css";
+                    break;
+            }
+
+            if (!parsed.Names.Any())
+            {
+                //is null right here??
+                return null;
+            }
+
+            //it's a bundle, we treat this differently
+            var found = _bundleManager.GetFiles(parsed.Names.Single());
+            if (found == null || !found.Any())
+            {
+                //is null right here??
+                return null;
+            }
+
+            //need to convert each file path to it's hash since that is what the minified file will be saved as                    
+            var filePaths = found.Select(file =>
+                Path.Combine(
+                    _fileSystemHelper.CurrentCacheFolder,
+                    _hasher.Hash(file.FilePath) + ext));
+
+            using (var resultStream = await GetCombinedStreamAsync(filePaths))
+            {
+                var compressedStream = await Compressor.CompressAsync(compression, resultStream);
+
+                await CacheCompositeFileAsync(parsed.Names.Single(), compressedStream, compression);
+
+                return File(compressedStream, mime);
+            }
+        }
 
         /// <summary>
         /// Handles requests for composite files
@@ -45,18 +105,18 @@ namespace Smidge.Controllers
         /// <param name="t">The type of file</param>
         /// <param name="v">The version</param>
         /// <returns></returns>
-        public async Task<FileResult> Index(string s, WebFileType t, string v)
+        public async Task<FileResult> Composite(string id)
         {
             var compression = Context.GetClientCompression();
 
-            var fileset = Uri.UnescapeDataString(s);
+            var parsed = _urlManager.ParsePath(id);
 
             //Creates a single hash of the full url (which can include many files)
-            var filesetKey = _hasher.Hash(fileset);
+            var filesetKey = _hasher.Hash(string.Join(".", parsed.Names));
 
-            string ext;
             string mime;
-            switch (t)
+            string ext;
+            switch (parsed.WebType)
             {
                 case WebFileType.Js:
                     ext = ".js";
@@ -76,37 +136,19 @@ namespace Smidge.Controllers
                 return result;
             }
 
-            var filePaths = Enumerable.Empty<string>();
+            //get the file list from the fileset string, remember, each of the files listed here
+            // is a path to it's already minified version since that is done during file rendering
 
-            if (fileset.Contains(".b"))
-            {
-                //it's a bundle, we treat this differently
-                var found = _bundleManager.GetFiles(fileset.Substring(0, fileset.IndexOf(".b")));
-                if (found != null && found.Any())
-                {
-                    //need to convert each file path to it's hash since that is what the minified file will be saved as                    
-                    filePaths = found.Select(file =>
-                        Path.Combine(
-                            _fileSystemHelper.CurrentCacheFolder,
-                            _hasher.Hash(file.FilePath) + ext));
-                }
-            }
-            else
-            {
-                //get the file list from the fileset string, remember, each of the files listed here
-                // is a path to it's already minified version since that is done during file rendering
-
-                filePaths = fileset.Split(new[] { ext }, StringSplitOptions.RemoveEmptyEntries).Select(filePath =>
-                    Path.Combine(
-                        _fileSystemHelper.CurrentCacheFolder,
-                        filePath + ext));
-            }
-
-            if (!filePaths.Any())
+            if (!parsed.Names.Any())
             {
                 //is null right here??
                 return null;
             }
+
+            var filePaths = parsed.Names.Select(filePath =>
+                Path.Combine(
+                    _fileSystemHelper.CurrentCacheFolder,
+                    filePath + ext));
 
             using (var resultStream = await GetCombinedStreamAsync(filePaths))
             {

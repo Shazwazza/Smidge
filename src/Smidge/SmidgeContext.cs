@@ -8,7 +8,7 @@ namespace Smidge
 {
     public class SmidgeContext
     {
-        public SmidgeContext(IUrlCreator urlCreator)
+        public SmidgeContext(IUrlManager urlCreator)
         {
             UrlCreator = urlCreator;
             Files = new HashSet<IWebFile>();
@@ -32,6 +32,6 @@ namespace Smidge
             }
         }
 
-        public IUrlCreator UrlCreator { get; private set; }
+        public IUrlManager UrlCreator { get; private set; }
     }
 }

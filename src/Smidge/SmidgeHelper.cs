@@ -56,7 +56,7 @@ namespace Smidge
             _http = http;
         }
 
-        public async Task<HtmlString> RenderJsHereAsync(string bundleName)
+        public async Task<HtmlString> JsHereAsync(string bundleName)
         {
             var result = new StringBuilder();
             var bundleExists = _bundleManager.Exists(bundleName);
@@ -80,7 +80,7 @@ namespace Smidge
             else
             {
                 var compression = _http.Value.GetClientCompression();
-                var url = _context.UrlCreator.GetUrl(bundleName, WebFileType.Js);
+                var url = _context.UrlCreator.GetUrl(bundleName, ".js");
 
                 //now we need to determine if these files have already been minified
                 var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
@@ -106,7 +106,7 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> RenderJsHereAsync()
+        public async Task<HtmlString> JsHereAsync()
         {
             var result = new StringBuilder();
             var urls = await GenerateJsUrlsAsync();
@@ -125,7 +125,7 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> RenderCssHereAsync()
+        public async Task<HtmlString> CssHereAsync()
         {
             var result = new StringBuilder();
             var urls = await GenerateCssUrlsAsync();
@@ -142,7 +142,7 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync()
         {
-            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, s => new JavaScriptFile(s + ".js"));
+            return await GenerateUrlsAsync(_context.JavaScriptFiles, ".js", s => new JavaScriptFile(s + ".js"));
         }
 
         /// <summary>
@@ -151,10 +151,13 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync()
         {
-            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, s => new CssFile(s + ".css"));
+            return await GenerateUrlsAsync(_context.CssFiles, ".css", s => new CssFile(s + ".css"));
         }
 
-        private async Task<IEnumerable<string>> GenerateUrlsAsync(IEnumerable<IWebFile> files, WebFileType type, Func<string, IWebFile> fileCreator)
+        private async Task<IEnumerable<string>> GenerateUrlsAsync(
+            IEnumerable<IWebFile> files, 
+            string fileExtension, 
+            Func<string, IWebFile> fileCreator)
         {
             var result = new List<string>();
 
@@ -183,7 +186,7 @@ namespace Smidge
                     return file;
                 });
 
-                var urls = _context.UrlCreator.GetUrls(type, cachedFiles);
+                var urls = _context.UrlCreator.GetUrls(cachedFiles, fileExtension);
 
                 foreach (var u in urls)
                 {
@@ -212,9 +215,12 @@ namespace Smidge
             return this;
         }
 
-        public SmidgeHelper RequiresJs(string path)
+        public SmidgeHelper RequiresJs(params string[] paths)
         {
-            RequiresJs(new JavaScriptFile(path));
+            foreach (var path in paths)
+            {
+                RequiresJs(new JavaScriptFile(path));
+            }            
             return this;
         }
 
@@ -224,9 +230,12 @@ namespace Smidge
             return this;
         }
 
-        public SmidgeHelper RequiresCss(string path)
+        public SmidgeHelper RequiresCss(params string[] paths)
         {
-            RequiresCss(new CssFile(path));
+            foreach (var path in paths)
+            {
+                RequiresCss(new CssFile(path));
+            }            
             return this;
         }
     }

@@ -38,11 +38,13 @@ namespace Smidge
         /// </summary>
         /// <param name="contentFile"></param>
         /// <returns></returns>
-        internal string MapPath(string contentFile)
+        public string MapPath(string contentFile)
         {
-            return Path.Combine(WebRoot, contentFile)
-                .Replace("~/", "")
-                .Replace("/", "\\");
+            return Path.Combine(WebRoot.TrimEnd('\\'),
+                contentFile
+                    .Replace("~/", "")
+                    .Replace("/", "\\")
+                    .TrimStart('\\'));
         }
 
         /// <summary>
@@ -50,15 +52,15 @@ namespace Smidge
         /// </summary>
         /// <param name="fullFilePath"></param>
         /// <returns></returns>
-        internal string ReverseMapPath(string fullFilePath)
+        public string ReverseMapPath(string fullFilePath)
         {
             var reversed = fullFilePath.Substring(WebRoot.Length)
-                .Replace("\\", "//");
+                .Replace("\\", "/");
             if (!reversed.StartsWith("/"))
             {
                 reversed = "/" + reversed;
             }
-            return reversed;
+            return "~" + reversed;
         }
 
 

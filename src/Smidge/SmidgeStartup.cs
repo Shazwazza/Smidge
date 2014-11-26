@@ -28,12 +28,13 @@ namespace Smidge
             services.AddSingleton<ISmidgeConfig, SmidgeConfig>();
             services.AddScoped<SmidgeContext>();
             services.AddScoped<SmidgeHelper>();
-            services.AddTransient<UrlCreatorOptions>(x => new UrlCreatorOptions
+            services.AddTransient<UrlManagerOptions>(x => new UrlManagerOptions
             {
                 MaxUrlLength = 2048,
-                RequestHandlerPath = "sg"
+                CompositeFilePath = "sc",
+                BundleFilePath = "sb"
             });
-            services.AddSingleton<IUrlCreator, DefaultUrlCreator>();
+            services.AddSingleton<IUrlManager, DefaultUrlManager>();
             
         }
 
@@ -44,9 +45,15 @@ namespace Smidge
             app.UseMvc(routes =>
             {               
                 routes.MapRoute(
-                    "Smidge",
-                    "sg/{id?}",
-                    new { controller = "Smidge", action = "Index" });
+                    "SmidgeComposite",
+                    "sc/{id}",
+                    new { controller = "Smidge", action = "Composite" });
+
+                routes.MapRoute(
+                    "SmidgeBundle",
+                    "sb/{id}",
+                    new { controller = "Smidge", action = "Bundle" });
+
             });
             
 

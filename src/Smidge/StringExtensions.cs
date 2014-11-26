@@ -6,6 +6,37 @@ namespace Smidge
 {
     public static class StringExtensions
     {
+        internal static string TrimExtension(this string input, string extension)
+        {
+            extension = extension.TrimStart('.');
+            var li = input.LastIndexOf(".");
+            if (li > 0)
+            {
+                input = input.Substring(0, li);
+            }
+            return input;
+        }
+
+        internal static string EnsureEndsWith(this string input, char endsWith)
+        {
+            var asString = endsWith.ToString();
+            if (!input.EndsWith(asString))
+            {
+                return string.Concat(input, asString);
+            }
+            return input;
+        }
+
+        internal static string EnsureStartsWith(this string input, char startsWith)
+        {
+            var asString = startsWith.ToString();
+            if (!input.StartsWith(asString))
+            {
+                return string.Concat(asString, input);
+            }
+            return input;
+        }
+
         internal static string ReplaceNonAlphanumericChars(this string input, char replacement)
         {
             //any character that is not alphanumeric, convert to a hyphen
