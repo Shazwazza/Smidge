@@ -22,7 +22,7 @@ namespace Smidge.Web
                     new JavaScriptFile("~/Js/Bundle1/a1.js"),
                     new JavaScriptFile("~/Js/Bundle1/a2.js"));
 
-                bundles.Create("test-bundle-2", "~/Js/Bundle2", WebFileType.Js);
+                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
             });
         }
 

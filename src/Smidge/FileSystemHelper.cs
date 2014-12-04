@@ -1,7 +1,11 @@
 ﻿using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Smidge
@@ -17,6 +21,64 @@ namespace Smidge
             _appEnv = appEnv;
             _config = config;
             _hostingEnv = hostingEnv;
+        }
+
+        /// <summary>
+        /// Takes in a given path and returns it's normalized result, either as a relative path for local files or an absolute web path with a host
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public string NormalizeWebPath(string path, HttpRequest request)
+        {
+            if (path.StartsWith("~/"))
+            {
+                path = path.TrimStart('~', '/');
+            }
+
+            //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
+            // logic to work properly
+            if (path.StartsWith("//"))
+            {
+                path = Regex.Replace(path, @"^\/\/", "\{request.Scheme}\{Uri.SchemeDelimiter}");
+            }
+
+            if (path.StartsWith("/"))
+            {
+                path = path.TrimStart('/');
+            }
+
+            return path;
+        }
+
+        /// <summary>
+        /// Rudimentary check to see if the path is a folder
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public bool IsFolder(string path)
+        {
+            if (path.EndsWith("/"))
+            {
+                return true;
+            }
+            var parts = path.Split('/');
+            if (!parts[parts.Length - 1].Contains("."))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public IEnumerable<string> GetPathsForFilesInFolder(string folderPath)
+        {
+            var folder = MapPath(folderPath);
+            if (Directory.Exists(folder))
+            {
+                var files = Directory.GetFiles(folder);
+                return files.Select(x => ReverseMapPath(x));
+            }
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>
@@ -109,5 +171,6 @@ namespace Smidge
                 return _hostingEnv.WebRoot;
             }
         }
+
     }
 }

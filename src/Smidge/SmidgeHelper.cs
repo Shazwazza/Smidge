@@ -24,11 +24,10 @@ namespace Smidge
         private ISmidgeConfig _config;
         private FileMinifyManager _fileManager;
         private FileSystemHelper _fileSystemHelper;
-        private IContextAccessor<HttpContext> _http;
+        private IContextAccessor<HttpRequest> _request;
         private IHasher _hasher;
         private BundleManager _bundleManager;
-
-
+        private FileBatcher _fileBatcher;
 
         /// <summary>
         /// Constructor
@@ -37,7 +36,7 @@ namespace Smidge
         /// <param name="config"></param>
         /// <param name="fileManager"></param>
         /// <param name="fileSystemHelper"></param>
-        /// <param name="http"></param>
+        /// <param name="request"></param>
         public SmidgeHelper(
             SmidgeContext context,
             ISmidgeConfig config, 
@@ -45,7 +44,7 @@ namespace Smidge
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
             BundleManager bundleManager,
-            IContextAccessor<HttpContext> http)
+            IContextAccessor<HttpRequest> request)
         {
             _bundleManager = bundleManager;
             _hasher = hasher;
@@ -53,7 +52,9 @@ namespace Smidge
             _context = context;
             _config = config;
             _fileSystemHelper = fileSystemHelper;
-            _http = http;
+            _request = request;
+
+            _fileBatcher = new FileBatcher(_fileSystemHelper, _request.Value, _hasher);
         }
 
         public async Task<HtmlString> JsHereAsync(string bundleName)
@@ -65,7 +66,7 @@ namespace Smidge
             if (_config.IsDebug)
             {
                 var urls = new List<string>();
-                var files = _bundleManager.GetFiles(bundleName);
+                var files = _bundleManager.GetFiles(bundleName, _request.Value);
                 foreach (var d in files)
                 {
                     urls.Add(d.FilePath);
@@ -79,14 +80,14 @@ namespace Smidge
             }
             else
             {
-                var compression = _http.Value.GetClientCompression();
+                var compression = _request.Value.GetClientCompression();
                 var url = _context.UrlCreator.GetUrl(bundleName, ".js");
 
                 //now we need to determine if these files have already been minified
                 var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
                 if (!File.Exists(compositeFilePath))
                 {
-                    var files = _bundleManager.GetFiles(bundleName);
+                    var files = _bundleManager.GetFiles(bundleName, _request.Value);
                     //we need to do the minify on the original files
                     foreach (var file in files)
                     {
@@ -163,50 +164,107 @@ namespace Smidge
 
             if (_config.IsDebug)
             {
-                foreach (var d in files)
-                {
-                    result.Add(d.FilePath);
-                }
+                return GenerateUrlsDebug(files, fileExtension);
             }
             else
             {
-                var compression = _http.Value.GetClientCompression();
+                var compression = _request.Value.GetClientCompression();
 
-                //we need to get a collection of files that have their cached/hashed paths, this is used 
-                // to check if the composite file has already been created, if it is then we don't need to worry 
-                // about anything. If it is not, then we need to minify each of the files now. Then when the request
-                // is made to get the composite file, that process is already complete and the composite handler just
-                // needs to combine, compress and store the file
-                //TODO: There's surely a nicer way to achieve this
-                var cachedFiles = files.Select(x =>
+                //Get the file collection used to create the composite URLs and the external requests
+                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(files, fileCreator);
+
+                foreach (var batch in fileBatches)
                 {
-                    var file = fileCreator(_hasher.Hash(x.FilePath));
-                    file.Minify = x.Minify;
-                    //file.PathNameAlias = x.PathNameAlias;
-                    return file;
-                });
-
-                var urls = _context.UrlCreator.GetUrls(cachedFiles, fileExtension);
-
-                foreach (var u in urls)
-                {
-                    //now we need to determine if these files have already been minified
-                    var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, u.Key);
-                    if (!File.Exists(compositeFilePath))
+                    //if it's external, the rule is that a WebFileBatch can only contain a single external file
+                    // it's path will be normalized as an external url so we just use it
+                    if (batch.IsExternal)
                     {
-                        //we need to do the minify on the original files
-                        foreach (var file in files)
+                        result.Add(batch.Single().FilePath);
+                    }
+                    else
+                    {
+                        //Get the URLs for the batch, this could be more than one resulting URL depending on how many
+                        // files are in the batch and the max url length
+                        var urls = _context.UrlCreator.GetUrls(batch, fileExtension);
+
+                        foreach (var u in urls)
                         {
-                            await _fileManager.MinifyAndCacheFileAsync(file);
+                            //now we need to determine if these files have already been minified
+                            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, u.Key);
+                            if (!File.Exists(compositeFilePath))
+                            {
+                                await ProcessWebFilesAsync(files);
+                            }
+
+                            result.Add(u.Url);
                         }
                     }
-
-                    result.Add(u.Url);
+                    
                 }
+
+                
             }
 
             return result;
 
+        }
+        
+
+        /// <summary>
+        /// Minifies (and performs any other operation defined in the pipeline) for each file
+        /// </summary>
+        /// <param name="files"></param>
+        /// <returns></returns>
+        private async Task ProcessWebFilesAsync(IEnumerable<IWebFile> files)
+        {
+            //we need to do the minify on the original files
+            foreach (var file in files)
+            {
+                file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, _request.Value);
+
+                //We need to check if this path is a folder, then iterate the files
+                if (_fileSystemHelper.IsFolder(file.FilePath))
+                {
+                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
+                    foreach (var f in filePaths)
+                    {
+                        await _fileManager.MinifyAndCacheFileAsync(new WebFile
+                        {
+                            FilePath = _fileSystemHelper.NormalizeWebPath(f, _request.Value),
+                            DependencyType = file.DependencyType,
+                            Minify = file.Minify
+                        });
+                    }
+                }
+                else
+                {
+                    await _fileManager.MinifyAndCacheFileAsync(file);
+                }
+            }
+        }
+
+        private IEnumerable<string> GenerateUrlsDebug(IEnumerable<IWebFile> files, string fileExtension)
+        {
+            var result = new List<string>();
+            foreach (var file in files)
+            {
+                file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, _request.Value);
+
+                //We need to check if this path is a folder, then iterate the files
+                if (_fileSystemHelper.IsFolder(file.FilePath))
+                {
+                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
+                    foreach (var f in filePaths)
+                    {
+                        result.Add(_fileSystemHelper.NormalizeWebPath(f, _request.Value));
+                    }
+                }
+                else
+                {
+                    result.Add(file.FilePath);
+                }
+            }
+            return result;
         }
 
         public SmidgeHelper RequiresJs(JavaScriptFile file)

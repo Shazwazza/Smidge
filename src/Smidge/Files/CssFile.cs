@@ -2,20 +2,16 @@
 
 namespace Smidge.Files
 {
-    public class CssFile : BasicFile
+    public class CssFile : WebFile
     {
         public CssFile()
         {
-
+            DependencyType = WebFileType.Css;
         }
-        public CssFile(string path)
+        public CssFile(string path) : this()
         {
-            FilePath = path.TrimStart(new[] { '~', '/' });
+            FilePath = path;
         }
 
-        public override WebFileType DependencyType
-        {
-            get { return WebFileType.Css; }
-        }
     }
 }

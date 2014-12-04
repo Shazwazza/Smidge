@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
 using Moq;
 using System;
@@ -8,6 +9,81 @@ namespace Smidge.Tests
 {
     public class FileSystemHelperTests
     {
+        [Fact]
+        public void Normalize_Web_Path_Virtual_Path()
+        {
+            var url = "~/test/hello.js";
+
+            var helper = new FileSystemHelper(
+                Mock.Of<IApplicationEnvironment>(),
+                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<ISmidgeConfig>());
+
+            var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
+
+            Assert.Equal("test/hello.js", result);
+        }
+
+        [Fact]
+        public void Normalize_Web_Path_Relative()
+        {
+            var url = "test/hello.js";
+
+            var helper = new FileSystemHelper(
+                Mock.Of<IApplicationEnvironment>(),
+                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<ISmidgeConfig>());
+
+            var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
+
+            Assert.Equal("test/hello.js", result);
+        }
+
+        [Fact]
+        public void Normalize_Web_Path_Absolute()
+        {
+            var url = "/test/hello.js";
+
+            var helper = new FileSystemHelper(
+                Mock.Of<IApplicationEnvironment>(),
+                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<ISmidgeConfig>());
+
+            var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
+
+            Assert.Equal("test/hello.js", result);
+        }
+
+        [Fact]
+        public void Normalize_Web_Path_External_Schemaless()
+        {
+            var url = "//test.com/hello.js";
+
+            var helper = new FileSystemHelper(
+                Mock.Of<IApplicationEnvironment>(),
+                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<ISmidgeConfig>());
+
+            var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
+
+            Assert.Equal("http://test.com/hello.js", result);
+        }
+
+        [Fact]
+        public void Normalize_Web_Path_External_With_Schema()
+        {
+            var url = "http://test.com/hello.js";
+
+            var helper = new FileSystemHelper(
+                Mock.Of<IApplicationEnvironment>(),
+                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<ISmidgeConfig>());
+
+            var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
+
+            Assert.Equal("http://test.com/hello.js", result);
+        }
+
         [Fact]
         public void Map_Path_Absolute()
         {

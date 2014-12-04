@@ -6,15 +6,22 @@ namespace Smidge
 
     public static class HttpExtensions
     {
-        public static void AddCompressionResponseHeader(this HttpContext context, CompressionType cType)
+        //public static Uri GetRequestUri(this HttpRequest request)
+        //{
+        //    var uriHelper = new Microsoft.AspNet.WebUtilities.UriHelper(request);
+        //    var uri = new Uri(uriHelper.GetFullUri());
+        //    return uri;
+        //}
+
+        public static void AddCompressionResponseHeader(this HttpResponse response, CompressionType cType)
         {
             if (cType == CompressionType.deflate)
             {
-                context.Response.Headers["Content-encoding"] = "deflate";
+                response.Headers["Content-encoding"] = "deflate";
             }
             else if (cType == CompressionType.gzip)
             {
-                context.Response.Headers["Content-encoding"] = "gzip";
+                response.Headers["Content-encoding"] = "gzip";
             }
         }
 
@@ -25,16 +32,16 @@ namespace Smidge
         /// If IE 6 is detected, we will ignore compression as it's known that some versions of IE 6
         /// have issues with it.
         /// </summary>
-        public static CompressionType GetClientCompression(this HttpContext context)
+        public static CompressionType GetClientCompression(this HttpRequest request)
         {
             CompressionType type = CompressionType.none;
-            var agentHeader = context.Request.Headers["User-Agent"];
+            var agentHeader = request.Headers["User-Agent"];
             if (agentHeader != null && agentHeader.Contains("MSIE 6"))
             {
                 return type;
             }
 
-            string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+            string acceptEncoding = request.Headers["Accept-Encoding"];
 
             if (!string.IsNullOrEmpty(acceptEncoding))
             {

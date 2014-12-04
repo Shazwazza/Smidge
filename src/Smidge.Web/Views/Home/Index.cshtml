@@ -3,8 +3,9 @@
 
     @{
         Smidge
-            .RequiresJs("Js/test1.js", "Js/test2.js")
-            .RequiresJs("Js/test3.js", "Js/test4.js")
+            .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
+            .RequiresJs("~/Js/test1.js", "Js/test2.js")
+            .RequiresJs("Js/Folder")
             .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");
     }
 

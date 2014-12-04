@@ -33,7 +33,7 @@ namespace Smidge.Tests
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var creator = new DefaultUrlManager(
-                new UrlManagerOptions { CompositeFilePath = "sg" },
+                new UrlManagerOptions { BundleFilePath = "sg" },
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object);
 

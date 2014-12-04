@@ -23,9 +23,7 @@ namespace Smidge.Controllers
         private IHasher _hasher;
         private BundleManager _bundleManager;
         private IUrlManager _urlManager;
-
-
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -49,7 +47,7 @@ namespace Smidge.Controllers
 
         public async Task<FileResult> Bundle(string id)
         {
-            var compression = Context.GetClientCompression();
+            var compression = Request.GetClientCompression();
 
             var parsed = _urlManager.ParsePath(id);
 
@@ -75,7 +73,7 @@ namespace Smidge.Controllers
             }
 
             //it's a bundle, we treat this differently
-            var found = _bundleManager.GetFiles(parsed.Names.Single());
+            var found = _bundleManager.GetFiles(parsed.Names.Single(), Request);
             if (found == null || !found.Any())
             {
                 //is null right here??
@@ -107,7 +105,7 @@ namespace Smidge.Controllers
         /// <returns></returns>
         public async Task<FileResult> Composite(string id)
         {
-            var compression = Context.GetClientCompression();
+            var compression = Request.GetClientCompression();
 
             var parsed = _urlManager.ParsePath(id);
 
@@ -168,7 +166,7 @@ namespace Smidge.Controllers
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             base.OnActionExecuted(context);
-            context.HttpContext.AddCompressionResponseHeader(Context.GetClientCompression());
+            context.HttpContext.Response.AddCompressionResponseHeader(Request.GetClientCompression());
         }
 
         private bool TryGetCachedCompositeFileResult(string filesetKey, CompressionType type, string mime, out FileResult result)

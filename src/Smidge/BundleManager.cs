@@ -1,14 +1,16 @@
-﻿using Smidge.Files;
+﻿using Microsoft.AspNet.Http;
+using Smidge.Files;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Smidge
 {
     public sealed class BundleManager
     {
-        public BundleManager(FileSystemHelper fileSystemHelper, Action<BundleManager> initialize)
+        public BundleManager(FileSystemHelper fileSystemHelper, Action<BundleManager> initialize = null)
         {
             _fileSystemHelper = fileSystemHelper;
             if (initialize != null)
@@ -17,45 +19,45 @@ namespace Smidge
             }            
         }
 
-        private ConcurrentDictionary<string, object> _bundles = new ConcurrentDictionary<string, object>();
+        private ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
         private FileSystemHelper _fileSystemHelper;
 
         public bool Exists(string bundleName)
         {
-            object result;
+            IEnumerable<IWebFile> result;
             return _bundles.TryGetValue(bundleName, out result);
         }
 
-        public IEnumerable<IWebFile> GetFiles(string bundleName)
+        public IEnumerable<IWebFile> GetFiles(string bundleName, HttpRequest request)
         {
-            object result;
-            if (_bundles.TryGetValue(bundleName, out result))
+            IEnumerable<IWebFile> files;
+            if (_bundles.TryGetValue(bundleName, out files))
             {
-                var collection = result as IEnumerable<IWebFile>;
-                if (collection != null)
+                var fileList = new List<IWebFile>();
+                foreach (var file in files)
                 {
-                    return collection;
-                }
-                var folder = result as FolderBundle;
-                if (folder != null)
-                {
-                    var filesInFolder = new List<IWebFile>();
-                    var path = _fileSystemHelper.MapPath(folder.Folder);
-                    var files = Directory.GetFiles(path);
-                    foreach (var file in files)
+                    file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, request);
+
+                    //We need to check if this path is a folder, then iterate the files
+                    if (_fileSystemHelper.IsFolder(file.FilePath))
                     {
-                        switch (folder.WebFileType)
+                        var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
+                        foreach (var f in filePaths)
                         {
-                            case WebFileType.Js:
-                                filesInFolder.Add(new JavaScriptFile(_fileSystemHelper.ReverseMapPath(file)));
-                                break;
-                            case WebFileType.Css:
-                                filesInFolder.Add(new CssFile(_fileSystemHelper.ReverseMapPath(file)));
-                                break;
+                            fileList.Add(new WebFile
+                            {
+                                FilePath = _fileSystemHelper.NormalizeWebPath(f, request),
+                                DependencyType = file.DependencyType,
+                                Minify = file.Minify
+                            });
                         }
                     }
-                    return filesInFolder;
+                    else
+                    {
+                        fileList.Add(file);
+                    }
                 }
+                return fileList;
             }
             return null;
         }
@@ -70,16 +72,13 @@ namespace Smidge
             _bundles.TryAdd(bundleName, cssFiles);
         }
 
-        public void Create(string bundleName, string folder, WebFileType type)
+        public void Create(string bundleName, WebFileType type, params string[] paths)
         {
-            _bundles.TryAdd(bundleName, new FolderBundle { Folder = folder, WebFileType = type });
+            _bundles.TryAdd(
+                bundleName, 
+                type == WebFileType.Css 
+                ? paths.Select(x => (IWebFile)new CssFile(x)) 
+                : paths.Select(x => (IWebFile)new JavaScriptFile(x)));
         }
-
-        private class FolderBundle
-        {
-            public WebFileType WebFileType { get; set; }
-            public string Folder { get; set; }
-        }
-
     }
 }

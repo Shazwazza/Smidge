@@ -5,6 +5,9 @@ using Smidge.CompositeFiles;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Hosting;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Smidge.Tests")]
 
 namespace Smidge
 {

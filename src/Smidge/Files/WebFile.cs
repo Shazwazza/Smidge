@@ -2,19 +2,19 @@
 
 namespace Smidge.Files
 {
-    public abstract class BasicFile : IWebFile
+    public class WebFile : IWebFile
     {
-        public BasicFile()
+        public WebFile()
         {
             //defaults
             Minify = true;
         }
 
-        public abstract WebFileType DependencyType { get; }
+        public WebFileType DependencyType { get; set; }
 
         public string FilePath { get; set; }
 
-        public string PathNameAlias { get; set; }
+        //public string PathNameAlias { get; set; }
 
         public bool Minify { get; set; }
     }
