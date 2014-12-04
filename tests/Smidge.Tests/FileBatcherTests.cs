@@ -41,7 +41,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test.min.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "http://cdnjs.cloudflare.com/ajax/libs/test2.min.js"),
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(4, result.Count());
 
@@ -52,7 +52,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test.min.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "~/test/test2.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world2.js"),
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(3, result.Count());
 
@@ -62,7 +62,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "~/test/test2.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world2.js"),
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(1, result.Count());
 
@@ -72,7 +72,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "~/test/test2.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test.min.js"),
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(2, result.Count());
 
@@ -82,7 +82,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "~/test/test2.js"),                    
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(2, result.Count());
 
@@ -91,7 +91,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test.min.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test2.min.js"),
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/test3.min.js")
-                }, s => new JavaScriptFile(s + ".js"));
+                });
 
             Assert.Equal(3, result.Count());
         }

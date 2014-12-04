@@ -143,7 +143,7 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync()
         {
-            return await GenerateUrlsAsync(_context.JavaScriptFiles, ".js", s => new JavaScriptFile(s + ".js"));
+            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js);
         }
 
         /// <summary>
@@ -152,26 +152,25 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync()
         {
-            return await GenerateUrlsAsync(_context.CssFiles, ".css", s => new CssFile(s + ".css"));
+            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css);
         }
 
         private async Task<IEnumerable<string>> GenerateUrlsAsync(
             IEnumerable<IWebFile> files, 
-            string fileExtension, 
-            Func<string, IWebFile> fileCreator)
+            WebFileType fileType)
         {
             var result = new List<string>();
 
             if (_config.IsDebug)
             {
-                return GenerateUrlsDebug(files, fileExtension);
+                return GenerateUrlsDebug(files);
             }
             else
             {
                 var compression = _request.GetClientCompression();
 
                 //Get the file collection used to create the composite URLs and the external requests
-                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(files, fileCreator);
+                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(files);
 
                 foreach (var batch in fileBatches)
                 {
@@ -185,7 +184,7 @@ namespace Smidge
                     {
                         //Get the URLs for the batch, this could be more than one resulting URL depending on how many
                         // files are in the batch and the max url length
-                        var compositeUrls = _context.UrlCreator.GetUrls(batch.Select(x => x.Hashed), fileExtension);
+                        var compositeUrls = _context.UrlCreator.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
 
                         foreach (var u in compositeUrls)
                         {
@@ -220,9 +219,7 @@ namespace Smidge
         {
             //we need to do the minify on the original files
             foreach (var file in files)
-            {
-                //file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, _request);
-
+            {                
                 //We need to check if this path is a folder, then iterate the files
                 if (_fileSystemHelper.IsFolder(file.FilePath))
                 {
@@ -244,7 +241,7 @@ namespace Smidge
             }
         }
 
-        private IEnumerable<string> GenerateUrlsDebug(IEnumerable<IWebFile> files, string fileExtension)
+        private IEnumerable<string> GenerateUrlsDebug(IEnumerable<IWebFile> files)
         {
             var result = new List<string>();
             foreach (var file in files)

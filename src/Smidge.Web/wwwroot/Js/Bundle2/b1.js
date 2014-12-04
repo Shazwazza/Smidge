@@ -1,1 +1,1 @@
-﻿alert("b1");
+﻿document.writeln("b1.js");

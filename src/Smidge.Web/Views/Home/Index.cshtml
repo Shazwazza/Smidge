@@ -5,13 +5,9 @@
         Smidge
             .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
             .RequiresJs("~/Js/test1.js", "Js/test2.js")
-            .RequiresJs("Js/Folder")
+            .RequiresJs("Js/Folder*js")
             .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");
     }
-
-    @await Smidge.JsHereAsync()
-    @await Smidge.JsHereAsync("test-bundle-1")
-    @await Smidge.JsHereAsync("test-bundle-2")
 
     @await Smidge.CssHereAsync()
 
@@ -33,5 +29,10 @@
             }
         </ul>
     </p>
+
+    @await Smidge.JsHereAsync()
+    @await Smidge.JsHereAsync("test-bundle-1")
+    @await Smidge.JsHereAsync("test-bundle-2")
+
 </body>
 </html>

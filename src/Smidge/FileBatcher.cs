@@ -28,7 +28,6 @@ namespace Smidge
         /// any external requests.
         /// </summary>
         /// <param name="files"></param>
-        /// <param name="fileCreator"></param>
         /// <param name="externalRequests">Returns a collection of external requests found in the collection</param>
         /// <returns></returns>
         /// <remarks>
@@ -42,7 +41,7 @@ namespace Smidge
         /// an external dependency or a dependency that requires a different rendering output, it will close the current collection and 
         /// start another one. Each of these collections will be rendered individually.
         /// </remarks>
-        internal IEnumerable<WebFileBatch> GetCompositeFileCollectionForUrlGeneration(IEnumerable<IWebFile> files, Func<string, IWebFile> fileCreator)
+        internal IEnumerable<WebFileBatch> GetCompositeFileCollectionForUrlGeneration(IEnumerable<IWebFile> files)
         {
             var current = new WebFileBatch();
             var result = new List<WebFileBatch>();
@@ -64,12 +63,21 @@ namespace Smidge
                     result.Add(current);
                     current = new WebFileBatch();
                 }
-                else
+                else if (_fileSystemHelper.IsFolder(f.FilePath))
                 {
-                    var hashedFile = fileCreator(_hasher.Hash(webPath));
-                    hashedFile.Minify = f.Minify;
-                    //file.PathNameAlias = x.PathNameAlias;
-                    current.AddInternal(f, hashedFile);
+                    //it's a folder so get all of it's individual files and process them 
+                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
+                    foreach (var p in filePaths)
+                    {
+                        var subFile = Duplicate(f, _fileSystemHelper.NormalizeWebPath(p, _request));
+                        var hashedFile = Duplicate(subFile, _hasher.Hash(subFile.FilePath));
+                        hashedFile.Minify = f.Minify;
+                        current.AddInternal(subFile, hashedFile);
+                    }
+                }
+                else {
+                    var hashedFile = Duplicate(f, _hasher.Hash(webPath));
+                    current.AddInternal(Duplicate(f, webPath), hashedFile);
                 }
             }
 
@@ -80,6 +88,16 @@ namespace Smidge
             }
 
             return result;
+        }
+
+        private IWebFile Duplicate(IWebFile orig, string newPath)
+        {
+            return new WebFile
+            {
+                DependencyType = orig.DependencyType,
+                FilePath = newPath,
+                Minify = orig.Minify
+            };
         }
     }
 }

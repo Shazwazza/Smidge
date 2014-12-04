@@ -1,2 +1,1 @@
-﻿//hello world
-var asdfasdf = "asdfasdfasdfasdf";
+﻿document.writeln("test3.js");

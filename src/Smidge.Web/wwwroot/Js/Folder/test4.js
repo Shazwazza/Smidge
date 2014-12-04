@@ -1,1 +1,1 @@
-﻿var asdf = "";
+﻿document.writeln("test4.js");

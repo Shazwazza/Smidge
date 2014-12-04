@@ -61,8 +61,18 @@ namespace Smidge
             {
                 return true;
             }
+                      
+
+            //the last part doesn't contain a '.'
             var parts = path.Split('/');
-            if (!parts[parts.Length - 1].Contains("."))
+            var lastPart = parts[parts.Length - 1];
+            if (!lastPart.Contains("."))
+            {
+                return true;
+            }
+
+            //This is used when specifying extensions in a folder
+            if (lastPart.Contains("*"))
             {
                 return true;
             }
@@ -72,10 +82,17 @@ namespace Smidge
 
         public IEnumerable<string> GetPathsForFilesInFolder(string folderPath)
         {
-            var folder = MapPath(folderPath);
+            //parse out the folder if it contains an asterisk
+            var parts = folderPath.Split('*');
+            var folderPart = parts[0];
+            var extensionFilter = parts.Length > 1 ? parts[1] : null;
+
+            var folder = MapPath(folderPart);
             if (Directory.Exists(folder))
             {
-                var files = Directory.GetFiles(folder);
+                var files = string.IsNullOrWhiteSpace(extensionFilter)
+                    ? Directory.GetFiles(folder)
+                    : Directory.GetFiles(folder, "*.\{extensionFilter}");
                 return files.Select(x => ReverseMapPath(x));
             }
             return Enumerable.Empty<string>();
