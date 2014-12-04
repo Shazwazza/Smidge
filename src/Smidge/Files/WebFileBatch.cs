@@ -8,29 +8,45 @@ namespace Smidge.Files
     /// <summary>
     /// A batch/collection of web files that can contain one or more local files or a single external file
     /// </summary>
-    public class WebFileBatch : IEnumerable<IWebFile>
+    public class WebFileBatch : IEnumerable<WebFilePair>
     {
         public WebFileBatch()
         {
             IsExternal = false;
         }
 
-        private List<IWebFile> _files = new List<IWebFile>();
+        private List<WebFilePair> _files = new List<WebFilePair>();
         
-        public void Add(IWebFile file)
+        public void AddExternal(IWebFile original)
+        {
+            if(IsExternal)
+            {
+                throw new InvalidOperationException("Cannot add more than one external file");
+            }
+            _files.Add(new WebFilePair(original, null));
+
+            if (!original.FilePath.Contains(Uri.SchemeDelimiter))
+            {
+                throw new InvalidOperationException("Use " + nameof(AddInternal) + " to add an internal file");
+            }
+
+            IsExternal = true;
+        }
+
+        public void AddInternal(IWebFile original, IWebFile hashed)
         {
             if (IsExternal)
             {
                 throw new InvalidOperationException("Cannot add more than one external file");
             }
-            _files.Add(file);
-            if (file.FilePath.Contains(Uri.SchemeDelimiter))
+            _files.Add(new WebFilePair(original, hashed));
+            if (original.FilePath.Contains(Uri.SchemeDelimiter))
             {
-                IsExternal = true;
+                throw new InvalidOperationException("Use " + nameof(AddExternal) + " to add an external file");
             }
         }
 
-        public IEnumerator<IWebFile> GetEnumerator()
+        public IEnumerator<WebFilePair> GetEnumerator()
         {
             return _files.GetEnumerator();
         }
@@ -40,7 +56,7 @@ namespace Smidge.Files
             return _files.GetEnumerator();
         }
 
-        public IEnumerable<IWebFile> Files
+        public IEnumerable<WebFilePair> Files
         {
             get
             {

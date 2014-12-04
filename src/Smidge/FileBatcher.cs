@@ -59,17 +59,17 @@ namespace Smidge
                         current = new WebFileBatch();
                     }
                     f.FilePath = webPath;
-                    current.Add(f);
+                    current.AddExternal(f);
                     //add it to the result and split again - each batch can only contain a single external request
                     result.Add(current);
                     current = new WebFileBatch();
                 }
                 else
                 {
-                    var file = fileCreator(_hasher.Hash(webPath));
-                    file.Minify = f.Minify;
+                    var hashedFile = fileCreator(_hasher.Hash(webPath));
+                    hashedFile.Minify = f.Minify;
                     //file.PathNameAlias = x.PathNameAlias;
-                    current.Add(file);
+                    current.AddInternal(f, hashedFile);
                 }
             }
 
