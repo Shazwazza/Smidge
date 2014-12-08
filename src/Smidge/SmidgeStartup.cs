@@ -46,6 +46,7 @@ namespace Smidge
 
             //Add the controller models as DI services - these get auto created for model binding
             services.AddTransient<BundleModel>();
+            services.AddTransient<CompositeFileModel>();
         }
 
         public static void UseSmidge(this IApplicationBuilder app)
@@ -56,7 +57,7 @@ namespace Smidge
             {               
                 routes.MapRoute(
                     "SmidgeComposite",
-                    "sc/{id}",
+                    "sc/{file}",
                     new { controller = "Smidge", action = "Composite" });
 
                 routes.MapRoute(

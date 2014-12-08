@@ -15,22 +15,13 @@ using System.Threading.Tasks;
 namespace Smidge.Controllers
 {
 
-    internal class CompositeFileStreamResult : FileStreamResult
-    {
-
-        public CompositeFileStreamResult(string compFilePath, Stream fileStream, string contentType)
-            : base(fileStream, contentType)
-        {
-            CompositeFilePath = compFilePath;
-        }
-
-        public string CompositeFilePath { get; private set; }
-    }
-
     /// <summary>
     /// Controller for handling minified/combined responses
-    /// </summary>
-    [AddCompressionHeader]
+    /// </summary>    
+    [AddExpiryHeaders(Order = 0)]
+    [CheckNotModified(Order = 1)]
+    [CompositeFileCacheFilter(Order = 2)]    
+    [AddCompressionHeader(Order = 3)]
     public class SmidgeController : Controller
     {
         private ISmidgeConfig _config;
@@ -65,18 +56,11 @@ namespace Smidge.Controllers
         /// Handles requests for bundles
         /// </summary>
         /// <param name="bundle">The bundle model</param>
-        /// <returns></returns>
+        /// <returns></returns>       
         public async Task<FileResult> Bundle(
             [FromServices]BundleModel bundle)
-        {           
-            //Check if it's already processed and return it
-            FileResult result;
-            if (TryGetCachedCompositeFileResult(bundle.BundleName, bundle.Compression, bundle.Mime, out result))
-            {
-                return result;
-            }
-
-            var found = _bundleManager.GetFiles(bundle.BundleName, Request);
+        {  
+            var found = _bundleManager.GetFiles(bundle.FileKey, Request);
             if (found == null || !found.Any())
             {
                 //TODO: Throw an exception, this will result in an exception anyways
@@ -93,9 +77,9 @@ namespace Smidge.Controllers
             {
                 var compressedStream = await Compressor.CompressAsync(bundle.Compression, resultStream);
 
-                var compositeFilePath = await CacheCompositeFileAsync(bundle.BundleName, compressedStream, bundle.Compression);
+                var compositeFilePath = await CacheCompositeFileAsync(bundle.FileKey, compressedStream, bundle.Compression);
 
-                return new CompositeFileStreamResult(compositeFilePath, compressedStream, bundle.Mime);
+                return File(compressedStream, bundle.Mime);
             }
         }
 
@@ -106,76 +90,31 @@ namespace Smidge.Controllers
         /// <param name="t">The type of file</param>
         /// <param name="v">The version</param>
         /// <returns></returns>
-        public async Task<FileResult> Composite(string id)
+        public async Task<FileResult> Composite(
+             [FromServices]CompositeFileModel file)
         {
-            var compression = Request.GetClientCompression();
-
-            var parsed = _urlManager.ParsePath(id);
-
-            //Creates a single hash of the full url (which can include many files)
-            var filesetKey = _hasher.Hash(string.Join(".", parsed.Names));
-
-            string mime;
-            string ext;
-            switch (parsed.WebType)
+            if (!file.ParsedPath.Names.Any())
             {
-                case WebFileType.Js:
-                    ext = ".js";
-                    mime = "text/javascript";
-                    break;
-                case WebFileType.Css:
-                default:
-                    ext = ".css";
-                    mime = "text/css";
-                    break;
-            }
-
-            //Check if it's already processed and return it
-            FileResult result;
-            if (TryGetCachedCompositeFileResult(filesetKey, compression, mime, out result))
-            {
-                return result;
-            }
-
-            //get the file list from the fileset string, remember, each of the files listed here
-            // is a path to it's already minified version since that is done during file rendering
-
-            if (!parsed.Names.Any())
-            {
-                //is null right here??
+                //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
 
-            var filePaths = parsed.Names.Select(filePath =>
+            var filePaths = file.ParsedPath.Names.Select(filePath =>
                 Path.Combine(
                     _fileSystemHelper.CurrentCacheFolder,
-                    filePath + ext));
+                    filePath + file.Extension));
 
             using (var resultStream = await GetCombinedStreamAsync(filePaths))
             {
-                var compressedStream = await Compressor.CompressAsync(compression, resultStream);
+                var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
-                var compositeFilePath = await CacheCompositeFileAsync(filesetKey, compressedStream, compression);
+                var compositeFilePath = await CacheCompositeFileAsync(file.FileKey, compressedStream, file.Compression);
 
-                return new CompositeFileStreamResult(compositeFilePath, compressedStream, mime);
+                return File(compressedStream, file.Mime);
             }
 
         }
-             
 
-        private bool TryGetCachedCompositeFileResult(string filesetKey, CompressionType type, string mime, out FileResult result)
-        {
-            result = null;
-            var filesetPath = _fileSystemHelper.GetCurrentCompositeFilePath(type, filesetKey);
-            if (System.IO.File.Exists(filesetPath))
-            {
-                result = File(filesetPath, mime);
-                return true;
-            }
-            return false;
-        }
-
-        //TODO: This needs to return the composite file name so we can store it with the file result
         private async Task<string> CacheCompositeFileAsync(string filesetKey, Stream compositeStream, CompressionType type)
         {
             var folder = _fileSystemHelper.GetCurrentCompositeFolder(type);
@@ -213,6 +152,8 @@ namespace Smidge.Controllers
             ms.Position = 0;
             return ms;
         }
+
+        
     }
 
 
