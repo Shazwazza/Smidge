@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Smidge.Files;
+using Smidge.Models;
 using Microsoft.AspNet.Http;
 using System.Text;
 using System.Linq;

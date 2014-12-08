@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace Smidge.Files
+namespace Smidge.Models
 {
     /// <summary>
     /// A batch/collection of web files that can contain one or more local files or a single external file
     /// </summary>
-    public class WebFileBatch : IEnumerable<WebFilePair>
+    internal class WebFileBatch : IEnumerable<WebFilePair>
     {
         public WebFileBatch()
         {

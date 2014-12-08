@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Smidge.Files
+namespace Smidge.Models
 {
-    public class WebFilePair
+    internal class WebFilePair
     {
         public WebFilePair(IWebFile original, IWebFile hashed)
         {

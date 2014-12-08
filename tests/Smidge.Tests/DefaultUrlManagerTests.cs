@@ -4,7 +4,7 @@ using Smidge.CompositeFiles;
 using Smidge;
 using Moq;
 using System.Collections.Generic;
-using Smidge.Files;
+using Smidge.Models;
 using System.Linq;
 
 namespace Smidge.Tests

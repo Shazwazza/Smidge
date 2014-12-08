@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Smidge.Files;
+using Smidge.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;

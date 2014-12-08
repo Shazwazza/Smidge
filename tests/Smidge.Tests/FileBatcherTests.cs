@@ -4,7 +4,7 @@ using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using Moq;
 using Smidge.CompositeFiles;
-using Smidge.Files;
+using Smidge.Models;
 using System;
 using System.Linq;
 using Xunit;

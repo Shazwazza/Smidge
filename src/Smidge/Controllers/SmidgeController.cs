@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using Smidge.CompositeFiles;
-using Smidge.Files;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,9 +14,23 @@ using System.Threading.Tasks;
 
 namespace Smidge.Controllers
 {
+
+    internal class CompositeFileStreamResult : FileStreamResult
+    {
+
+        public CompositeFileStreamResult(string compFilePath, Stream fileStream, string contentType)
+            : base(fileStream, contentType)
+        {
+            CompositeFilePath = compFilePath;
+        }
+
+        public string CompositeFilePath { get; private set; }
+    }
+
     /// <summary>
     /// Controller for handling minified/combined responses
     /// </summary>
+    [AddCompressionHeader]
     public class SmidgeController : Controller
     {
         private ISmidgeConfig _config;
@@ -43,40 +59,27 @@ namespace Smidge.Controllers
             _config = config;
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
-        }      
+        }
 
-        public async Task<FileResult> Bundle(string id)
-        {
-            var compression = Request.GetClientCompression();
-
-            var parsed = _urlManager.ParsePath(id);
-
-            string mime;
-            string ext;
-            switch (parsed.WebType)
+        /// <summary>
+        /// Handles requests for bundles
+        /// </summary>
+        /// <param name="bundle">The bundle model</param>
+        /// <returns></returns>
+        public async Task<FileResult> Bundle(
+            [FromServices]BundleModel bundle)
+        {           
+            //Check if it's already processed and return it
+            FileResult result;
+            if (TryGetCachedCompositeFileResult(bundle.BundleName, bundle.Compression, bundle.Mime, out result))
             {
-                case WebFileType.Js:
-                    ext = ".js";
-                    mime = "text/javascript";
-                    break;
-                case WebFileType.Css:
-                default:
-                    ext = ".css";
-                    mime = "text/css";
-                    break;
+                return result;
             }
 
-            if (!parsed.Names.Any())
-            {
-                //is null right here??
-                return null;
-            }
-
-            //it's a bundle, we treat this differently
-            var found = _bundleManager.GetFiles(parsed.Names.Single(), Request);
+            var found = _bundleManager.GetFiles(bundle.BundleName, Request);
             if (found == null || !found.Any())
             {
-                //is null right here??
+                //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
 
@@ -84,15 +87,15 @@ namespace Smidge.Controllers
             var filePaths = found.Select(file =>
                 Path.Combine(
                     _fileSystemHelper.CurrentCacheFolder,
-                    _hasher.Hash(file.FilePath) + ext));
+                    _hasher.Hash(file.FilePath) + bundle.Extension));
 
             using (var resultStream = await GetCombinedStreamAsync(filePaths))
             {
-                var compressedStream = await Compressor.CompressAsync(compression, resultStream);
+                var compressedStream = await Compressor.CompressAsync(bundle.Compression, resultStream);
 
-                await CacheCompositeFileAsync(parsed.Names.Single(), compressedStream, compression);
+                var compositeFilePath = await CacheCompositeFileAsync(bundle.BundleName, compressedStream, bundle.Compression);
 
-                return File(compressedStream, mime);
+                return new CompositeFileStreamResult(compositeFilePath, compressedStream, bundle.Mime);
             }
         }
 
@@ -152,22 +155,13 @@ namespace Smidge.Controllers
             {
                 var compressedStream = await Compressor.CompressAsync(compression, resultStream);
 
-                await CacheCompositeFileAsync(filesetKey, compressedStream, compression);
+                var compositeFilePath = await CacheCompositeFileAsync(filesetKey, compressedStream, compression);
 
-                return File(compressedStream, mime);
+                return new CompositeFileStreamResult(compositeFilePath, compressedStream, mime);
             }
 
         }
-        
-        /// <summary>
-        /// Adds the compression headers
-        /// </summary>
-        /// <param name="context"></param>
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
-            base.OnActionExecuted(context);
-            context.HttpContext.Response.AddCompressionResponseHeader(Request.GetClientCompression());
-        }
+             
 
         private bool TryGetCachedCompositeFileResult(string filesetKey, CompressionType type, string mime, out FileResult result)
         {
@@ -181,16 +175,20 @@ namespace Smidge.Controllers
             return false;
         }
 
-        private async Task CacheCompositeFileAsync(string filesetKey, Stream compositeStream, CompressionType type)
+        //TODO: This needs to return the composite file name so we can store it with the file result
+        private async Task<string> CacheCompositeFileAsync(string filesetKey, Stream compositeStream, CompressionType type)
         {
             var folder = _fileSystemHelper.GetCurrentCompositeFolder(type);
             Directory.CreateDirectory(folder);
             compositeStream.Position = 0;
-            using (var fs = System.IO.File.Create(Path.Combine(folder, filesetKey + ".s")))
+            //TODO: Shouldn't this use: GetCurrentCompositeFilePath?
+            var fileName = Path.Combine(folder, filesetKey + ".s");
+            using (var fs = System.IO.File.Create(fileName))
             {
                 await compositeStream.CopyToAsync(fs);
             }
             compositeStream.Position = 0;
+            return fileName;
         }      
 
         /// <summary>
@@ -216,4 +214,6 @@ namespace Smidge.Controllers
             return ms;
         }
     }
+
+
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet.Http;
-using Smidge.Files;
+using Smidge.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

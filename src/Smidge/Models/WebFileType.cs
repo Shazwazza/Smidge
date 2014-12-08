@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Smidge.Files
+namespace Smidge.Models
 {
     public enum WebFileType
     {

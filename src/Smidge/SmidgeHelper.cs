@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Rendering;
 using Smidge.CompositeFiles;
-using Smidge.Files;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
