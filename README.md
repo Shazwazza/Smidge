@@ -15,6 +15,10 @@ In Startup.Configure
 
     app.UseSmidge();
 
+In _ViewStart.cshtml add an injected service:
+
+    @inject SmidgeHelper Smidge
+
 ### View based declarations:
 
 Require multiple files
