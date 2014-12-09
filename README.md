@@ -42,7 +42,22 @@ Chaining:
 
 ### Pre-defined bundles
 
-//TODO: I need to write these docs :)
+Define your bundles during startup:
+
+    services.AddSmidge()
+        .Configure<Bundles>(bundles =>
+        {
+            //Defining using JavaScriptFile's or CssFile's:
+
+            bundles.Create("test-bundle-1", //bundle name
+                new JavaScriptFile("~/Js/Bundle1/a1.js"),
+                new JavaScriptFile("~/Js/Bundle1/a2.js"));
+
+            //Or defining using file/folder paths:
+
+            bundles.Create("test-bundle-2", WebFileType.Js, 
+                "~/Js/Bundle2", "~/Js/OtherFolder*js");
+        });
 
 ### Rendering
 
@@ -64,3 +79,5 @@ Some of the logic for this application has been ported over from [CDF (Client De
 &copy; 2014 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
+
+Logo image <a href="http://www.freepik.com">Designed by Freepik</a>
