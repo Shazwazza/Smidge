@@ -4,6 +4,8 @@ using Smidge.Models;
 using Microsoft.AspNet.Http;
 using System.Text;
 using System.Linq;
+using Microsoft.Framework.OptionsModel;
+using Smidge.Options;
 
 namespace Smidge.CompositeFiles
 {
@@ -13,10 +15,10 @@ namespace Smidge.CompositeFiles
         private IHasher _hasher;
         private UrlManagerOptions _options;
 
-        public DefaultUrlManager(UrlManagerOptions options, ISmidgeConfig config, IHasher hasher)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher)
         {
             _hasher = hasher;
-            _options = options;
+            _options = options.Options.UrlOptions;
             _config = config;
         }
 

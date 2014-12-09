@@ -2,10 +2,12 @@
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.Runtime;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Smidge
@@ -15,6 +17,7 @@ namespace Smidge
         private IApplicationEnvironment _appEnv;
         private ISmidgeConfig _config;
         private IHostingEnvironment _hostingEnv;
+        private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config)
         {
@@ -154,16 +157,26 @@ namespace Smidge
 
         internal async Task WriteContentsAsync(string filePath, string contents)
         {
+            var locker = _fileLocker.GetOrAdd(filePath, x => new SemaphoreSlim(1));
+
             //TODO: Need try/catch and maybe a nice solution for locking.
             // We could keep a concurrent dictionary of file paths and objects to lock so that 
             // we only lock for a specific path. The dictionary should remain quite small since 
             // when we write to files it's only when they haven't already been cached.
             // we could also store this dictionary in an http cache so that it expires.
-            
-            using (var writer = File.CreateText(filePath))
+
+            await locker.WaitAsync();
+            try
             {
-                await writer.WriteAsync(contents);
+                using (var writer = File.CreateText(filePath))
+                {
+                    await writer.WriteAsync(contents);
+                }
             }
+            finally
+            {
+                locker.Release();
+            }           
         }
 
         /// <summary>

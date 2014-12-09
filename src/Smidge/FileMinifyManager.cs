@@ -6,17 +6,20 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.Framework.Runtime;
+using Microsoft.Framework.OptionsModel;
 
 namespace Smidge
 {
     public sealed class FileMinifyManager
     {
         private FileSystemHelper _fileSystemHelper;
-        private SmidgeOptions _options;
+        private DefaultFileProcessors _defaultFileProcessors;
+        private IHasher _hasher;
 
-        public FileMinifyManager(FileSystemHelper fileSystemHelper, SmidgeOptions options)
+        public FileMinifyManager(FileSystemHelper fileSystemHelper, DefaultFileProcessors options, IHasher hasher)
         {
-            _options = options;
+            _hasher = hasher;
+            _defaultFileProcessors = options;
             _fileSystemHelper = fileSystemHelper;
         }
 
@@ -41,18 +44,18 @@ namespace Smidge
 
         private async Task ProcessCssFile(IWebFile file)
         {
-            await ProcessFile(file, ".css", s => _options.DefaultCssMinifier.Minify(s));
+            await ProcessFile(file, ".css", s => _defaultFileProcessors.CssMinifier.Minify(s));
         }
 
         private async Task ProcessJsFile(IWebFile file)
         {
-            await ProcessFile(file, ".js", s => _options.DefaultJavaScriptMinifier.Minify(s));
+            await ProcessFile(file, ".js", s => _defaultFileProcessors.JavaScriptMinifier.Minify(s));
         }
 
         private async Task ProcessFile(IWebFile file, string extension, Func<string, string> processor)
         {
             //check if it's in cache
-            var hashName = _options.Hasher.Hash(file.FilePath) + extension;
+            var hashName = _hasher.Hash(file.FilePath) + extension;
             var cacheDir = _fileSystemHelper.CurrentCacheFolder;
             var cacheFile = Path.Combine(cacheDir, hashName);
 

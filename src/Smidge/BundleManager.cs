@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNet.Http;
+using Microsoft.Framework.OptionsModel;
 using Smidge.Models;
+using Smidge.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,19 +10,17 @@ using System.Linq;
 
 namespace Smidge
 {
+   
     public sealed class BundleManager
     {
-        public BundleManager(FileSystemHelper fileSystemHelper, Action<BundleManager> initialize = null)
+        public BundleManager(FileSystemHelper fileSystemHelper, IOptions<Bundles> bundles)
         {
-            _fileSystemHelper = fileSystemHelper;
-            if (initialize != null)
-            {
-                initialize(this);
-            }            
+            _bundles = bundles.Options;
+            _fileSystemHelper = fileSystemHelper;                    
         }
 
-        private ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
         private FileSystemHelper _fileSystemHelper;
+        private Bundles _bundles;
 
         public bool Exists(string bundleName)
         {
@@ -60,25 +60,6 @@ namespace Smidge
                 return fileList;
             }
             return null;
-        }
-
-        public void Create(string bundleName, params JavaScriptFile[] jsFiles)
-        {
-            _bundles.TryAdd(bundleName, jsFiles);
-        }
-
-        public void Create(string bundleName, params CssFile[] cssFiles)
-        {
-            _bundles.TryAdd(bundleName, cssFiles);
-        }
-
-        public void Create(string bundleName, WebFileType type, params string[] paths)
-        {
-            _bundles.TryAdd(
-                bundleName, 
-                type == WebFileType.Css 
-                ? paths.Select(x => (IWebFile)new CssFile(x)) 
-                : paths.Select(x => (IWebFile)new JavaScriptFile(x)));
         }
     }
 }

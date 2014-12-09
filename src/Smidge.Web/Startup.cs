@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using System.Threading.Tasks;
 using Smidge.Controllers;
+using Smidge.Options;
 
 namespace Smidge.Web
 {
@@ -18,26 +19,22 @@ namespace Smidge.Web
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddMvc().Configure<MvcOptions>(options =>
-            //{
-            //    //options.ModelBinders.RemoveAll(binder => binder.OptionType == typeof(ServicesModelBinder));
-            //    options.ModelBinders.Add(new MyServicesModelBinder());
-            //});
-
+          
             services.AddMvc();
 
-            services.AddSmidge(
-                //TODO: Change this to a Configure<SmidgeOptions> extension like the above
-                new SmidgeOptions(),
-                //TODO: Change this behavior, perhaps liek a configure extension like the above
-                bundles =>
-            {
-                bundles.Create("test-bundle-1",
-                    new JavaScriptFile("~/Js/Bundle1/a1.js"),
-                    new JavaScriptFile("~/Js/Bundle1/a2.js"));
+            services.AddSmidge()
+                .Configure<SmidgeOptions>(options =>
+                {
+                    options.DefaultCssMinifier = typeof(JsMin);
+                })
+                .Configure<Bundles>(bundles =>
+                {
+                    bundles.Create("test-bundle-1",
+                        new JavaScriptFile("~/Js/Bundle1/a1.js"),
+                        new JavaScriptFile("~/Js/Bundle1/a2.js"));
 
-                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
-            });
+                    bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
+                });
         }
 
         public void Configure(IApplicationBuilder app)

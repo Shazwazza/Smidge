@@ -52,7 +52,7 @@ namespace Smidge
                 bool modified = ifModifiedSince < utcLastModified;
                 return modified;
             }
-            return false;
+            return true;
         }
 
         internal static bool TryParseHttpDate(string dateString, out DateTime parsedDate)

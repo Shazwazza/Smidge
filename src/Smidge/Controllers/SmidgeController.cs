@@ -18,10 +18,10 @@ namespace Smidge.Controllers
     /// <summary>
     /// Controller for handling minified/combined responses
     /// </summary>    
-    [AddExpiryHeaders(Order = 0)]
-    [CheckNotModified(Order = 1)]
-    [CompositeFileCacheFilter(Order = 2)]    
-    [AddCompressionHeader(Order = 3)]
+    [AddCompressionHeader(Order = 0)]
+    [AddExpiryHeaders(Order = 1)]
+    [CheckNotModified(Order = 2)]
+    [CompositeFileCacheFilter(Order = 3)]        
     public class SmidgeController : Controller
     {
         private ISmidgeConfig _config;
@@ -109,7 +109,7 @@ namespace Smidge.Controllers
                 var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
                 var compositeFilePath = await CacheCompositeFileAsync(file.FileKey, compressedStream, file.Compression);
-
+                
                 return File(compressedStream, file.Mime);
             }
 

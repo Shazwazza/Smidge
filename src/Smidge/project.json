@@ -1,16 +1,15 @@
 ﻿{
     "version": "1.0.0-*",
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta-*",
         "System.Text.RegularExpressions": "4.0.10-beta-22231",
-        "Microsoft.AspNet.Http": "1.0.0-*",
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-*",
+        "Microsoft.AspNet.Http": "1.0.0-beta-*",
+        "Microsoft.AspNet.Http.Extensions": "1.0.0-beta-*",
+        "Microsoft.AspNet.WebUtilities": "1.0.0-beta-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-beta-*",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-beta-*",
         "System.Security.Cryptography.Hashing": "4.0.0-beta-22231",
-        "System.Collections.Concurrent": "4.0.0-beta-22231",
-        "Microsoft.Framework.Cache.Distributed":  "1.0.0-*"
+        "System.Collections.Concurrent": "4.0.0-beta-22231"
     },
 
     "frameworks": {
