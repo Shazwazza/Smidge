@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 /* Originally written in 'C', this code has been converted to the C# language.
  * The author's copyright message is reproduced below.
@@ -33,9 +34,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-namespace Smidge
+namespace Smidge.FileProcessors
 {
-    public sealed class JsMin : IMinifier
+    public sealed class JsMin : IPreProcessor
     {
         const int EOF = -1;
 
@@ -47,17 +48,17 @@ namespace Smidge
         static int theX = EOF;
         static int theY = EOF;
 
-        public string Minify(string src)
+        public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
             StringBuilder sb = new StringBuilder();
-            using (sr = new StringReader(src))
+            using (sr = new StringReader(fileProcessContext.FileContent))
             {
                 using (sw = new StringWriter(sb))
                 {
                     jsmin();
                 }
             }
-            return sb.ToString();
+            return Task.FromResult(sb.ToString());
         }
 
         /* jsmin -- Copy the input to the output, deleting the characters which are

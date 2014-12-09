@@ -24,8 +24,7 @@ namespace Smidge.Web
 
             services.AddSmidge()
                 .Configure<SmidgeOptions>(options =>
-                {
-                    options.DefaultCssMinifier = typeof(JsMin);
+                {                    
                 })
                 .Configure<Bundles>(bundles =>
                 {

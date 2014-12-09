@@ -1,4 +1,5 @@
 ﻿using System;
+using Smidge.FileProcessors;
 
 namespace Smidge.Models
 {
@@ -6,16 +7,16 @@ namespace Smidge.Models
     {
         public WebFile()
         {
-            //defaults
-            Minify = true;
         }
 
         public WebFileType DependencyType { get; set; }
 
         public string FilePath { get; set; }
 
+        public PreProcessPipeline Pipeline { get; set; }
+
         //public string PathNameAlias { get; set; }
 
-        public bool Minify { get; set; }
+        //public bool Minify { get; set; }
     }
 }

@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using Smidge.Models;
 using Microsoft.Framework.OptionsModel;
 using Smidge.Options;
+using Smidge.FileProcessors;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -20,18 +21,22 @@ namespace Smidge
         {
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
             services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();
-
-            services.AddSingleton<DefaultFileProcessors>();
+            services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<BundleManager>();
             services.AddSingleton<FileSystemHelper>();
-            services.AddSingleton<FileMinifyManager>();
+            services.AddSingleton<PreProcessingManager>();
             services.AddSingleton<ISmidgeConfig, SmidgeConfig>();
             services.AddScoped<SmidgeContext>();
             services.AddScoped<SmidgeHelper>();
             services.AddSingleton<IUrlManager, DefaultUrlManager>();
-            services.AddSingleton<IMinifier, JsMin>();
-            services.AddSingleton<IMinifier, CssHelper>();
             services.AddSingleton<IHasher, Crc32Hasher>();
+
+            //pre-processors
+            services.AddSingleton<IPreProcessor, JsMin>();
+            services.AddSingleton<IPreProcessor, CssMinifier>();
+            services.AddScoped<IPreProcessor, CssImportProcessor>();
+            services.AddScoped<IPreProcessor, CssUrlProcessor>();
+
 
             //Add the controller models as DI services - these get auto created for model binding
             services.AddTransient<BundleModel>();

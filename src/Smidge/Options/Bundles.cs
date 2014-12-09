@@ -1,4 +1,5 @@
-﻿using Smidge.Models;
+﻿using Smidge.FileProcessors;
+using Smidge.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -27,6 +28,39 @@ namespace Smidge.Options
                 type == WebFileType.Css
                 ? paths.Select(x => (IWebFile)new CssFile(x))
                 : paths.Select(x => (IWebFile)new JavaScriptFile(x)));
+        }
+
+        public void Create(string bundleName, PreProcessPipeline pipeline, params JavaScriptFile[] jsFiles)
+        {
+            foreach (var file in jsFiles)
+            {
+                if (file.Pipeline == null)
+                {
+                    file.Pipeline = pipeline;
+                }
+            }
+            _bundles.TryAdd(bundleName, jsFiles);
+        }
+
+        public void Create(string bundleName, PreProcessPipeline pipeline, params CssFile[] cssFiles)
+        {
+            foreach (var file in cssFiles)
+            {
+                if (file.Pipeline == null)
+                {
+                    file.Pipeline = pipeline;
+                }
+            }
+            _bundles.TryAdd(bundleName, cssFiles);
+        }
+
+        public void Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, params string[] paths)
+        {
+            _bundles.TryAdd(
+                bundleName,
+                type == WebFileType.Css
+                ? paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline })
+                : paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }));
         }
 
         public bool TryGetValue(string key, out IEnumerable<IWebFile> value)

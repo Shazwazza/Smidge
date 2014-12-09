@@ -19,16 +19,14 @@ namespace Smidge
             {
                 if (req.Path.HasValue)
                 {
-                    //var uriHelper = new UriHelper(req);
-                    //var fullUri = uriHelper.GetFullUri();
-                    //var reqUri = new Uri(fullUri);
+                    var uriHelper = new UriHelper(req);
+                    var fullUri = uriHelper.GetFullUri();
+                    var reqUri = new Uri(fullUri);
 
-                    //var left = reqUri.GetComponents(UriComponents.StrongAuthority, UriFormat.SafeUnescaped);
+                    var left = reqUri.GetComponents(UriComponents.StrongAuthority, UriFormat.SafeUnescaped);
 
-                    //var absoluteUrl = new Uri(new Uri(left), uri);
-                    //return absoluteUrl;
-
-                    return null;
+                    var absoluteUrl = new Uri(new Uri(left), uri);
+                    return absoluteUrl;
                 }
             }
             return uri;

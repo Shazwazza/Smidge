@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Framework.ConfigurationModel;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
+using Smidge.FileProcessors;
 
 namespace Smidge
 {
@@ -22,12 +23,14 @@ namespace Smidge
     {
         private SmidgeContext _context;
         private ISmidgeConfig _config;
-        private FileMinifyManager _fileManager;
+        private PreProcessingManager _fileManager;
         private FileSystemHelper _fileSystemHelper;
         private HttpRequest _request;
         private IHasher _hasher;
         private BundleManager _bundleManager;
         private FileBatcher _fileBatcher;
+        private PreProcessPipelineFactory _processorFactory;
+
 
         /// <summary>
         /// Constructor
@@ -40,12 +43,14 @@ namespace Smidge
         public SmidgeHelper(
             SmidgeContext context,
             ISmidgeConfig config, 
-            FileMinifyManager fileManager, 
+            PreProcessingManager fileManager, 
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
             BundleManager bundleManager,
-            IContextAccessor<HttpContext> http)
+            IContextAccessor<HttpContext> http,
+            PreProcessPipelineFactory processorFactory)
         {
+            _processorFactory = processorFactory;
             _bundleManager = bundleManager;
             _hasher = hasher;
             _fileManager = fileManager;
@@ -91,7 +96,7 @@ namespace Smidge
                     //we need to do the minify on the original files
                     foreach (var file in files)
                     {
-                        await _fileManager.MinifyAndCacheFileAsync(file);
+                        await _fileManager.ProcessAndCacheFileAsync(file);
                     }
                 }
                 result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
@@ -107,10 +112,10 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> JsHereAsync()
+        public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null)
         {
             var result = new StringBuilder();
-            var urls = await GenerateJsUrlsAsync();
+            var urls = await GenerateJsUrlsAsync(pipeline);
             foreach (var url in urls)
             {
                 result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
@@ -126,10 +131,10 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> CssHereAsync()
+        public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null)
         {
             var result = new StringBuilder();
-            var urls = await GenerateCssUrlsAsync();
+            var urls = await GenerateCssUrlsAsync(pipeline);
             foreach (var url in urls)
             {
                 result.AppendFormat("<link href='{0}' rel='stylesheet' type='text/css'/>", url);
@@ -141,23 +146,24 @@ namespace Smidge
         /// Generates the list of URLs to render based on what is registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateJsUrlsAsync()
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null)
         {
-            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js);
+            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, pipeline);
         }
 
         /// <summary>
         /// Generates the list of URLs to render based on what is registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync()
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null)
         {
-            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css);
+            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline);
         }
 
         private async Task<IEnumerable<string>> GenerateUrlsAsync(
             IEnumerable<IWebFile> files, 
-            WebFileType fileType)
+            WebFileType fileType,
+            PreProcessPipeline pipeline = null)
         {
             var result = new List<string>();
 
@@ -167,6 +173,12 @@ namespace Smidge
             }
             else
             {
+
+                if (pipeline == null)
+                {
+                    pipeline = _processorFactory.GetDefault(fileType);
+                }
+
                 var compression = _request.GetClientCompression();
 
                 //Get the file collection used to create the composite URLs and the external requests
@@ -193,7 +205,7 @@ namespace Smidge
                             if (!File.Exists(compositeFilePath))
                             {
                                 //need to process/minify these files - need to use their original paths of course
-                                await ProcessWebFilesAsync(batch.Select(x => x.Original));
+                                await ProcessWebFilesAsync(batch.Select(x => x.Original), pipeline);
                             }
 
                             result.Add(u.Url);
@@ -215,28 +227,34 @@ namespace Smidge
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>
-        private async Task ProcessWebFilesAsync(IEnumerable<IWebFile> files)
-        {
+        private async Task ProcessWebFilesAsync(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
+        {   
             //we need to do the minify on the original files
             foreach (var file in files)
-            {                
+            {   
+                //if the pipeline on the file is null, assign the default one passed in
+                if (file.Pipeline == null)
+                {
+                    file.Pipeline = pipeline;
+                }
+
                 //We need to check if this path is a folder, then iterate the files
                 if (_fileSystemHelper.IsFolder(file.FilePath))
                 {
                     var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
                     foreach (var f in filePaths)
                     {
-                        await _fileManager.MinifyAndCacheFileAsync(new WebFile
+                        await _fileManager.ProcessAndCacheFileAsync(new WebFile
                         {
                             FilePath = _fileSystemHelper.NormalizeWebPath(f, _request),
                             DependencyType = file.DependencyType,
-                            Minify = file.Minify
+                            Pipeline = file.Pipeline
                         });
                     }
                 }
                 else
                 {
-                    await _fileManager.MinifyAndCacheFileAsync(file);
+                    await _fileManager.ProcessAndCacheFileAsync(file);
                 }
             }
         }

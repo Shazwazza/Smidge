@@ -71,7 +71,7 @@ namespace Smidge
                     {
                         var subFile = Duplicate(f, _fileSystemHelper.NormalizeWebPath(p, _request));
                         var hashedFile = Duplicate(subFile, _hasher.Hash(subFile.FilePath));
-                        hashedFile.Minify = f.Minify;
+                        hashedFile.Pipeline = f.Pipeline;
                         current.AddInternal(subFile, hashedFile);
                     }
                 }
@@ -96,7 +96,7 @@ namespace Smidge
             {
                 DependencyType = orig.DependencyType,
                 FilePath = newPath,
-                Minify = orig.Minify
+                Pipeline = orig.Pipeline
             };
         }
     }
