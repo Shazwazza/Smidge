@@ -79,3 +79,5 @@ Some of the logic for this application has been ported over from [CDF (Client De
 &copy; 2014 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
+
+Logo image <a href="http://www.freepik.com">Designed by Freepik</a>
