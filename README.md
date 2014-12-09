@@ -1,7 +1,7 @@
 ![Smidge](assets/logo2.png?raw=true) Smidge
 ======
 
-A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file minification, combination & compression. 
+A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
 
 ##Usage
 
