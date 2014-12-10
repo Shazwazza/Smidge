@@ -24,7 +24,7 @@ namespace Smidge
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<BundleManager>();
             services.AddSingleton<FileSystemHelper>();
-            services.AddSingleton<PreProcessingManager>();
+            services.AddSingleton<PreProcessManager>();
             services.AddSingleton<ISmidgeConfig, SmidgeConfig>();
             services.AddScoped<SmidgeContext>();
             services.AddScoped<SmidgeHelper>();

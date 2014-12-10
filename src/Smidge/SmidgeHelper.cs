@@ -23,7 +23,7 @@ namespace Smidge
     {
         private SmidgeContext _context;
         private ISmidgeConfig _config;
-        private PreProcessingManager _fileManager;
+        private PreProcessManager _fileManager;
         private FileSystemHelper _fileSystemHelper;
         private HttpRequest _request;
         private IHasher _hasher;
@@ -43,7 +43,7 @@ namespace Smidge
         public SmidgeHelper(
             SmidgeContext context,
             ISmidgeConfig config, 
-            PreProcessingManager fileManager, 
+            PreProcessManager fileManager, 
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
             BundleManager bundleManager,

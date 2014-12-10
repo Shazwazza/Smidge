@@ -11,12 +11,12 @@ using Smidge.FileProcessors;
 
 namespace Smidge
 {
-    public sealed class PreProcessingManager
+    public sealed class PreProcessManager
     {
         private FileSystemHelper _fileSystemHelper;
         private IHasher _hasher;
 
-        public PreProcessingManager(FileSystemHelper fileSystemHelper, IHasher hasher)
+        public PreProcessManager(FileSystemHelper fileSystemHelper, IHasher hasher)
         {
             _hasher = hasher;
             _fileSystemHelper = fileSystemHelper;
@@ -73,7 +73,8 @@ namespace Smidge
                 var filePath = _fileSystemHelper.MapPath(file.FilePath);
                 var contents = await _fileSystemHelper.ReadContentsAsync(filePath);
 
-                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file.FilePath));
+                //process the file
+                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file));
 
                 //save it to the cache path
                 await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities;
 using Microsoft.Framework.DependencyInjection;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -34,7 +36,10 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var path = _fileSystemHelper.NormalizeWebPath(importPath, _http.Value.Request);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_http.Value.Request);
+                var absolute = uri.ToAbsolutePath(importPath);
+
+                var path = _fileSystemHelper.NormalizeWebPath(absolute, _http.Value.Request);
                 //is it external?
                 if (path.Contains(Uri.SchemeDelimiter))
                 {
@@ -48,10 +53,14 @@ namespace Smidge.FileProcessors
                     if (System.IO.File.Exists(filePath))
                     {
                         var content = await _fileSystemHelper.ReadContentsAsync(filePath);
-                        //TODO: This needs to be put back through the whole pre-processor pipeline before being added!
-                        // we need to add a ctor reference to that pipeline engine when we make it
+                        
+                        //This needs to be put back through the whole pre-processor pipeline before being added,
+                        // so we'll clone the original webfile with it's new path, this will inherit the whole pipeline,
+                        // and then we'll execute the pipeline for that file
+                        var clone = fileProcessContext.WebFile.Duplicate(path);
+                        var processed = await clone.Pipeline.ProcessAsync(new FileProcessContext(content, clone));
 
-                        sb.Append(content);
+                        sb.Append(processed);
                     }
                     else
                     {
@@ -77,30 +86,40 @@ namespace Smidge.FileProcessors
             var pathsFound = new List<string>();
             var matches = RegexStatements.ImportCssRegex.Matches(content);
             foreach (Match match in matches)
-            {
-                //Ignore external imports
+            {                
+                //Ignore external imports - they might be wrapped in a url( block so get it
                 var urlMatch = RegexStatements.CssUrlRegex.Match(match.Value);
                 if (urlMatch.Success && urlMatch.Groups.Count >= 2)
                 {
                     var path = urlMatch.Groups[1].Value.Trim('\'', '"');
-                    if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                         || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-                         || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
+                    if (IsExternal(path)) continue;
                 }
-
+                
                 //Strip the import statement                
                 content = content.ReplaceFirst(match.Value, "");
 
-                //write import css content
-                var filePath = match.Groups[1].Value.Trim('\'', '"');
+                //get the last non-empty match
+                var filePath = match.Groups.Cast<Group>().Where(x => !string.IsNullOrEmpty(x.Value)).Last().Value.Trim('\'', '"');
+
+                //Ignore external imports - this will occur if they are not wrapped in a url block
+                if (IsExternal(filePath)) continue;
+
                 pathsFound.Add(filePath);
             }
 
             importedPaths = pathsFound;
             return content.Trim();
+        }
+
+        private static bool IsExternal(string path)
+        {
+            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                 || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                 || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -6,6 +6,17 @@ namespace Smidge
 {
     public static class UriExtensions
     {
+        internal static string ToAbsolutePath(this Uri originalUri, string path)
+        {
+            var hashSplit = path.Split(new[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
+
+            return string.Format(@"{0}{1}",
+                                 (path.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)
+                                 || path.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase)
+                                 || path.StartsWith("//", StringComparison.InvariantCultureIgnoreCase)) ? path : new Uri(originalUri, path).PathAndQuery,
+                                 hashSplit.Length > 1 ? ("#" + hashSplit[1]) : "");
+        }
+
         /// <summary>
         /// Checks if the url is a local/relative uri, if it is, it makes it absolute based on the 
         /// current request uri.
@@ -23,7 +34,7 @@ namespace Smidge
                     var fullUri = uriHelper.GetFullUri();
                     var reqUri = new Uri(fullUri);
 
-                    var left = reqUri.GetComponents(UriComponents.StrongAuthority, UriFormat.SafeUnescaped);
+                    var left = reqUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped);
 
                     var absoluteUrl = new Uri(new Uri(left), uri);
                     return absoluteUrl;

@@ -69,15 +69,15 @@ namespace Smidge
                     var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
                     foreach (var p in filePaths)
                     {
-                        var subFile = Duplicate(f, _fileSystemHelper.NormalizeWebPath(p, _request));
-                        var hashedFile = Duplicate(subFile, _hasher.Hash(subFile.FilePath));
+                        var subFile = f.Duplicate(_fileSystemHelper.NormalizeWebPath(p, _request));
+                        var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
                         hashedFile.Pipeline = f.Pipeline;
                         current.AddInternal(subFile, hashedFile);
                     }
                 }
                 else {
-                    var hashedFile = Duplicate(f, _hasher.Hash(webPath));
-                    current.AddInternal(Duplicate(f, webPath), hashedFile);
+                    var hashedFile = f.Duplicate(_hasher.Hash(webPath));
+                    current.AddInternal(f.Duplicate(webPath), hashedFile);
                 }
             }
 
@@ -90,14 +90,6 @@ namespace Smidge
             return result;
         }
 
-        private IWebFile Duplicate(IWebFile orig, string newPath)
-        {
-            return new WebFile
-            {
-                DependencyType = orig.DependencyType,
-                FilePath = newPath,
-                Pipeline = orig.Pipeline
-            };
-        }
+        
     }
 }

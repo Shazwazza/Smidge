@@ -1,3 +1,5 @@
-﻿body {
+﻿@import "import1.css";
+
+body {
     background-color: lightgoldenrodyellow;
 }
