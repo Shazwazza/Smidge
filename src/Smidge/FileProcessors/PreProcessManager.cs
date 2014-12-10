@@ -24,7 +24,7 @@ namespace Smidge
 
         /// <summary>
         /// If the current asset/request requires minification, this will check the cache for its existence, if it doesn't
-        /// exist, it will minify it and store the cache file. Lastly, it sets the file path for the JavaScript file.
+        /// exist, it will process it and store the cache file. Lastly, it sets the file path for the JavaScript file.
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
@@ -57,10 +57,16 @@ namespace Smidge
         private async Task ProcessFile(IWebFile file, string extension)
         {
             //check if it's in cache
-            
+
             //TODO: If we make the hash as part of the last write time of the file, then the hash will be different
             // which means it will be a new cached file which means we can have auto-changing of files. Versioning
-            // will still be manual but that would just be up to the client cache, not the server cache!
+            // will still be manual but that would just be up to the client cache, not the server cache. But,
+            // before we do that we need to consider performance because this means that for every file that is hashed
+            // we'd need to lookup it's last write time so that all hashes match which isn't really ideal.
+
+            //var filePath = _fileSystemHelper.MapPath(file.FilePath);
+            //var lastWrite = File.GetLastWriteTimeUtc(filePath);
+            //var hashName = _hasher.Hash(file.FilePath + lastWrite) + extension;
 
             var hashName = _hasher.Hash(file.FilePath) + extension;
             var cacheDir = _fileSystemHelper.CurrentCacheFolder;
