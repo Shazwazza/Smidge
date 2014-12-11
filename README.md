@@ -3,6 +3,10 @@
 
 A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
 
+##Work in progress
+
+I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented below work. Hopefully should be able to get an alpha out in the next couple of weeks.
+
 ##Usage
 
 ### Install
