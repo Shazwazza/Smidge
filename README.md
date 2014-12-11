@@ -44,8 +44,6 @@ Chaining:
         .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
     }
 
-*NOTE:View based declarations are really really simple... but this will not work in a load balanced scenario, pre-defined bundles can be used for load balancing.* 
-
 ### Pre-defined bundles
 
 Define your bundles during startup:
