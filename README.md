@@ -80,9 +80,6 @@ Rendering is done async, examples:
     @await Smidge.JsHereAsync("test-bundle-1")
     @await Smidge.JsHereAsync("test-bundle-2")
 
-## Contribution
-
-This is currently still a work in progress, I'm hoping to get an alpha out within the next couple of weeks. In the meantime you can test it out and/or get involved, any help/contributions would be fantastic.
 
 Some of the logic for this application has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
 
