@@ -21,6 +21,14 @@ In Startup.Configure
 
     app.UseSmidge();
 
+Add a config file to your app root (not wwwroot) called **smidge.json** with this content... you can of course change configure this content.
+
+    {
+        "debug": false,                     //true to enable file processing
+        "dataFolder": "App_Data/Smidge",    //where the cache files are stored
+        "version":  "1"                     //can be any string
+    }
+
 In _ViewStart.cshtml add an injected service:
 
     @inject SmidgeHelper Smidge
