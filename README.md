@@ -13,6 +13,8 @@ I haven't had time to document all of the features and extensibility points just
 
 ### Install
 
+_NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+
 In Startup.ConfigureServices:
 
     services.AddSmidge();
@@ -21,7 +23,7 @@ In Startup.Configure
 
     app.UseSmidge();
 
-Add a config file to your app root (not wwwroot) called **smidge.json** with this content... you can of course change configure this content.
+Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
 
     {
         "debug": false,                     //true to enable file processing
@@ -79,6 +81,7 @@ Rendering is done async, examples:
     @await Smidge.JsHereAsync()
     @await Smidge.JsHereAsync("test-bundle-1")
     @await Smidge.JsHereAsync("test-bundle-2")
+
 
 
 Some of the logic for this application has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
