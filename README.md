@@ -5,10 +5,6 @@
 
 A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
 
-##Work in progress
-
-I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented below work.
-
 ##Usage
 
 ### Install
@@ -136,6 +132,10 @@ If you want to customize the pipeline for a particular bundle, you can just crea
         });
         
 _There are quite a few overloads for creating bundles with custom pipelines._
+
+##Work in progress
+
+I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
 
 Some of the logic for this library has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
 
