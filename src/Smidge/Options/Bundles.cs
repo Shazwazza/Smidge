@@ -9,7 +9,16 @@ namespace Smidge.Options
 {
     public class Bundles
     {
+
         private ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
+
+        /// <summary>
+        /// Gets/sets the pipeline factory
+        /// </summary>
+        /// <remarks>
+        /// This will be set with the BundlesSetup class
+        /// </remarks>
+        public PreProcessPipelineFactory PipelineFactory { get; set; }
 
         public void Create(string bundleName, params JavaScriptFile[] jsFiles)
         {

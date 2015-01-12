@@ -10,12 +10,12 @@
         "**.vspscc"
     ],
     "dependencies": {
-        "Microsoft.AspNet.StaticFiles": "1.0.0-beta-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-beta-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-beta-*",
-        "Microsoft.AspNet.Hosting": "1.0.0-beta-*",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-beta-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-rc-*",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-rc-*",
+        "Microsoft.AspNet.Mvc": "6.0.0-rc-*",
+        "Microsoft.AspNet.Hosting": "1.0.0-rc-*",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-rc-*",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-rc-*",
         "Smidge": "1.0.0-*"
     },
     /*"commands": {

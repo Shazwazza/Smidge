@@ -15,10 +15,6 @@ namespace Smidge.Models
         //string ForceProvider { get; set; }
         //bool ForceBundle { get; set; }
 
-        //TODO: Instead of just having this flag, each file can have a list of 
-        // pipeline elements to execute (i.e. minify, uglify, etc...)
-        //bool Minify { get; set; }
-
         /// <summary>
         /// The pre-processor pipeline that will be used to process this file, if it is null then the default pipeline for this
         /// file type will be applied.

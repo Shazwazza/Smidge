@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using System.Threading.Tasks;
 using Smidge.Controllers;
 using Smidge.Options;
+using Smidge.FileProcessors;
 
 namespace Smidge.Web
 {
@@ -33,6 +34,8 @@ namespace Smidge.Web
                         new JavaScriptFile("~/Js/Bundle1/a2.js"));
 
                     bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
+
+                    bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMin)), WebFileType.Js, "~/Js/Bundle2");
                 });
         }
 

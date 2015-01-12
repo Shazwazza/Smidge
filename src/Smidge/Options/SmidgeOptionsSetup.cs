@@ -6,10 +6,6 @@ namespace Smidge.Options
     /// <summary>
     /// Used to specify the type of options that can be configured
     /// </summary>
-    /// <remarks>
-    /// This whole options thing is just strange... but i guess that is how they are doing it. By creating this class and adding it to DI,
-    /// it means that developers can use the Configure{SmidgeOptions} extension method on start.
-    /// </remarks>
     public sealed class SmidgeOptionsSetup : ConfigureOptions<SmidgeOptions>
     {
         public SmidgeOptionsSetup() : base(ConfigureSmidge)
@@ -17,9 +13,26 @@ namespace Smidge.Options
 
         }
 
+        /// <summary>
+        /// Set the default options
+        /// </summary>
+        /// <param name="options"></param>
+        /// <remarks>
+        /// By default the Smidge options ctor's include all default settings
+        /// </remarks>
         public static void ConfigureSmidge(SmidgeOptions options)
         {
-            //By default the Smidge options ctor's include all default settings
+            
+        }
+
+        /// <summary>
+        /// Allows for configuring the options instance before options are set
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="name"></param>
+        public override void Configure(SmidgeOptions options, string name = "")
+        {
+            base.Configure(options, name);
         }
     }
 }

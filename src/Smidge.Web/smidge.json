@@ -1,5 +1,5 @@
 ﻿{
-    "debug": false,
-    "dataFolder": "App_Data/Smidge",
-    "version":  "1"
+    "debug": false,                     //true to enable file processing
+    "dataFolder": "App_Data/Smidge",    //where the cache files are stored
+    "version":  "1"                     //can be any string
 }

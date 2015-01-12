@@ -17,6 +17,21 @@ namespace Smidge.FileProcessors
             _allProcessors = allProcessors;
         }
 
+        /// <summary>
+        /// Returns a pipeline with the specified types in order
+        /// </summary>
+        /// <param name="preProcessorTypes"></param>
+        /// <returns></returns>
+        public PreProcessPipeline GetPipeline(params Type[] preProcessorTypes)
+        {
+            var processors = new List<IPreProcessor>();
+            foreach (var type in preProcessorTypes)
+            {
+                processors.Add(_allProcessors.Single(x => x.GetType() == type));
+            }
+            return new PreProcessPipeline(processors);
+        }
+
         public virtual PreProcessPipeline GetDefault(WebFileType fileType)
         {
             switch (fileType)
