@@ -1,11 +1,19 @@
 ![Smidge](assets/logo2.png?raw=true) Smidge
 ======
 
+> Makes things smaller and better
+
 A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
+
+##Work in progress
+
+I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented below work.
 
 ##Usage
 
 ### Install
+
+_NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
 
 In Startup.ConfigureServices:
 
@@ -14,6 +22,14 @@ In Startup.ConfigureServices:
 In Startup.Configure
 
     app.UseSmidge();
+
+Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
+
+    {
+        "debug": false,                     //true to enable file processing
+        "dataFolder": "App_Data/Smidge",    //where the cache files are stored
+        "version":  "1"                     //can be any string
+    }
 
 In _ViewStart.cshtml add an injected service:
 
@@ -37,8 +53,6 @@ Chaining:
         .RequiresJs("Js/Folder*js")
         .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
     }
-
-*NOTE:View based declarations are really really simple... but this will not work in a load balanced scenario, pre-defined bundles can be used for load balancing.* 
 
 ### Pre-defined bundles
 
@@ -68,9 +82,7 @@ Rendering is done async, examples:
     @await Smidge.JsHereAsync("test-bundle-1")
     @await Smidge.JsHereAsync("test-bundle-2")
 
-## Contribution
 
-This is currently still a work in progress, I'm hoping to get an alpha out within the next couple of weeks. In the meantime you can test it out and/or get involved, any help/contributions would be fantastic.
 
 Some of the logic for this application has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
 
