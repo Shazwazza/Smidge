@@ -95,7 +95,7 @@ But you can create and add your own just by adding the instance to the IoC conta
 
 `services.AddScoped<IPreProcessor, DotLessProcessor>();`
 
-#### Global custom pipeline
+##### Global custom pipeline
 
 If you want to override the default processing pipeline for all files, then you'd add your own implementation of `Smidge.FileProcessors.PreProcessPipelineFactory` to the IoC container after you've called `AddSmidge();`, like:
 
@@ -103,7 +103,7 @@ If you want to override the default processing pipeline for all files, then you'
 
 and override the `GetDefault` method. You can see the default implementation here: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge/FileProcessors/PreProcessPipelineFactory.cs
 
-#### Individual file custom pipeline 
+##### Individual file custom pipeline 
 
 If you want to customize the pipeline for any given file it's really easy. Each registered file is of type `Smidge.Models.IFile` which contains a property called `Pipeline` of type `Smidge.FileProcessors.PreProcessPipeline`. So if you wanted to customize the pipeline for a single JS file, you could do something like:
 
@@ -116,7 +116,7 @@ If you want to customize the pipeline for any given file it's really easy. Each 
                     typeof(DotLess), typeof(JsMin))
             })
 
-#### Bundle level custom pipeline
+##### Bundle level custom pipeline
 
 If you want to customize the pipeline for a particular bundle, you can just create your bundle with a custom pipeline like:
 
