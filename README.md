@@ -11,6 +11,10 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
 
+Nuget:
+
+    Install-Package Smidge -Pre
+
 In Startup.ConfigureServices:
 
     services.AddSmidge();
