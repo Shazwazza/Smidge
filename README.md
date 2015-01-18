@@ -45,7 +45,7 @@ Require multiple files
 
 Require a folder - optionally you can also include filters (i.e. this includes all .js files)
 
-    @{ Smidge.RequiresJs("Js/*js"); }
+    @{ Smidge.RequiresJs("Js/Stuff*js"); }
 
 Chaining:
 
