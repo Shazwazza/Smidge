@@ -42,7 +42,7 @@ namespace Smidge
             // logic to work properly
             if (path.StartsWith("//"))
             {
-                path = Regex.Replace(path, @"^\/\/", "\{request.Scheme}\{Uri.SchemeDelimiter}");
+                path = Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Uri.SchemeDelimiter));
             }
 
             if (path.StartsWith("/"))
@@ -95,7 +95,7 @@ namespace Smidge
             {
                 var files = string.IsNullOrWhiteSpace(extensionFilter)
                     ? Directory.GetFiles(folder)
-                    : Directory.GetFiles(folder, "*.\{extensionFilter}");
+                    : Directory.GetFiles(folder, string.Format("*.{0}", extensionFilter));
                 return files.Select(x => ReverseMapPath(x));
             }
             return Enumerable.Empty<string>();

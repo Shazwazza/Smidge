@@ -31,7 +31,7 @@ namespace Smidge
         public async Task ProcessAndCacheFileAsync(IWebFile file)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
-            if (file.Pipeline == null) throw new ArgumentNullException("\{nameof(file)}.Pipeline");
+			if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
 
             switch (file.DependencyType)
             {
