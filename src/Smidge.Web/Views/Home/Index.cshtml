@@ -1,5 +1,7 @@
 ﻿@using Smidge.Models;
 @using Smidge.FileProcessors;
+@inject Smidge.SmidgeHelper Smidge
+@inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
 
 <html>
 <head>
@@ -20,6 +22,8 @@
 
 </head>
 <body>
+    
+    <h1>@ViewBag.Blah </h1>
     Hello world
 
     <p>
