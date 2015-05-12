@@ -9,7 +9,9 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 ### Install
 
-_NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+Nuget:
+
+    Install-Package Smidge -Pre
 
 In Startup.ConfigureServices:
 
@@ -31,6 +33,10 @@ In _ViewStart.cshtml add an injected service:
 
     @inject SmidgeHelper Smidge
 
+_Initial release blog post: http://shazwazza.com/post/introducing-smidge-an-aspnet-5-runtime-jscss-pre-processor/_
+
+_NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+
 ### View based declarations:
 
 Require multiple files
@@ -39,7 +45,7 @@ Require multiple files
 
 Require a folder - optionally you can also include filters (i.e. this includes all .js files)
 
-    @{ Smidge.RequiresJs("Js/Folder*js"); }
+    @{ Smidge.RequiresJs("Js/Stuff*js"); }
 
 Chaining:
 
