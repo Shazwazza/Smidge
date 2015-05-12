@@ -1,26 +1,30 @@
 ﻿{
-    "version": "1.0.0-Alpha1",
+    "version": "1.0.0-Beta2",
     "authors": [ "Shannon Deminick" ],
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
-  
+
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-rc-*",
-        "Microsoft.AspNet.Http": "1.0.0-rc-*",
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-rc-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-rc-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-rc-*",
-        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-rc-*"
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta4",
+        //"Microsoft.AspNet.Http": "1.0.0-beta4",
+        //"Microsoft.AspNet.Http.Extensions": "1.0.0-beta4",
+        "Microsoft.AspNet.Mvc": "6.0.0-beta4",
+        "Microsoft.Framework.ConfigurationModel": "1.0.0-beta4",
+        "Microsoft.Framework.ConfigurationModel.Json": "1.0.0-beta4",
+        "Microsoft.AspNet.Hosting": "1.0.0-beta4",
+        "Microsoft.Framework.Runtime": "1.0.0-beta4",        
+        "Microsoft.AspNet.FileSystems": "1.0.0-beta2",
+        "Microsoft.AspNet.FileSystems.Interfaces": "1.0.0-beta2"
     },
 
-    "frameworks": {
-        "aspnet50": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.Collections": "",
-                "System.Security": "",
-                "System.Text.RegularExpressions": ""
-            } 
-        }
-        //,"aspnetcore50": { }
-    }
+	"frameworks": {
+		"dnx451": {
+			//"frameworkAssemblies": {
+			//	"System.Runtime": "",
+			//	"System.Collections": "",
+			//	"System.Security": "",
+			//	"System.Text.RegularExpressions": ""
+			//}
+		}
+		//,"dnxcore50": { }
+	}
 }

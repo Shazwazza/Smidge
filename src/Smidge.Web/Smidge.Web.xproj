@@ -4,21 +4,27 @@
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
-  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.Props" Condition="'$(VSToolsPath)' != ''" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>c304b5b8-0750-4b60-b6d0-06208639d560</ProjectGuid>
-    <RootNamespace>Smidge</RootNamespace>
+    <ProjectGuid>ece87089-76c8-485d-8aa4-975410b73454</ProjectGuid>
+    <RootNamespace>Smidge.Web</RootNamespace>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\bin\$(MSBuildProjectName)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <AssemblyName>Smidge</AssemblyName>
+    <AssemblyName>Smidge.Web</AssemblyName>
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
+    <DevelopmentServerPort>1809</DevelopmentServerPort>
+    <CommandLineArguments />
+    <DebugTarget>
+    </DebugTarget>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <ProduceOutputsOnBuild>True</ProduceOutputsOnBuild>
-  </PropertyGroup>
-  <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties project_1json__JSONSchema="http://www.asp.net/media/4878834/project.json" />
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.Props" />
+  <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" />
 </Project>

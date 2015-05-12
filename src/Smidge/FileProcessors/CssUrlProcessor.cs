@@ -2,6 +2,7 @@
 using Microsoft.Framework.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 
 namespace Smidge.FileProcessors
 {
@@ -10,20 +11,20 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssUrlProcessor : IPreProcessor
     {
-        public CssUrlProcessor(FileSystemHelper fileSystemHelper, IContextAccessor<HttpContext> http)
+        public CssUrlProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
         {
             _fileSystemHelper = fileSystemHelper;
             _http = http;
         }
 
 
-        private IContextAccessor<HttpContext> _http;
+        private IHttpContextAccessor _http;
         private FileSystemHelper _fileSystemHelper;
 
         public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
             //ensure the Urls in the css are changed to absolute
-            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _http.Value.Request);
+            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _http.HttpContext.Request);
 
             return Task.FromResult(parsedUrls);
         }

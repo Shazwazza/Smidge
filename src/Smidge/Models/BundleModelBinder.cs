@@ -6,7 +6,7 @@ namespace Smidge.Models
 {
     internal class BundleModelBinder : IModelBinder
     {
-        public Task<bool> BindModelAsync(ModelBindingContext bindingContext)
+        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {
             throw new NotImplementedException();
         }

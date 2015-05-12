@@ -47,7 +47,7 @@ namespace Smidge
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
             BundleManager bundleManager,
-            IContextAccessor<HttpContext> http,
+            IHttpContextAccessor http,
             PreProcessPipelineFactory processorFactory)
         {
             _processorFactory = processorFactory;
@@ -57,7 +57,7 @@ namespace Smidge
             _context = context;
             _config = config;
             _fileSystemHelper = fileSystemHelper;
-            _request = http.Value.Request;
+            _request = http.HttpContext.Request;
 
             _fileBatcher = new FileBatcher(_fileSystemHelper, _request, _hasher);
         }

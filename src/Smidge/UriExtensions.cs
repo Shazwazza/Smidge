@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.Http;
 using System;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNet.Http.Extensions;
 
 namespace Smidge
 {

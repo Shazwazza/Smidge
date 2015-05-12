@@ -22,7 +22,7 @@ namespace Smidge
         {
             get
             {
-                return _config.Get<bool>("debug");
+				return _config.Get<bool>("debug");
             }
         }
 

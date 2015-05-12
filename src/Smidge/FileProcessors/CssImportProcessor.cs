@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 
 namespace Smidge.FileProcessors
 {
@@ -16,14 +17,14 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssImportProcessor : IPreProcessor
     {
-        public CssImportProcessor(FileSystemHelper fileSystemHelper, IContextAccessor<HttpContext> http)
+        public CssImportProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
         {
             _fileSystemHelper = fileSystemHelper;
             _http = http;
         }
 
         
-        private IContextAccessor<HttpContext> _http;
+        private IHttpContextAccessor _http;
         private FileSystemHelper _fileSystemHelper;
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
@@ -36,10 +37,10 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_http.Value.Request);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_http.HttpContext.Request);
                 var absolute = uri.ToAbsolutePath(importPath);
 
-                var path = _fileSystemHelper.NormalizeWebPath(absolute, _http.Value.Request);
+                var path = _fileSystemHelper.NormalizeWebPath(absolute, _http.HttpContext.Request);
                 //is it external?
                 if (path.Contains(Uri.SchemeDelimiter))
                 {

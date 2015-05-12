@@ -10,20 +10,20 @@
         "**.vspscc"
     ],
     "dependencies": {
-        "Microsoft.AspNet.StaticFiles": "1.0.0-rc-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-rc-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-rc-*",
-        "Microsoft.AspNet.Hosting": "1.0.0-rc-*",
-        "Microsoft.AspNet.Diagnostics": "1.0.0-rc-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-rc-*",
+        "Microsoft.AspNet.StaticFiles": "1.0.0-beta4",
+        "Microsoft.AspNet.Server.IIS": "1.0.0-beta4", 
+        "Microsoft.AspNet.Mvc": "6.0.0-beta4", 
+        "Microsoft.AspNet.Hosting": "1.0.0-beta4",
+        "Microsoft.AspNet.Diagnostics": "1.0.0-beta4",
+        "Microsoft.AspNet.Server.WebListener": "1.0.0-beta4",
         "Smidge": "1.0.0-*"
     },
-    /*"commands": {
+    "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5009",
         "kestrel": "Microsoft.AspNet.Hosting --server Kestrel --server.urls http://localhost:5009"
-    },*/
+    },
     "frameworks": {
-        "aspnet50": { }
-        //,"aspnetcore50": { }
+        "dnx451": { } 
+        //,"dnxcore50": { }
     }
 }

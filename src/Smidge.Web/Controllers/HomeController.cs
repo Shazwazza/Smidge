@@ -8,7 +8,7 @@ namespace Smidge.Web.Controllers
     {
         // GET: /<controller>/
         public IActionResult Index()
-        {
+        {			
             //return "Hello";
             return View();
         }

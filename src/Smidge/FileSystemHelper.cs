@@ -14,8 +14,8 @@ namespace Smidge
 {
     public sealed class FileSystemHelper
     {
-        private IApplicationEnvironment _appEnv;
-        private ISmidgeConfig _config;
+		private IApplicationEnvironment _appEnv;
+		private ISmidgeConfig _config;
         private IHostingEnvironment _hostingEnv;
         private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -198,7 +198,7 @@ namespace Smidge
         {
             get
             {
-                return _hostingEnv.WebRoot;
+                return _hostingEnv.WebRootPath;
             }
         }
 

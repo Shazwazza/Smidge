@@ -16,7 +16,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
@@ -31,7 +31,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
@@ -46,7 +46,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
@@ -61,7 +61,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
@@ -76,7 +76,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.NormalizeWebPath(url, Mock.Of<HttpRequest>(x => x.Scheme == "http"));
@@ -91,7 +91,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.MapPath(url);
@@ -106,7 +106,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.MapPath(url);
@@ -121,7 +121,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.MapPath(url);
@@ -136,7 +136,7 @@ namespace Smidge.Tests
 
             var helper = new FileSystemHelper(
                 Mock.Of<IApplicationEnvironment>(),
-                Mock.Of<IHostingEnvironment>(x => x.WebRoot == "C:\\MySolution\\MyProject"),
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
                 Mock.Of<ISmidgeConfig>());
 
             var result = helper.ReverseMapPath(url);

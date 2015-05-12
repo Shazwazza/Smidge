@@ -8,7 +8,7 @@ namespace Smidge.Models
     public class CompositeFileModel : RequestModel
     {
 
-        public CompositeFileModel(IHasher hasher, IUrlManager urlManager, IContextAccessor<ActionContext> action)
+        public CompositeFileModel(IHasher hasher, IUrlManager urlManager, ActionContext action)
             : base("file", urlManager, action)
         {
             //Creates a single hash of the full url (which can include many files)
