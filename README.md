@@ -29,9 +29,9 @@ Add a config file to your app root (not wwwroot) called **smidge.json** with thi
         "version":  "1"                     //can be any string
     }
 
-Create a file in your ~/Views folder:  _GlobalImport.cshtml
+Create a file in your ~/Views folder:  `_GlobalImport.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
-In _GlobalImport.cshtml add an injected service:
+In `_GlobalImport.cshtml` add an injected service:
 
     @inject Smidge.SmidgeHelper Smidge
 
