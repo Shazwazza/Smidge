@@ -29,9 +29,11 @@ Add a config file to your app root (not wwwroot) called **smidge.json** with thi
         "version":  "1"                     //can be any string
     }
 
-In _ViewStart.cshtml add an injected service:
+Create a file in your ~/Views folder:  _GlobalImport.cshtml
+(This is an MVC 6 way of injecting services into all of your views)
+In _GlobalImport.cshtml add an injected service:
 
-    @inject SmidgeHelper Smidge
+    @inject Smidge.SmidgeHelper Smidge
 
 _Initial release blog post: http://shazwazza.com/post/introducing-smidge-an-aspnet-5-runtime-jscss-pre-processor/_
 
@@ -97,7 +99,7 @@ Each processor is of type `Smidge.FileProcessors.IPreProcessor` which contains a
 * `CssMinifier`
 * `JsMin`
 
-But you can create and add your own just by adding the instance to the IoC container like:
+But you can create and add your own just by adding the instance to the IoC container, for example if you created a dotless processor::
 
 `services.AddScoped<IPreProcessor, DotLessProcessor>();`
 
@@ -113,7 +115,7 @@ and override the `GetDefault` method. You can see the default implementation her
 
 If you want to customize the pipeline for any given file it's really easy. Each registered file is of type `Smidge.Models.IFile` which contains a property called `Pipeline` of type `Smidge.FileProcessors.PreProcessPipeline`. So if you wanted to customize the pipeline for a single JS file, you could do something like:
 
-    @inject PreProcessPipelineFactory PipelineFactory
+    @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
     
     @{ Smidge.RequiresJs(new JavaScriptFile("~/Js/test2.js")
             {
