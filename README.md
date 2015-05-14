@@ -145,8 +145,6 @@ _There are quite a few overloads for creating bundles with custom pipelines._
 
 I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
 
-Some of the logic for this library has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
-
 ## Copyright & Licence
 
 &copy; 2015 by Shannon Deminick
