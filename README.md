@@ -5,9 +5,7 @@
 
 A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
 
-##Usage
-
-### Install
+## Install
 
 Nuget:
 
@@ -36,6 +34,8 @@ In `_GlobalImport.cshtml` add an injected service:
     @inject Smidge.SmidgeHelper Smidge
 
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+
+##Usage
 
 ### View based declarations:
 
