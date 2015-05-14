@@ -35,8 +35,6 @@ In `_GlobalImport.cshtml` add an injected service:
 
     @inject Smidge.SmidgeHelper Smidge
 
-_Initial release blog post: http://shazwazza.com/post/introducing-smidge-an-aspnet-5-runtime-jscss-pre-processor/_
-
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
 
 ### View based declarations:
