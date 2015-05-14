@@ -24,7 +24,7 @@ In Startup.Configure
 Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
 
     {
-        "debug": false,                     //true to enable file processing
+        "debug": false,                     //true to disable file processing
         "dataFolder": "App_Data/Smidge",    //where the cache files are stored
         "version":  "1"                     //can be any string
     }
