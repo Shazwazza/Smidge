@@ -5,9 +5,7 @@
 
 A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file management, minification, combination & compression. 
 
-##Usage
-
-### Install
+## Install
 
 Nuget:
 
@@ -24,20 +22,20 @@ In Startup.Configure
 Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
 
     {
-        "debug": false,                     //true to enable file processing
+        "debug": false,                     //true to disable file processing
         "dataFolder": "App_Data/Smidge",    //where the cache files are stored
         "version":  "1"                     //can be any string
     }
 
-Create a file in your ~/Views folder:  _GlobalImport.cshtml
+Create a file in your ~/Views folder:  `_GlobalImport.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
-In _GlobalImport.cshtml add an injected service:
+In `_GlobalImport.cshtml` add an injected service:
 
     @inject Smidge.SmidgeHelper Smidge
 
-_Initial release blog post: http://shazwazza.com/post/introducing-smidge-an-aspnet-5-runtime-jscss-pre-processor/_
-
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+
+##Usage
 
 ### View based declarations:
 
@@ -144,8 +142,6 @@ _There are quite a few overloads for creating bundles with custom pipelines._
 ##Work in progress
 
 I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
-
-Some of the logic for this library has been ported over from [CDF (Client Dependency Framework)](https://github.com/Shazwazza/ClientDependency).
 
 ## Copyright & Licence
 
