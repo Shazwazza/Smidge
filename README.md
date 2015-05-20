@@ -5,6 +5,8 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 ## Install
 
+_Currently supporting DNX 4.5.1 & DNXCore 5.0_
+
 Nuget:
 
     Install-Package Smidge -Pre
