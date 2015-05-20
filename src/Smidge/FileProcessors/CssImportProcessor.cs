@@ -42,7 +42,7 @@ namespace Smidge.FileProcessors
 
                 var path = _fileSystemHelper.NormalizeWebPath(absolute, _http.HttpContext.Request);
                 //is it external?
-                if (path.Contains(Uri.SchemeDelimiter))
+                if (path.Contains(Constants.SchemeDelimiter))
                 {
                     //Pretty sure we just leave the external refs in there
                     //TODO: Look in CDF, we have tests for this, pretty sure the ParseImportStatements removes that

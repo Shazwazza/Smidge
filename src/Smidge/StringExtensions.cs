@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -6,6 +7,11 @@ namespace Smidge
 {
     public static class StringExtensions
     {
+        internal static bool InvariantIgnoreCaseStartsWith(this string input, string value)
+        {
+            return CultureInfo.InvariantCulture.CompareInfo.IsPrefix(input, value, CompareOptions.IgnoreCase);            
+        }
+
         internal static string TrimExtension(this string input, string extension)
         {
             extension = extension.TrimStart('.');

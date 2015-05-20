@@ -25,7 +25,7 @@ namespace Smidge.Models
             }
             _files.Add(new WebFilePair(original, null));
 
-            if (!original.FilePath.Contains(Uri.SchemeDelimiter))
+            if (!original.FilePath.Contains(Constants.SchemeDelimiter))
             {
                 throw new InvalidOperationException("Use " + nameof(AddInternal) + " to add an internal file");
             }
@@ -40,7 +40,7 @@ namespace Smidge.Models
                 throw new InvalidOperationException("Cannot add more than one external file");
             }
             _files.Add(new WebFilePair(original, hashed));
-            if (original.FilePath.Contains(Uri.SchemeDelimiter))
+            if (original.FilePath.Contains(Constants.SchemeDelimiter))
             {
                 throw new InvalidOperationException("Use " + nameof(AddExternal) + " to add an external file");
             }

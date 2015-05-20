@@ -6,6 +6,8 @@ using System.Linq;
 
 namespace Smidge
 {
+   
+
     /// <summary>
     /// Puts a collection of web files into appropriate batches - based on internal vs external dependencies or for other
     /// reasons to split files into batches (i.e. different html attributes)
@@ -50,7 +52,7 @@ namespace Smidge
                 var webPath = _fileSystemHelper.NormalizeWebPath(f.FilePath, _request);
 
                 //if this is an external path then we need to split and start new
-                if (webPath.Contains(Uri.SchemeDelimiter))
+                if (webPath.Contains(Constants.SchemeDelimiter))
                 {
                     if (current.Any())
                     {

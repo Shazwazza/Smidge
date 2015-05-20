@@ -42,7 +42,7 @@ namespace Smidge
             // logic to work properly
             if (path.StartsWith("//"))
             {
-                path = Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Uri.SchemeDelimiter));
+                path = Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Constants.SchemeDelimiter));
             }
 
             if (path.StartsWith("/"))

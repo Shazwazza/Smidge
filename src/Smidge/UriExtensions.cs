@@ -12,9 +12,9 @@ namespace Smidge
             var hashSplit = path.Split(new[] { '#' }, StringSplitOptions.RemoveEmptyEntries);
 
             return string.Format(@"{0}{1}",
-                                 (path.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)
-                                 || path.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase)
-                                 || path.StartsWith("//", StringComparison.InvariantCultureIgnoreCase)) ? path : new Uri(originalUri, path).PathAndQuery,
+                                 (path.InvariantIgnoreCaseStartsWith("http://")
+                                 || path.InvariantIgnoreCaseStartsWith("https://")
+                                 || path.InvariantIgnoreCaseStartsWith("//")) ? path : new Uri(originalUri, path).PathAndQuery,
                                  hashSplit.Length > 1 ? ("#" + hashSplit[1]) : "");
         }
 
