@@ -137,6 +137,15 @@ If you want to customize the pipeline for a particular bundle, you can just crea
         
 _There are quite a few overloads for creating bundles with custom pipelines._
 
+### URLs
+
+There's a couple of methods you can use retrieve the URLs that Smidge will generate when rendering the `<link>` or `<script>` html tags. This might be handy in case you need to load in these assets manually (i.e. lazy load scripts, etc...):
+
+    Task<IEnumerable<string>> SmidgeHelper.GenerateJsUrlsAsync()
+    Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
+    
+Both of these methods return a list of strings and there are several overloads for each which allow you to generate the URLs for pre-defined bundles, or the URLs for runtime registered dependencies. Examples of this can be seen in the demo web site's Index.cshtml: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge.Web/Views/Home/Index.cshtml
+
 ##Work in progress
 
 I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
