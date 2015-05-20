@@ -11,8 +11,8 @@
         "Microsoft.Framework.Runtime": "1.0.0-beta4"
     },
 
-	"frameworks": {
-		"dnx451": { },
-		"dnxcore50": { }
-	}
+    "frameworks": {
+        "dnxcore50": { },
+        "dnx451": { }
+    }
 }

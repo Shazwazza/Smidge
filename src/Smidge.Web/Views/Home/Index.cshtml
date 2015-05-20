@@ -1,6 +1,6 @@
 ﻿@using Smidge.Models;
 @using Smidge.FileProcessors;
-
+@inject Microsoft.Framework.Runtime.IApplicationEnvironment AppEnv; 
 <html>
 <head>
 
@@ -24,6 +24,8 @@
 <body>
     
     <h1>Smidge demo site</h1>
+
+    <h3>Runtime: @AppEnv.RuntimeFramework.FullName</h3>
 
     <h5>Generated non-named-bundled JS Urls</h5>
     <ul>
