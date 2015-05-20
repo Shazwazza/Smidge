@@ -77,7 +77,7 @@ _There are quite a few overloads for creating bundles._
 
 ### Rendering
 
-Rendering is done async, examples:
+Examples of how you output the `<link>` and `<script>` html tags for you assets (rendering is done async):
 
     @await Smidge.CssHereAsync()
     @await Smidge.JsHereAsync()
