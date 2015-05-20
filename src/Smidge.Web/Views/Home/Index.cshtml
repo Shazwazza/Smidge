@@ -13,34 +13,63 @@
             {
                 Pipeline = PipelineFactory.GetPipeline(typeof(JsMin))
             })
+            .RequiresCss("//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css")
             .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");
     }
 
     @await Smidge.CssHereAsync()
+    @await Smidge.CssHereAsync("test-bundle-4")
 
 </head>
 <body>
     
-    Hello world
+    <h1>Smidge demo site</h1>
 
-    <p>
-        <ul>
-            @foreach (var item in await Smidge.GenerateJsUrlsAsync())
+    <h5>Generated non-named-bundled JS Urls</h5>
+    <ul>
+        @foreach (var item in await Smidge.GenerateJsUrlsAsync())
             {
-                <li>@item</li>
-            }
-        </ul>
-        <ul>
-            @foreach (var item in await Smidge.GenerateCssUrlsAsync())
+            <li>@item</li>
+        }
+    </ul>
+
+    <h5>Generated non-named-bundled CSS Urls</h5>
+    <ul>
+        @foreach (var item in await Smidge.GenerateCssUrlsAsync())
             {
-                <li>@item</li>
-            }
-        </ul>
-    </p>
+            <li>@item</li>
+        }
+    </ul>
+
+    <h5>Generated named-bundled JS Urls</h5>
+    <ul>
+        @foreach (var item in await Smidge.GenerateJsUrlsAsync("test-bundle-1"))
+        {
+            <li>@item</li>
+        }
+        @foreach (var item in await Smidge.GenerateJsUrlsAsync("test-bundle-2"))
+        {
+            <li>@item</li>
+        }
+    </ul>
+
+    <h5>Generated named-bundled CSS Urls</h5>
+    <ul>
+        @foreach (var item in await Smidge.GenerateCssUrlsAsync("test-bundle-4"))
+            {
+            <li>@item</li>
+        }
+    </ul>
+    
+    <div id="jsOutput">
+        <span>JS loading debug output:</span>
+    </div>
 
     @await Smidge.JsHereAsync()
     @await Smidge.JsHereAsync("test-bundle-1")
     @await Smidge.JsHereAsync("test-bundle-2")
+
+    
 
 </body>
 </html>

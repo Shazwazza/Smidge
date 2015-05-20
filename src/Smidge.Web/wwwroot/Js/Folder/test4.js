@@ -1,1 +1,1 @@
-﻿document.writeln("test4.js");
+﻿$("#jsOutput").append("<br/><span>/Js/Folder/test4.js</span>")

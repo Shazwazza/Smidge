@@ -64,44 +64,26 @@ namespace Smidge
 
         public async Task<HtmlString> JsHereAsync(string bundleName)
         {
+            var urls = await GenerateJsUrlsAsync(bundleName);            
             var result = new StringBuilder();
-            var bundleExists = _bundleManager.Exists(bundleName);
-            if (!bundleExists) return null;
 
-            if (_config.IsDebug)
+            foreach (var url in urls)
             {
-                var urls = new List<string>();
-                var files = _bundleManager.GetFiles(bundleName, _request);
-                foreach (var d in files)
-                {
-                    urls.Add(d.FilePath);
-                }
-
-                foreach (var url in urls)
-                {
-                    result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
-                }
-                return new HtmlString(result.ToString());
-            }
-            else
-            {
-                var compression = _request.GetClientCompression();
-                var url = _context.UrlCreator.GetUrl(bundleName, ".js");
-
-                //now we need to determine if these files have already been minified
-                var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
-                if (!File.Exists(compositeFilePath))
-                {
-                    var files = _bundleManager.GetFiles(bundleName, _request);
-                    //we need to do the minify on the original files
-                    foreach (var file in files)
-                    {
-                        await _fileManager.ProcessAndCacheFileAsync(file);
-                    }
-                }
                 result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
-                return new HtmlString(result.ToString());
-            }            
+            }
+            return new HtmlString(result.ToString());
+        }
+
+        public async Task<HtmlString> CssHereAsync(string bundleName)
+        {
+            var urls = await GenerateCssUrlsAsync(bundleName);
+            var result = new StringBuilder();
+
+            foreach (var url in urls)
+            {
+                result.AppendFormat("<link href='{0}' rel='stylesheet' type='text/css'/>", url);
+            }
+            return new HtmlString(result.ToString());
         }
 
         /// <summary>
@@ -149,6 +131,58 @@ namespace Smidge
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null)
         {
             return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, pipeline);
+        }
+
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName)
+        {
+            return await GenerateUrlsAsync(bundleName, ".js");
+        }
+
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName)
+        {
+            return await GenerateUrlsAsync(bundleName, ".css");
+        }
+
+        private async Task<IEnumerable<string>> GenerateUrlsAsync(string bundleName, string fileExt)
+        {
+            var result = new List<string>();
+            var bundleExists = _bundleManager.Exists(bundleName);
+            if (!bundleExists) return null;
+
+            if (_config.IsDebug)
+            {
+                var urls = new List<string>();
+                var files = _bundleManager.GetFiles(bundleName, _request);
+                foreach (var d in files)
+                {
+                    urls.Add(d.FilePath);
+                }
+
+                foreach (var url in urls)
+                {
+                    result.Add(url);
+                }
+                return result;
+            }
+            else
+            {
+                var compression = _request.GetClientCompression();
+                var url = _context.UrlCreator.GetUrl(bundleName, fileExt);
+
+                //now we need to determine if these files have already been minified
+                var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
+                if (!File.Exists(compositeFilePath))
+                {
+                    var files = _bundleManager.GetFiles(bundleName, _request);
+                    //we need to do the minify on the original files
+                    foreach (var file in files)
+                    {
+                        await _fileManager.ProcessAndCacheFileAsync(file);
+                    }
+                }
+                result.Add(url);
+                return result;
+            }
         }
 
         /// <summary>

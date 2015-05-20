@@ -1,1 +1,1 @@
-﻿document.writeln("a2.js");
+﻿$("#jsOutput").append("<br/><span>/Js/Bundle1/a2.js</span>")
