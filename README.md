@@ -5,7 +5,7 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 ## Install
 
-_Currently supporting DNX 4.5.1 & DNXCore 5.0_
+_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against beta5_
 
 Nuget:
 
@@ -27,9 +27,9 @@ Add a config file to your app root (not wwwroot) called **smidge.json** with thi
         "version":  "1"                     //can be any string
     }
 
-Create a file in your ~/Views folder:  `_GlobalImport.cshtml`
+Create a file in your ~/Views folder:  `ViewImports.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
-In `_GlobalImport.cshtml` add an injected service:
+In `_ViewImports.cshtml` add an injected service:
 
     @inject Smidge.SmidgeHelper Smidge
 
