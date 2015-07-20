@@ -1,14 +1,38 @@
 ﻿using System;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
+using Microsoft.Framework.Runtime;
 
 namespace Smidge
 {
+    public static class ConfigurationExtensions
+    {
+        public static bool GetBool(this IConfiguration config, string key)
+        {
+            var val = config[key];
+            bool output;
+            if (bool.TryParse(val, out output))
+            {
+                return output;
+            }
+            throw new InvalidCastException("Could not parse value " + val + " to a boolean");
+        }
+    }
+
     /// <summary>
     /// Smidge configuration
     /// </summary>
     public class SmidgeConfig : ISmidgeConfig
     {
-        private InternalConfig _config = new InternalConfig();
+        public SmidgeConfig(IApplicationEnvironment appEnv)
+        {
+            var cfg = new ConfigurationBuilder(appEnv.ApplicationBasePath)
+                 //.AddEnvironmentVariables()                    
+                .AddJsonFile("Smidge.json");
+            
+            _config = cfg.Build();
+        }
+
+        private readonly IConfiguration _config;
 
         public string ServerName
         {
@@ -22,7 +46,7 @@ namespace Smidge
         {
             get
             {
-				return _config.Get<bool>("debug");
+				return _config.GetBool("debug");
             }
         }
 
@@ -40,19 +64,7 @@ namespace Smidge
             {
                 return (_config.Get("dataFolder") ?? "App_Data/Smidge").Replace("/", "\\");
             }
-        }
-
-        /// <summary>
-        /// The internal configuration class that reads from the underlying files/environment
-        /// </summary>
-        private class InternalConfig : Configuration, IConfiguration
-        {
-            public InternalConfig()
-            {
-                this.AddJsonFile("Smidge.json");
-                this.AddEnvironmentVariables();
-            }
-        }        
+        }    
 
         private string GetFileSafeMachineName(string name)
         {

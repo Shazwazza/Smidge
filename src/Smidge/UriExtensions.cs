@@ -31,10 +31,10 @@ namespace Smidge
             {
                 if (req.Path.HasValue)
                 {
-                    var uriHelper = new UriHelper(req);
-                    var fullUri = uriHelper.GetFullUri();
+                    var fullUri = UriHelper.Encode(req.Scheme, req.Host, req.PathBase, req.Path, req.QueryString);                        
+                    //var uriHelper = new UriHelper(req);
+                    //var fullUri = uriHelper.GetFullUri();
                     var reqUri = new Uri(fullUri);
-
                     var left = reqUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped);
 
                     var absoluteUrl = new Uri(new Uri(left), uri);

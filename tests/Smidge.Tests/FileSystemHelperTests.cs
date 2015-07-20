@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Runtime;
+
 using Moq;
 using System;
 using Xunit;
+using Microsoft.Framework.Runtime;
 
 namespace Smidge.Tests
 {

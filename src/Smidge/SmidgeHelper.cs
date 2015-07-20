@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Framework.ConfigurationModel;
+using Microsoft.Framework.Configuration;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
 using Smidge.FileProcessors;
