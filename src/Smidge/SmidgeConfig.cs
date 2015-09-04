@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Framework.Configuration;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 
 namespace Smidge
 {
@@ -28,17 +28,17 @@ namespace Smidge
             var cfg = new ConfigurationBuilder(appEnv.ApplicationBasePath)
                  //.AddEnvironmentVariables()                    
                 .AddJsonFile("Smidge.json");
-            
+
             _config = cfg.Build();
         }
 
-        private readonly IConfiguration _config;
+        private readonly IConfigurationRoot _config;
 
         public string ServerName
         {
             get
             {
-                return GetFileSafeMachineName(_config.Get("COMPUTERNAME") ?? "Default");
+                return GetFileSafeMachineName(_config["COMPUTERNAME"] ?? "Default");
             }           
         }
 
@@ -54,7 +54,7 @@ namespace Smidge
         {
             get
             {
-                return _config.Get("version") ?? "1";
+                return _config["version"] ?? "1";
             }
         }
 
@@ -62,7 +62,7 @@ namespace Smidge
         {
             get
             {
-                return (_config.Get("dataFolder") ?? "App_Data/Smidge").Replace("/", "\\");
+                return (_config["dataFolder"] ?? "App_Data/Smidge").Replace("/", "\\");
             }
         }    
 

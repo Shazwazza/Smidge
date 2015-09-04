@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

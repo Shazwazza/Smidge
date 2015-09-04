@@ -12,7 +12,7 @@ namespace Smidge.Controllers
     {
         public int Order { get; set; }
 
-        public IFilter CreateInstance(IServiceProvider serviceProvider)
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return new AddExpiryHeaderFilter(serviceProvider.GetRequiredService<IHasher>());
         }

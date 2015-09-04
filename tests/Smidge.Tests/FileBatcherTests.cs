@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Runtime;
+using Microsoft.Dnx.Runtime;
 using Moq;
 using Smidge.CompositeFiles;
 using Smidge.Models;

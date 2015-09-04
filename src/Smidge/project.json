@@ -4,15 +4,15 @@
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
 
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-beta5",
-        "Microsoft.AspNet.Mvc": "6.0.0-beta5",
-        "Microsoft.Framework.Configuration": "1.0.0-beta5",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-beta5", 
-        "Microsoft.Framework.Runtime": "1.0.0-beta5"  
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta7", 
+        "Microsoft.AspNet.Mvc": "6.0.0-beta7",
+        "Microsoft.Framework.Configuration": "1.0.0-beta7", 
+        "Microsoft.Framework.Configuration.Json": "1.0.0-beta7", 
+        "Microsoft.Dnx.Runtime": "1.0.0-beta7"  
     },
 
     "frameworks": {
-        "dnxcore50": { },
+        "dnxcore50": { },  
         "dnx451": { }
     }
 }

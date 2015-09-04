@@ -13,8 +13,8 @@ namespace Smidge.Models
     /// </summary>
     public class BundleModel : RequestModel
     {
-        public BundleModel(IUrlManager urlManager, IScopedInstance<ActionContext> action)
-            : base("bundle", urlManager, action)
+        public BundleModel(IUrlManager urlManager, IActionContextAccessor accessor)
+            : base("bundle", urlManager, accessor)
         {
             if (!ParsedPath.Names.Any())
             {

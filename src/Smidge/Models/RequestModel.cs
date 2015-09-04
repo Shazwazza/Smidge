@@ -11,14 +11,14 @@ namespace Smidge.Models
     /// </summary>
     public abstract class RequestModel
     {
-        public RequestModel(string valueName, IUrlManager urlManager, IScopedInstance<ActionContext> action)
+        protected RequestModel(string valueName, IUrlManager urlManager, IActionContextAccessor accessor)
         {
             //default 
             LastFileWriteTime = DateTime.Now;
 
-            Compression = action.Value.HttpContext.Request.GetClientCompression();
+            Compression = accessor.ActionContext.HttpContext.Request.GetClientCompression();
 
-            var bundleId = (string)action.Value.RouteData.Values[valueName];
+            var bundleId = (string)accessor.ActionContext.RouteData.Values[valueName];
             ParsedPath = urlManager.ParsePath(bundleId);
 
             switch (ParsedPath.WebType)
