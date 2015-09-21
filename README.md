@@ -5,7 +5,7 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 ## Install
 
-_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against beta5_
+_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against **beta7**_
 
 Nuget:
 
