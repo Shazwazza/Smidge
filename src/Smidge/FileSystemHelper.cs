@@ -125,8 +125,8 @@ namespace Smidge
             return Path.Combine(WebRoot.TrimEnd('\\'),
                 contentFile
                     .Replace("~/", "")
-                    .Replace("/", "\\")
-                    .TrimStart('\\'));
+                    .Replace('/', Path.DirectorySeparatorChar)
+                    .TrimStart(Path.DirectorySeparatorChar));
         }
 
         /// <summary>

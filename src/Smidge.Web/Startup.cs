@@ -8,6 +8,7 @@ using Smidge.Models;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting;
 using Smidge.Controllers;
 using Smidge.Options;
 using Smidge.FileProcessors;
@@ -43,8 +44,19 @@ namespace Smidge.Web
                 });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // Add the following to the request pipeline only in development environment.
+            if (env.IsDevelopment())
+            {
+                app.UseErrorPage();
+            }
+            else
+            {
+                // Add Error handling middleware which catches all application specific errors and
+                // sends the request to the following path or controller action.
+                app.UseErrorHandler("/Home/Error");
+            }
 
             app.UseMvc(routes =>
             {
