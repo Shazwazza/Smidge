@@ -58,6 +58,8 @@ namespace Smidge.Web
                 app.UseErrorHandler("/Home/Error");
             }
 
+            app.UseStaticFiles();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute("Default", "{controller=Home}/{action=Index}/{id?}");
