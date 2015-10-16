@@ -10,7 +10,7 @@ namespace Smidge.Options
     public class Bundles
     {
 
-        private ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
+        private readonly ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
 
         /// <summary>
         /// Gets/sets the pipeline factory

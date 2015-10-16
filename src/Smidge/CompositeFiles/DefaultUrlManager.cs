@@ -18,7 +18,7 @@ namespace Smidge.CompositeFiles
         public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher)
         {
             _hasher = hasher;
-            _options = options.Options.UrlOptions;
+            _options = options.Value.UrlOptions;
             _config = config;
         }
 

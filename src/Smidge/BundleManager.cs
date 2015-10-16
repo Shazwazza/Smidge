@@ -17,7 +17,7 @@ namespace Smidge
         public BundleManager(FileSystemHelper fileSystemHelper, PreProcessPipelineFactory processorFactory, IOptions<Bundles> bundles)
         {
             _processorFactory = processorFactory;
-            _bundles = bundles.Options;
+            _bundles = bundles.Value;
             _fileSystemHelper = fileSystemHelper;                    
         }
 

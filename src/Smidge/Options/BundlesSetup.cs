@@ -25,12 +25,11 @@ namespace Smidge.Options
         /// Allows for configuring the options instance before options are set
         /// </summary>
         /// <param name="options"></param>
-        /// <param name="name"></param>
-        public override void Configure(Bundles options, string name = "")
+        public override void Configure(Bundles options)
         {
             options.PipelineFactory = PipelineFactory;
 
-            base.Configure(options, name);
+            base.Configure(options);
         }
     }
 }

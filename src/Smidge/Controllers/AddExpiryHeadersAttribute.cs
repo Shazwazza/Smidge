@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
+﻿using Microsoft.Framework.DependencyInjection;
 using Smidge.Models;
 using System;
 using System.Linq;
+using Microsoft.AspNet.Mvc.Filters;
+
 namespace Smidge.Controllers
 {
     /// <summary>

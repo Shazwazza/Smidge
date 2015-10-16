@@ -1,22 +1,12 @@
-﻿using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.AspNet.Routing;
-using Smidge;
-using Smidge.Models;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Smidge.Controllers;
+using Microsoft.Framework.DependencyInjection;
 using Smidge.Options;
+using Smidge.Models;
 using Smidge.FileProcessors;
 
 namespace Smidge.Web
 {
-   
-
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
@@ -49,13 +39,13 @@ namespace Smidge.Web
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
-                app.UseErrorPage();
+                app.UseDeveloperExceptionPage();
             }
             else
             {
                 // Add Error handling middleware which catches all application specific errors and
                 // sends the request to the following path or controller action.
-                app.UseErrorHandler("/Home/Error");
+                app.UseExceptionHandler("/Home/Error");
             }
 
             app.UseStaticFiles();

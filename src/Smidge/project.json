@@ -1,24 +1,25 @@
 ﻿{
-    "version": "1.0.0-beta5",
+    "version": "1.0.0-beta6",
     "authors": [ "Shannon Deminick" ],
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
     "summary": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
-    "title":  "Smidge",
+    "title": "Smidge",
     "copyright": "Copyright © Shannon Deminick 2015",
     "projectUrl": "https://github.com/Shazwazza/Smidge/",
     "licenseUrl": "http://opensource.org/licenses/MIT",
-    "tags": ["css", "javascript", "minify", "compression", "combination", "aspnet5"],
+    "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
 
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-beta7", 
-        "Microsoft.AspNet.Mvc": "6.0.0-beta7",
-        "Microsoft.Framework.Configuration": "1.0.0-beta7", 
-        "Microsoft.Framework.Configuration.Json": "1.0.0-beta7", 
-        "Microsoft.Dnx.Runtime": "1.0.0-beta7"  
+        "Microsoft.Framework.DependencyInjection": "1.0.0-beta8",
+        "Microsoft.AspNet.Mvc": "6.0.0-beta8",
+        "Microsoft.Framework.Configuration": "1.0.0-beta8",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-beta8",
+        "Microsoft.Dnx.Runtime": "1.0.0-beta8",
+        "System.IO.Compression":  "4.0.0-*"
     },
 
     "frameworks": {
-        "dnxcore50": { },  
-        "dnx451": { }
+        "dnxcore50": { },
+        "dnx46": { }
     }
 }

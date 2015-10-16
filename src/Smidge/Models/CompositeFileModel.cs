@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
-using Smidge.CompositeFiles;
-using System;
+﻿using Smidge.CompositeFiles;
+using Microsoft.AspNet.Mvc.Infrastructure;
 
 namespace Smidge.Models
 {

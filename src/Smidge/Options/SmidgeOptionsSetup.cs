@@ -24,15 +24,5 @@ namespace Smidge.Options
         {
             
         }
-
-        /// <summary>
-        /// Allows for configuring the options instance before options are set
-        /// </summary>
-        /// <param name="options"></param>
-        /// <param name="name"></param>
-        public override void Configure(SmidgeOptions options, string name = "")
-        {
-            base.Configure(options, name);
-        }
     }
 }

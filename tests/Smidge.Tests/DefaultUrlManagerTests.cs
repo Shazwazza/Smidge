@@ -19,7 +19,7 @@ namespace Smidge.Tests
             var path = "c61531b5.2512be3b.bb1214f7.a21bd1fd.js.v1";
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg" } };
             var manager = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Options == options),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 Mock.Of<IHasher>());
 
@@ -37,7 +37,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
             var creator = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Options == options),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object);
 
@@ -53,7 +53,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
             var creator = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Options == options),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object);
 
@@ -71,7 +71,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 14 + 10 } };
             var creator = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Options == options),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object);
 
@@ -91,7 +91,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 10 } };
             var creator = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Options == options),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object);
 

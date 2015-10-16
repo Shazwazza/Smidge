@@ -45,7 +45,7 @@ namespace Smidge
         /// </remarks>
         public static bool HasRequestBeenModifiedSince(this HttpRequest request, DateTime utcLastModified)
         {
-            string ifModifiedSinceString = request.Headers.Get(HttpConstants.IfModifiedSince);
+            string ifModifiedSinceString = request.Headers[HttpConstants.IfModifiedSince];
             DateTime ifModifiedSince;
             if (TryParseHttpDate(ifModifiedSinceString, out ifModifiedSince))
             {
@@ -104,7 +104,7 @@ namespace Smidge
         public static CompressionType GetClientCompression(this HttpRequest request)
         {
             CompressionType type = CompressionType.none;
-            var agentHeader = request.Headers[HttpConstants.UserAgent];
+            var agentHeader = (string)request.Headers[HttpConstants.UserAgent];
             if (agentHeader != null && agentHeader.Contains("MSIE 6"))
             {
                 return type;
