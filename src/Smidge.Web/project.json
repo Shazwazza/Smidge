@@ -15,6 +15,7 @@
         "Microsoft.AspNet.Hosting": "1.0.0-beta8",
         "Microsoft.AspNet.Diagnostics": "1.0.0-beta8",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8",
+        "Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
         "Smidge": "1.0.0-*"
     },
     "commands": {

@@ -26,6 +26,7 @@ namespace Smidge
         public SmidgeConfig(IApplicationEnvironment appEnv)
         {
             var cfg = new ConfigurationBuilder()
+                .SetBasePath(appEnv.ApplicationBasePath)
                  //.AddEnvironmentVariables()                    
                 .AddJsonFile("smidge.json");
 

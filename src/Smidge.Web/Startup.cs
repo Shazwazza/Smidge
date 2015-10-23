@@ -36,6 +36,8 @@ namespace Smidge.Web
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseIISPlatformHandler();
+
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
