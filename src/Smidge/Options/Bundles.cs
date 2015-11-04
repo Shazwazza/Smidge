@@ -12,9 +12,9 @@ namespace Smidge.Options
 
         private readonly ConcurrentDictionary<string, List<IWebFile>> _bundles = new ConcurrentDictionary<string, List<IWebFile>>();
 
-        public IEnumerable<string> GetBundleNames()
+        public IEnumerable<string> GetBundleNames(WebFileType type)
         {
-            return _bundles.Keys;
+            return _bundles.Where(x => x.Value.Any(f => f.DependencyType == type)).Select(x => x.Key);
         }
 
         /// <summary>

@@ -53,7 +53,7 @@
 
     <h5>Generated named-bundled JS Urls</h5>
     <ul>
-        @foreach (var bundleName in BundleManager.GetBundleNames())
+        @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Js))
         {
             foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(bundleName))
             {
@@ -64,7 +64,7 @@
 
     <h5>Generated named-bundled CSS Urls</h5>
     <ul>
-        @foreach (var bundleName in BundleManager.GetBundleNames())
+        @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Css))
         {
             foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync(bundleName))
             {

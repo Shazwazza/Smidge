@@ -25,9 +25,9 @@ namespace Smidge
         private Bundles _bundles;
         private PreProcessPipelineFactory _processorFactory;
 
-        public IEnumerable<string> GetBundleNames()
+        public IEnumerable<string> GetBundleNames(WebFileType type)
         {
-            return _bundles.GetBundleNames();
+            return _bundles.GetBundleNames(type);
         }
 
         public bool Exists(string bundleName)
