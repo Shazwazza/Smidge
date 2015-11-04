@@ -16,12 +16,15 @@
         "Microsoft.AspNet.Diagnostics": "1.0.0-beta8",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8",
         "Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
+		"Microsoft.AspNet.Tooling.Razor": "1.0.0-beta8",
+		"Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta8",
         "Smidge": "1.0.0-*"
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel"
     },
     "frameworks": {
-        "dnxcore50": { }
-    }
+		"dnx451": { },
+		"dnxcore50": { }
+	  }
 }

@@ -26,10 +26,22 @@ namespace Smidge
             _hostingEnv = hostingEnv;
         }
 
+        public static bool IsExternalRequestPath(string path)
+        {
+            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                 || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                 || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
+            {
+                return true;
+            }
+            return false;
+        }
+
         /// <summary>
         /// Takes in a given path and returns it's normalized result, either as a relative path for local files or an absolute web path with a host
         /// </summary>
         /// <param name="path"></param>
+        /// <param name="request"></param>
         /// <returns></returns>
         public string NormalizeWebPath(string path, HttpRequest request)
         {

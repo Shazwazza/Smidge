@@ -56,6 +56,12 @@ namespace Smidge
 
         private async Task ProcessFile(IWebFile file, string extension)
         {
+            //If Its external throw an exception this is not allowed. 
+            if (file.FilePath.Contains(Constants.SchemeDelimiter))
+            {
+                throw new InvalidOperationException("Cannot process an external file as part of a bundle");
+            };
+
             //check if it's in cache
 
             //TODO: If we make the hash as part of the last write time of the file, then the hash will be different
@@ -77,6 +83,10 @@ namespace Smidge
             if (!File.Exists(cacheFile))
             {
                 var filePath = _fileSystemHelper.MapPath(file.FilePath);
+                
+                //doesn't exist, throw as thsi shouldn't happen
+                if (File.Exists(filePath) == false) throw new FileNotFoundException("No file found with path " + filePath);
+
                 var contents = await _fileSystemHelper.ReadContentsAsync(filePath);
 
                 //process the file

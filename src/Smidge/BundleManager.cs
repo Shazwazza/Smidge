@@ -25,15 +25,56 @@ namespace Smidge
         private Bundles _bundles;
         private PreProcessPipelineFactory _processorFactory;
 
+        public IEnumerable<string> GetBundleNames()
+        {
+            return _bundles.GetBundleNames();
+        }
+
         public bool Exists(string bundleName)
         {
-            IEnumerable<IWebFile> result;
+            List<IWebFile> result;
             return _bundles.TryGetValue(bundleName, out result);
+        }
+
+        /// <summary>
+        /// Adds an item to the bundle, if the bundle doesn't exist it will be created
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <param name="file"></param>
+        public void AddToBundle(string bundleName, CssFile file)
+        {
+            List<IWebFile> files;
+            if (_bundles.TryGetValue(bundleName, out files))
+            {
+                files.Add(file);
+            }
+            else
+            {
+                _bundles.Create(bundleName, file);
+            }
+        }
+
+        /// <summary>
+        /// Adds an item to the bundle, if the bundle doesn't exist it will be created
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <param name="file"></param>
+        public void AddToBundle(string bundleName, JavaScriptFile file)
+        {
+            List<IWebFile> files;
+            if (_bundles.TryGetValue(bundleName, out files))
+            {
+                files.Add(file);
+            }
+            else
+            {
+                _bundles.Create(bundleName, file);
+            }
         }
 
         public IEnumerable<IWebFile> GetFiles(string bundleName, HttpRequest request)
         {
-            IEnumerable<IWebFile> files;
+            List<IWebFile> files;
             if (_bundles.TryGetValue(bundleName, out files))
             {
                 var fileList = new List<IWebFile>();

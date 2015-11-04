@@ -20,6 +20,6 @@
 
     "frameworks": {
         "dnxcore50": { },
-        "dnx46": { }
+        "dnx451": { }
     }
 }

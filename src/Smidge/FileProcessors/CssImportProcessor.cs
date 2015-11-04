@@ -93,7 +93,7 @@ namespace Smidge.FileProcessors
                 if (urlMatch.Success && urlMatch.Groups.Count >= 2)
                 {
                     var path = urlMatch.Groups[1].Value.Trim('\'', '"');
-                    if (IsExternal(path)) continue;
+                    if (FileSystemHelper.IsExternalRequestPath(path)) continue;
                 }
                 
                 //Strip the import statement                
@@ -103,7 +103,7 @@ namespace Smidge.FileProcessors
                 var filePath = match.Groups.Cast<Group>().Where(x => !string.IsNullOrEmpty(x.Value)).Last().Value.Trim('\'', '"');
 
                 //Ignore external imports - this will occur if they are not wrapped in a url block
-                if (IsExternal(filePath)) continue;
+                if (FileSystemHelper.IsExternalRequestPath(filePath)) continue;
 
                 pathsFound.Add(filePath);
             }
@@ -112,15 +112,6 @@ namespace Smidge.FileProcessors
             return content.Trim();
         }
 
-        private static bool IsExternal(string path)
-        {
-            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-            return false;
-        }
+        
     }
 }

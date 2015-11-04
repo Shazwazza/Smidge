@@ -10,7 +10,12 @@ namespace Smidge.Options
     public class Bundles
     {
 
-        private readonly ConcurrentDictionary<string, IEnumerable<IWebFile>> _bundles = new ConcurrentDictionary<string, IEnumerable<IWebFile>>();
+        private readonly ConcurrentDictionary<string, List<IWebFile>> _bundles = new ConcurrentDictionary<string, List<IWebFile>>();
+
+        public IEnumerable<string> GetBundleNames()
+        {
+            return _bundles.Keys;
+        }
 
         /// <summary>
         /// Gets/sets the pipeline factory
@@ -22,12 +27,12 @@ namespace Smidge.Options
 
         public void Create(string bundleName, params JavaScriptFile[] jsFiles)
         {
-            _bundles.TryAdd(bundleName, jsFiles);
+            _bundles.TryAdd(bundleName, new List<IWebFile>(jsFiles));
         }
 
         public void Create(string bundleName, params CssFile[] cssFiles)
         {
-            _bundles.TryAdd(bundleName, cssFiles);
+            _bundles.TryAdd(bundleName, new List<IWebFile>(cssFiles));
         }
 
         public void Create(string bundleName, WebFileType type, params string[] paths)
@@ -35,8 +40,8 @@ namespace Smidge.Options
             _bundles.TryAdd(
                 bundleName,
                 type == WebFileType.Css
-                ? paths.Select(x => (IWebFile)new CssFile(x))
-                : paths.Select(x => (IWebFile)new JavaScriptFile(x)));
+                ? paths.Select(x => (IWebFile)new CssFile(x)).ToList()
+                : paths.Select(x => (IWebFile)new JavaScriptFile(x)).ToList());
         }
 
         public void Create(string bundleName, PreProcessPipeline pipeline, params JavaScriptFile[] jsFiles)
@@ -48,7 +53,7 @@ namespace Smidge.Options
                     file.Pipeline = pipeline;
                 }
             }
-            _bundles.TryAdd(bundleName, jsFiles);
+            _bundles.TryAdd(bundleName, new List<IWebFile>(jsFiles));
         }
 
         public void Create(string bundleName, PreProcessPipeline pipeline, params CssFile[] cssFiles)
@@ -60,7 +65,7 @@ namespace Smidge.Options
                     file.Pipeline = pipeline;
                 }
             }
-            _bundles.TryAdd(bundleName, cssFiles);
+            _bundles.TryAdd(bundleName, new List<IWebFile>(cssFiles));
         }
 
         public void Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, params string[] paths)
@@ -68,11 +73,11 @@ namespace Smidge.Options
             _bundles.TryAdd(
                 bundleName,
                 type == WebFileType.Css
-                ? paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline })
-                : paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }));
+                ? paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList()
+                : paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }).ToList());
         }
 
-        public bool TryGetValue(string key, out IEnumerable<IWebFile> value)
+        public bool TryGetValue(string key, out List<IWebFile> value)
         {
             return _bundles.TryGetValue(key, out value);
         }

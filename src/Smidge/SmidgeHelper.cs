@@ -15,11 +15,10 @@ using Smidge.FileProcessors;
 
 namespace Smidge
 {
-    
     /// <summary>
     /// Used in views to register and render dependencies
     /// </summary>
-    public class SmidgeHelper
+    public class SmidgeHelper : ISmidgeRequire
     {
         private SmidgeContext _context;
         private ISmidgeConfig _config;
@@ -317,13 +316,13 @@ namespace Smidge
             return result;
         }
 
-        public SmidgeHelper RequiresJs(JavaScriptFile file)
+        public ISmidgeRequire RequiresJs(JavaScriptFile file)
         {
             _context.Files.Add(file);
             return this;
         }
 
-        public SmidgeHelper RequiresJs(params string[] paths)
+        public ISmidgeRequire RequiresJs(params string[] paths)
         {
             foreach (var path in paths)
             {
@@ -332,19 +331,53 @@ namespace Smidge
             return this;
         }
 
-        public SmidgeHelper RequiresCss(CssFile file)
+        public ISmidgeRequire RequiresCss(CssFile file)
         {
             _context.Files.Add(file);
             return this;
         }
 
-        public SmidgeHelper RequiresCss(params string[] paths)
+        public ISmidgeRequire RequiresCss(params string[] paths)
         {
             foreach (var path in paths)
             {
                 RequiresCss(new CssFile(path));
             }            
             return this;
+        }
+
+        /// <summary>
+        /// Creates a new bundle and returns a bundle context to add files to it
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// The bundle is write once - so if it already exists, a noop context is returned that does nothing
+        /// </remarks>
+        public ISmidgeRequire CreateJsBundle(string bundleName)
+        {
+            if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentNullException(nameof(bundleName));
+
+            if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
+
+            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js);            
+        }
+
+        /// <summary>
+        /// Creates a new bundle and returns a bundle context to add files to it
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// The bundle is write once - so if it already exists, a noop context is returned that does nothing
+        /// </remarks>
+        public ISmidgeRequire CreateCssBundle(string bundleName)
+        {
+            if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentNullException(nameof(bundleName));
+
+            if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
+
+            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Css);
         }
     }
 }
