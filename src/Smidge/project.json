@@ -1,4 +1,4 @@
-{
+﻿{
     "version": "1.0.0-rc1",
     "authors": [ "Shannon Deminick" ],
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",

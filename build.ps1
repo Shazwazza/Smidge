@@ -19,7 +19,7 @@ $DNU = "dnu"
 $DNVM = "dnvm"
 
 # use the correct version
-& $DNVM use 1.0.0-beta7
+& $DNVM use 1.0.0-rc1-final
 
 # Make sure we don't have a release folder for this version already
 $BuildFolder = Join-Path -Path $SolutionRoot -ChildPath "build";
