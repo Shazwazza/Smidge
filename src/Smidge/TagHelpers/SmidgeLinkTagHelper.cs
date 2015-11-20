@@ -25,11 +25,14 @@ namespace Smidge.TagHelpers
         [HtmlAttributeName("href")]
         public string Source { get; set; }
 
+        [HtmlAttributeName("debug")]
+        public bool Debug { get; set; }
+
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             if (_bundleManager.Exists(Source))
             {
-                var result = (await _smidgeHelper.GenerateCssUrlsAsync(Source)).ToArray();
+                var result = (await _smidgeHelper.GenerateCssUrlsAsync(Source, Debug)).ToArray();
                 var currAttr = output.Attributes.ToDictionary(x => x.Name, x => x.Value);
                 using (var writer = new StringWriter())
                 {

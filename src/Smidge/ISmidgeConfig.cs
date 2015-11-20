@@ -2,8 +2,7 @@
 {
     public interface ISmidgeConfig
     {
-        string DataFolder { get; }
-        bool IsDebug { get; }
+        string DataFolder { get; }        
         string ServerName { get; }
         string Version { get; }
     }

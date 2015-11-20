@@ -43,15 +43,7 @@ namespace Smidge
                 return GetFileSafeMachineName(_config["COMPUTERNAME"] ?? "Default");
             }           
         }
-
-        public bool IsDebug
-        {
-            get
-            {
-				return _config.GetBool("debug");
-            }
-        }
-
+        
         public string Version
         {
             get

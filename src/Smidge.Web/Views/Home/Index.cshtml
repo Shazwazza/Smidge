@@ -12,8 +12,7 @@
     @{
         SmidgeHelper
             .CreateJsBundle("inline-js-bundle")
-            .RequiresJs("~/Js/test1.js", "Js/test2.js")
-            .RequiresJs("Js/Folder*js")
+            .RequiresJs("~/Js/test1.js", "Js/test2.js")            
             .RequiresJs(new JavaScriptFile("~/Js/test2.js")
             {
                 Pipeline = PipelineFactory.GetPipeline(typeof(JsMin))
@@ -21,6 +20,8 @@
         SmidgeHelper
             .CreateCssBundle("inline-css-bundle")
             .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");
+
+        SmidgeHelper.RequiresJs("Js/Folder*js");
     }
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
@@ -37,8 +38,8 @@
 
     <h5>Generated non-named-bundled JS Urls</h5>
     <ul>
-        @foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync())
-            {
+        @foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(debug:true))
+        {
             <li>@item</li>
         }
     </ul>
@@ -46,7 +47,7 @@
     <h5>Generated non-named-bundled CSS Urls</h5>
     <ul>
         @foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync())
-            {
+        {
             <li>@item</li>
         }
     </ul>
@@ -77,7 +78,7 @@
         <span>JS loading debug output:</span>
     </div>
 
-    @await SmidgeHelper.JsHereAsync()
+    @await SmidgeHelper.JsHereAsync(debug:true)
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 

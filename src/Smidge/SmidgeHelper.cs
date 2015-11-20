@@ -38,7 +38,10 @@ namespace Smidge
         /// <param name="config"></param>
         /// <param name="fileManager"></param>
         /// <param name="fileSystemHelper"></param>
-        /// <param name="request"></param>
+        /// <param name="hasher"></param>
+        /// <param name="bundleManager"></param>
+        /// <param name="http"></param>
+        /// <param name="processorFactory"></param>
         public SmidgeHelper(
             SmidgeContext context,
             ISmidgeConfig config, 
@@ -61,9 +64,9 @@ namespace Smidge
             _fileBatcher = new FileBatcher(_fileSystemHelper, _request, _hasher);
         }
 
-        public async Task<HtmlString> JsHereAsync(string bundleName)
+        public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
         {
-            var urls = await GenerateJsUrlsAsync(bundleName);            
+            var urls = await GenerateJsUrlsAsync(bundleName, debug);            
             var result = new StringBuilder();
 
             foreach (var url in urls)
@@ -73,9 +76,9 @@ namespace Smidge
             return new HtmlString(result.ToString());
         }
 
-        public async Task<HtmlString> CssHereAsync(string bundleName)
+        public async Task<HtmlString> CssHereAsync(string bundleName, bool debug = false)
         {
-            var urls = await GenerateCssUrlsAsync(bundleName);
+            var urls = await GenerateCssUrlsAsync(bundleName, debug);
             var result = new StringBuilder();
 
             foreach (var url in urls)
@@ -93,10 +96,10 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null)
+        public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
             var result = new StringBuilder();
-            var urls = await GenerateJsUrlsAsync(pipeline);
+            var urls = await GenerateJsUrlsAsync(pipeline, debug);
             foreach (var url in urls)
             {
                 result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
@@ -112,10 +115,10 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null)
+        public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
             var result = new StringBuilder();
-            var urls = await GenerateCssUrlsAsync(pipeline);
+            var urls = await GenerateCssUrlsAsync(pipeline, debug);
             foreach (var url in urls)
             {
                 result.AppendFormat("<link href='{0}' rel='stylesheet' type='text/css'/>", url);
@@ -127,28 +130,28 @@ namespace Smidge
         /// Generates the list of URLs to render based on what is registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null)
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
-            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, pipeline);
+            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, pipeline, debug);
         }
 
-        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName)
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateUrlsAsync(bundleName, ".js");
+            return await GenerateUrlsAsync(bundleName, ".js", debug);
         }
 
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName)
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateUrlsAsync(bundleName, ".css");
+            return await GenerateUrlsAsync(bundleName, ".css", debug);
         }
 
-        private async Task<IEnumerable<string>> GenerateUrlsAsync(string bundleName, string fileExt)
+        private async Task<IEnumerable<string>> GenerateUrlsAsync(string bundleName, string fileExt, bool debug)
         {
             var result = new List<string>();
             var bundleExists = _bundleManager.Exists(bundleName);
             if (!bundleExists) return null;
 
-            if (_config.IsDebug)
+            if (debug)
             {
                 var urls = new List<string>();
                 var files = _bundleManager.GetFiles(bundleName, _request);
@@ -188,19 +191,20 @@ namespace Smidge
         /// Generates the list of URLs to render based on what is registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null)
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
-            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline);
+            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline, debug);
         }
 
         private async Task<IEnumerable<string>> GenerateUrlsAsync(
             IEnumerable<IWebFile> files, 
-            WebFileType fileType,
-            PreProcessPipeline pipeline = null)
+            WebFileType fileType,            
+            PreProcessPipeline pipeline = null,
+            bool debug = false)
         {
             var result = new List<string>();
 
-            if (_config.IsDebug)
+            if (debug)
             {
                 return GenerateUrlsDebug(files);
             }
@@ -253,12 +257,13 @@ namespace Smidge
             return result;
 
         }
-        
+
 
         /// <summary>
         /// Minifies (and performs any other operation defined in the pipeline) for each file
         /// </summary>
         /// <param name="files"></param>
+        /// <param name="pipeline"></param>
         /// <returns></returns>
         private async Task ProcessWebFilesAsync(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
         {   
