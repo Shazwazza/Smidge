@@ -10,11 +10,11 @@
     "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
 
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-beta8",
-        "Microsoft.AspNet.Mvc": "6.0.0-beta8",
-        "Microsoft.Framework.Configuration": "1.0.0-beta8",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-beta8",
-        "Microsoft.Dnx.Runtime": "1.0.0-beta8",
+        "Microsoft.Framework.DependencyInjection": "1.0.0-rc1-final",
+        "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
+        "Microsoft.Framework.Configuration": "1.0.0-rc1-final",
+        "Microsoft.Framework.Configuration.Json": "1.0.0-rc1-final",
+        "Microsoft.Dnx.Runtime": "1.0.0-rc1-final",
         "System.IO.Compression": "4.0.0-*",
         "Microsoft.AspNet.NodeServices": "1.0.0-alpha5"
     },
