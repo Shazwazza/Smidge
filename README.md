@@ -21,19 +21,23 @@ In Startup.Configure
 
 Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
 
-    {
-        "debug": false,                     //true to disable file processing
-        "dataFolder": "App_Data/Smidge",    //where the cache files are stored
-        "version":  "1"                     //can be any string
-    }
+```json
+{
+    "debug": false,                     //true to disable file processing
+    "dataFolder": "App_Data/Smidge",    //where the cache files are stored
+    "version":  "1"                     //can be any string
+}
+```
 
 Create a file in your ~/Views folder:  `_ViewImports.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
 In `_ViewImports.cshtml` add an injected service and a reference to Smidge's tag helpers:
 
-    @inject Smidge.SmidgeHelper Smidge
-    @addTagHelper "*, Smidge"
-    
+```csharp
+@inject Smidge.SmidgeHelper Smidge
+@addTagHelper "*, Smidge"
+```
+
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
 
 ##Usage
@@ -42,20 +46,22 @@ _NOTE: There is a website example project in this source for a reference: https:
 
 Define your bundles during startup:
 
-    services.AddSmidge()
-        .Configure<Bundles>(bundles =>
-        {
-            //Defining using JavaScriptFile's or CssFile's:
+```csharp
+services.AddSmidge()
+    .Configure<Bundles>(bundles =>
+    {
+        //Defining using JavaScriptFile's or CssFile's:
 
-            bundles.Create("test-bundle-1", //bundle name
-                new JavaScriptFile("~/Js/Bundle1/a1.js"),
-                new JavaScriptFile("~/Js/Bundle1/a2.js"));
+        bundles.Create("test-bundle-1", //bundle name
+            new JavaScriptFile("~/Js/Bundle1/a1.js"),
+            new JavaScriptFile("~/Js/Bundle1/a2.js"));
 
-            //Or defining using file/folder paths:
+        //Or defining using file/folder paths:
 
-            bundles.Create("test-bundle-2", WebFileType.Js, 
-                "~/Js/Bundle2", "~/Js/OtherFolder*js");
-        });
+        bundles.Create("test-bundle-2", WebFileType.Js, 
+            "~/Js/Bundle2", "~/Js/OtherFolder*js");
+    });
+```
 
 _There are quite a few overloads for creating bundles._
 
@@ -67,20 +73,26 @@ If you don't want to create named bundles and just want to declare dependencies 
 
 Require multiple files
 
-    @{ Smidge.RequiresJs("~/Js/test1.js", "Js/test2.js"); }
+```csharp
+@{ Smidge.RequiresJs("~/Js/test1.js", "Js/test2.js"); }
+```
 
 Require a folder - optionally you can also include filters (i.e. this includes all .js files)
 
-    @{ Smidge.RequiresJs("Js/Stuff*js"); }
+```csharp
+@{ Smidge.RequiresJs("Js/Stuff*js"); }
+```
 
 Chaining:
 
-    @{ Smidge
-        //external resources work too!
-        .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-        .RequiresJs("Js/Folder*js")
-        .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
-    }
+```csharp
+@{ Smidge
+    //external resources work too!
+    .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
+    .RequiresJs("Js/Folder*js")
+    .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
+}
+```
     
 #### Inline bundles:
 
@@ -88,34 +100,42 @@ You can create/declare bundles inline in your views too using this syntax:
 
 JS Bundle:
 
-    @{ SmidgeHelper
-            .CreateJsBundle("my-awesome-js-bundle")
-            .RequiresJs("~/Js/test1.js", "Js/test2.js")
-            .RequiresJs("Js/Folder*js");
-    }
+```csharp
+@{ SmidgeHelper
+        .CreateJsBundle("my-awesome-js-bundle")
+        .RequiresJs("~/Js/test1.js", "Js/test2.js")
+        .RequiresJs("Js/Folder*js");
+}
+```
     
 CSS Bundle:
 
-    @{ SmidgeHelper
-            .CreateCssBundle("my-cool-css-bundle")
-            .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css");
-    }
+```csharp
+@{ SmidgeHelper
+        .CreateCssBundle("my-cool-css-bundle")
+        .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css");
+}
+```
 
 ### Rendering
 
 The easiest way to render bundles is simply by the bundle name:
 
-    <script src="my-awesome-js-bundle" type="text/javascript"></script>
-    <link rel="stylesheet" href="my-cool-css-bundle"/>
+```html
+<script src="my-awesome-js-bundle" type="text/javascript"></script>
+<link rel="stylesheet" href="my-cool-css-bundle"/>
+```
     
 This uses Smidge's custom tag helpers to check if the source is a bundle reference and will output the correct bundle URL.
 
 Alternatively, if you want to use Razor to output output the `<link>` and `<script>` html tags for you assets, you can use the following example syntax (rendering is done async):
 
-    @await Smidge.CssHereAsync()
-    @await Smidge.JsHereAsync()
-    @await Smidge.JsHereAsync("test-bundle-1")
-    @await Smidge.JsHereAsync("test-bundle-2")
+```csharp
+@await Smidge.CssHereAsync()
+@await Smidge.JsHereAsync()
+@await Smidge.JsHereAsync("test-bundle-1")
+@await Smidge.JsHereAsync("test-bundle-2")
+```
     
 If you are using inline non-bundle named declarations you will need to use the Razor methods above: `Smidge.CssHereAsync()` and `Smidge.JsHereAsync()`
 
@@ -132,13 +152,17 @@ Each processor is of type `Smidge.FileProcessors.IPreProcessor` which contains a
 
 But you can create and add your own just by adding the instance to the IoC container, for example if you created a dotless processor::
 
-`services.AddScoped<IPreProcessor, DotLessProcessor>();`
+```csharp
+services.AddScoped<IPreProcessor, DotLessProcessor>();
+```
 
 ##### Global custom pipeline
 
 If you want to override the default processing pipeline for all files, then you'd add your own implementation of `Smidge.FileProcessors.PreProcessPipelineFactory` to the IoC container after you've called `AddSmidge();`, like:
 
-`services.AddSingleton<PreProcessPipelineFactory, MyCustomPreProcessPipelineFactory>();`
+```csharp
+services.AddSingleton<PreProcessPipelineFactory, MyCustomPreProcessPipelineFactory>();
+```
 
 and override the `GetDefault` method. You can see the default implementation here: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge/FileProcessors/PreProcessPipelineFactory.cs
 
@@ -146,29 +170,33 @@ and override the `GetDefault` method. You can see the default implementation her
 
 If you want to customize the pipeline for any given file it's really easy. Each registered file is of type `Smidge.Models.IFile` which contains a property called `Pipeline` of type `Smidge.FileProcessors.PreProcessPipeline`. So if you wanted to customize the pipeline for a single JS file, you could do something like:
 
-    @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
-    
-    @{ Smidge.RequiresJs(new JavaScriptFile("~/Js/test2.js")
-            {
-                Pipeline = PipelineFactory.GetPipeline(
-                    //add as many processor types as you want
-                    typeof(DotLess), typeof(JsMin))
-            })
+```csharp
+@inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
+
+@{ Smidge.RequiresJs(new JavaScriptFile("~/Js/test2.js")
+        {
+            Pipeline = PipelineFactory.GetPipeline(
+                //add as many processor types as you want
+                typeof(DotLess), typeof(JsMin))
+        })
+```
 
 ##### Bundle level custom pipeline
 
 If you want to customize the pipeline for a particular bundle, you can just create your bundle with a custom pipeline like:
 
-    services.AddSmidge()
-        .Configure<Bundles>(bundles =>
-        {                   
-            bundles.Create("test-bundle-3", 
-                bundles.PipelineFactory.GetPipeline(
-                    //add as many processor types as you want
-                    typeof(DotLess), typeof(JsMin)), 
-                WebFileType.Js, 
-                "~/Js/Bundle2");
-        });
+```csharp
+services.AddSmidge()
+    .Configure<Bundles>(bundles =>
+    {                   
+        bundles.Create("test-bundle-3", 
+            bundles.PipelineFactory.GetPipeline(
+                //add as many processor types as you want
+                typeof(DotLess), typeof(JsMin)), 
+            WebFileType.Js, 
+            "~/Js/Bundle2");
+    });
+```
         
 _There are quite a few overloads for creating bundles with custom pipelines._
 
@@ -176,8 +204,10 @@ _There are quite a few overloads for creating bundles with custom pipelines._
 
 There's a couple of methods you can use retrieve the URLs that Smidge will generate when rendering the `<link>` or `<script>` html tags. This might be handy in case you need to load in these assets manually (i.e. lazy load scripts, etc...):
 
-    Task<IEnumerable<string>> SmidgeHelper.GenerateJsUrlsAsync()
-    Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
+```csharp
+Task<IEnumerable<string>> SmidgeHelper.GenerateJsUrlsAsync()
+Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
+```
     
 Both of these methods return a list of strings and there are several overloads for each which allow you to generate the URLs for pre-defined bundles, or the URLs for runtime registered dependencies. Examples of this can be seen in the demo web site's Index.cshtml: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge.Web/Views/Home/Index.cshtml
 
