@@ -23,11 +23,13 @@ Add a config file to your app root (not wwwroot) called **smidge.json** with thi
 
 ```json
 {
-    "debug": false,                     //true to disable file processing
-    "dataFolder": "App_Data/Smidge",    //where the cache files are stored
-    "version":  "1"                     //can be any string
+    "dataFolder": "App_Data/Smidge",
+    "version":  "1"
 }
 ```
+
+* dataFolder: where the cache files are stored
+* version: can be any string, this is used for cache busting in URLs generated
 
 Create a file in your ~/Views folder:  `_ViewImports.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
@@ -138,6 +140,27 @@ Alternatively, if you want to use Razor to output output the `<link>` and `<scri
 ```
     
 If you are using inline non-bundle named declarations you will need to use the Razor methods above: `Smidge.CssHereAsync()` and `Smidge.JsHereAsync()`
+
+#### Debugging
+
+By default Smidge will combine/compress/minify but while you are developing you probably don't want this to happen. Each of the above rendering methods has an optional boolean 'debug' parameter. If you set this to `true` then the combine/compress/minify is disabled.
+
+The methods `CssHereAsync`, `JsHereAsync`, `GenerateJsUrlsAsync` and `GenerateCssUrlsAsync` all have an optional boolean `debug` parameter. If you are using tag helpers to render your bundles you can simply include a `debug` attribute, for example:
+
+```html
+<script src="my-awesome-js-bundle" type="text/javascript" debug="true"></script>
+```
+
+You can combine this functionality with environment variables, for example:
+
+```html
+<environment names="Development">
+    <script src="my-awesome-js-bundle" type="text/javascript" debug="true"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="my-awesome-js-bundle" type="text/javascript"></script>
+</environment>
+```
 
 ### Custom pre-processing pipeline
 
