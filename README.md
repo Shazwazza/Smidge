@@ -5,7 +5,7 @@ A lightweight **ASP.Net 5** library for runtime CSS and JavaScript file manageme
 
 ## Install
 
-_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against **beta8**_
+_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against **rc1-final**_
 
 Nuget:
 
@@ -27,34 +27,16 @@ Add a config file to your app root (not wwwroot) called **smidge.json** with thi
         "version":  "1"                     //can be any string
     }
 
-Create a file in your ~/Views folder:  `ViewImports.cshtml`
+Create a file in your ~/Views folder:  `_ViewImports.cshtml`
 (This is an MVC 6 way of injecting services into all of your views)
-In `_ViewImports.cshtml` add an injected service:
+In `_ViewImports.cshtml` add an injected service and a reference to Smidge's tag helpers:
 
     @inject Smidge.SmidgeHelper Smidge
-
+    @addTagHelper "*, Smidge"
+    
 _NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
 
 ##Usage
-
-### View based declarations:
-
-Require multiple files
-
-    @{ Smidge.RequiresJs("~/Js/test1.js", "Js/test2.js"); }
-
-Require a folder - optionally you can also include filters (i.e. this includes all .js files)
-
-    @{ Smidge.RequiresJs("Js/Stuff*js"); }
-
-Chaining:
-
-    @{ Smidge
-        //external resources work too!
-        .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-        .RequiresJs("Js/Folder*js")
-        .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
-    }
 
 ### Pre-defined bundles
 
@@ -77,14 +59,65 @@ Define your bundles during startup:
 
 _There are quite a few overloads for creating bundles._
 
+### View based declarations:
+
+#### Inline individual declarations:
+
+If you don't want to create named bundles and just want to declare dependencies individually, you can do that too and Smidge will generate the URLs for these dependencies (they are essentially runtime bundles)
+
+Require multiple files
+
+    @{ Smidge.RequiresJs("~/Js/test1.js", "Js/test2.js"); }
+
+Require a folder - optionally you can also include filters (i.e. this includes all .js files)
+
+    @{ Smidge.RequiresJs("Js/Stuff*js"); }
+
+Chaining:
+
+    @{ Smidge
+        //external resources work too!
+        .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
+        .RequiresJs("Js/Folder*js")
+        .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
+    }
+    
+#### Inline bundles:
+
+You can create/declare bundles inline in your views too using this syntax:
+
+JS Bundle:
+
+    @{ SmidgeHelper
+            .CreateJsBundle("my-awesome-js-bundle")
+            .RequiresJs("~/Js/test1.js", "Js/test2.js")
+            .RequiresJs("Js/Folder*js");
+    }
+    
+CSS Bundle:
+
+    @{ SmidgeHelper
+            .CreateCssBundle("my-cool-css-bundle")
+            .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css");
+    }
+
 ### Rendering
 
-Examples of how you output the `<link>` and `<script>` html tags for you assets (rendering is done async):
+The easiest way to render bundles is simply by the bundle name:
+
+    <script src="my-awesome-js-bundle" type="text/javascript"></script>
+    <link rel="stylesheet" href="my-cool-css-bundle"/>
+    
+This uses Smidge's custom tag helpers to check if the source is a bundle reference and will output the correct bundle URL.
+
+Alternatively, if you want to use Razor to output output the `<link>` and `<script>` html tags for you assets, you can use the following example syntax (rendering is done async):
 
     @await Smidge.CssHereAsync()
     @await Smidge.JsHereAsync()
     @await Smidge.JsHereAsync("test-bundle-1")
     @await Smidge.JsHereAsync("test-bundle-2")
+    
+If you are using inline non-bundle named declarations you will need to use the Razor methods above: `Smidge.CssHereAsync()` and `Smidge.JsHereAsync()`
 
 ### Custom pre-processing pipeline
 
