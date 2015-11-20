@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Dnx.Runtime;
 using Smidge.CompositeFiles;
 using Smidge.Models;
@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge.Controllers
 {

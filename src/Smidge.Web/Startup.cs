@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;

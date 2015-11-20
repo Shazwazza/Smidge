@@ -1,4 +1,4 @@
-﻿using Microsoft.Framework.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
 using System.Linq;

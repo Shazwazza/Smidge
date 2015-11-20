@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Smidge.FileProcessors;
 using Smidge.Models;
 using Smidge.Options;

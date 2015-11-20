@@ -1,6 +1,7 @@
 ﻿using System;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge
 {

@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0-beta7",
+    "version": "1.0.0-rc1",
     "authors": [ "Shannon Deminick" ],
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
     "summary": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
@@ -10,15 +10,14 @@
     "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
 
     "dependencies": {
-        "Microsoft.Framework.DependencyInjection": "1.0.0-rc1-final",
+        "Microsoft.Extensions.DependencyInjection": "1.0.0-rc1-final", 
         "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
-        "Microsoft.Framework.Configuration": "1.0.0-rc1-final",
-        "Microsoft.Framework.Configuration.Json": "1.0.0-rc1-final",
+        "Microsoft.Extensions.Configuration": "1.0.0-rc1-final",
+        "Microsoft.Extensions.Configuration.Json": "1.0.0-rc1-final", 
         "Microsoft.Dnx.Runtime": "1.0.0-rc1-final",
-        "System.IO.Compression": "4.0.0-*",
-        "Microsoft.AspNet.NodeServices": "1.0.0-alpha5"
+        "System.IO.Compression": "4.0.0-*"  
     },
-
+     
     "frameworks": {
         "dnxcore50": { },
         "dnx451": { }

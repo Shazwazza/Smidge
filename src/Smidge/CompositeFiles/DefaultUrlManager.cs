@@ -4,7 +4,7 @@ using Smidge.Models;
 using Microsoft.AspNet.Http;
 using System.Text;
 using System.Linq;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Smidge.Options;
 
 namespace Smidge.CompositeFiles

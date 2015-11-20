@@ -1,14 +1,14 @@
 ﻿using System;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Smidge.CompositeFiles;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Hosting;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNet.NodeServices;
+//using Microsoft.AspNet.NodeServices;
 using Smidge.Models;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Smidge.Options;
 using Smidge.FileProcessors;
 
@@ -20,7 +20,7 @@ namespace Smidge
     {
         public static IServiceCollection AddSmidge(this IServiceCollection services)
         {
-            services.AddNodeServices(NodeHostingModel.Http);
+            //services.AddNodeServices(NodeHostingModel.Http);
 
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
             services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();
@@ -37,7 +37,7 @@ namespace Smidge
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMin>();
             services.AddSingleton<IPreProcessor, CssMinifier>();
-            services.AddSingleton<IPreProcessor, NodeMinifier>();
+            //services.AddSingleton<IPreProcessor, NodeMinifier>();
             services.AddScoped<IPreProcessor, CssImportProcessor>();
             services.AddScoped<IPreProcessor, CssUrlProcessor>();
 

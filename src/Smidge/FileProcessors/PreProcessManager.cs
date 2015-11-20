@@ -4,9 +4,9 @@ using Smidge.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Smidge.FileProcessors;
 
 namespace Smidge

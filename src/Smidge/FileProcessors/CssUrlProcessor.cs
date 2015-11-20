@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;

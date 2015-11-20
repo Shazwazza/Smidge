@@ -8,9 +8,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Framework.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Smidge.FileProcessors;
 
 namespace Smidge

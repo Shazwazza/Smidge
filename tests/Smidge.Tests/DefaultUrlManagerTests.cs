@@ -6,7 +6,7 @@ using Moq;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Linq;
-using Microsoft.Framework.OptionsModel;
+using Microsoft.Extensions.OptionsModel;
 using Smidge.Options;
 
 namespace Smidge.Tests

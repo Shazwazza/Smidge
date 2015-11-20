@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNet.Mvc;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace Smidge.Controllers
             {
                 lastWriteTime = System.IO.File.GetLastWriteTime(filesetPath);
                 //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files
-                result = new PhysicalFileProviderResult(filesetPath, mime);
+                result = new PhysicalFileResult(filesetPath, mime);
                 return true;
             }
 

@@ -4,7 +4,7 @@ using Microsoft.AspNet.Http;
 using Moq;
 using System;
 using Xunit;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge.Tests
 {
