@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/y2c08r2wsqsliq7o?svg=true)](https://ci.appveyor.com/project/Shandem/smidge)
+
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
