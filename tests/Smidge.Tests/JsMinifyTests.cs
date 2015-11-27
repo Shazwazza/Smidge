@@ -92,7 +92,8 @@ jQuery(this).append('<div>\
 
             //Assert
 
-            Assert.Equal("\nfunction Test(){jQuery(this).append('<div>\\\n\n  <div>\\\n\n   <a href=\"http://google.com\" /></a>\\\n\n  </div>\\\n\n </div>');}", output);
+            Assert.Equal("function Test(){jQuery(this).append('<div>\\  <div>\\   <a href=\"http://google.com\" /></a>\\  </div>\\ </div>');}", 
+                output.Replace("\n", string.Empty));
 
         }
 
