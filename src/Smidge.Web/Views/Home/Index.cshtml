@@ -18,9 +18,10 @@
             });
         SmidgeHelper
             .CreateCssBundle("inline-css-bundle")
-            .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");
+            .RequiresCss("Css/test1.css", "Css/test2.css");
 
         SmidgeHelper.RequiresJs("Js/Folder*js");
+        SmidgeHelper.RequiresCss("Css/Folder*css");
     }
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" type="text/javascript"></script>
@@ -32,9 +33,9 @@
 <body>
 
     @Html.Partial("TopBar")
-    @Html.Partial("LoadedDependencies")
+    @Html.Partial("LoadedDependencies", false)
 
-    @await SmidgeHelper.JsHereAsync(debug:true)
+    @await SmidgeHelper.JsHereAsync(debug:false)
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 

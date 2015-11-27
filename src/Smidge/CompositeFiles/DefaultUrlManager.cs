@@ -4,7 +4,10 @@ using Smidge.Models;
 using Microsoft.AspNet.Http;
 using System.Text;
 using System.Linq;
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 
 namespace Smidge.CompositeFiles
@@ -13,25 +16,28 @@ namespace Smidge.CompositeFiles
     {
         private ISmidgeConfig _config;
         private IHasher _hasher;
+        private readonly IUrlHelper _urlHelper;
         private UrlManagerOptions _options;
 
-        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher, IUrlHelper urlHelper)
         {
             _hasher = hasher;
+            _urlHelper = urlHelper;
             _options = options.Value.UrlOptions;
             _config = config;
         }
 
         public string GetUrl(string bundleName, string fileExtension)
         {
-            //TODO: Make this a safe name!
-            const string handler = "{0}/{1}{2}.v{3}";
-            return string.Format(
-                handler,
-                _options.BundleFilePath,
-                Uri.EscapeUriString(bundleName),
-                fileExtension,
-                _config.Version);
+            const string handler = "~/{0}/{1}{2}.v{3}";
+            return _urlHelper.Content(
+                string.Format(
+                    handler,
+                    _options.BundleFilePath,
+                    Uri.EscapeUriString(bundleName),
+                    fileExtension,
+                    _config.Version));
+
         }
 
         public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension)
@@ -136,13 +142,14 @@ namespace Smidge.CompositeFiles
         {
             //Create a delimited URL query string
 
-            const string handler = "{0}/{1}{2}.v{3}";
-            return string.Format(
-                handler,
-                _options.CompositeFilePath,
-                Uri.EscapeUriString(fileKey),
-                fileExtension,
-                _config.Version);
+            const string handler = "~/{0}/{1}{2}.v{3}";
+            return _urlHelper.Content(
+                string.Format(
+                    handler,
+                    _options.CompositeFilePath,
+                    Uri.EscapeUriString(fileKey),
+                    fileExtension,
+                    _config.Version));
         }
     }
 }

@@ -33,9 +33,9 @@
 <body>
     
     @Html.Partial("TopBar")
-    @Html.Partial("LoadedDependencies", false)
+    @Html.Partial("LoadedDependencies", true)
 
-    @await SmidgeHelper.JsHereAsync(debug:false)
+    @await SmidgeHelper.JsHereAsync(debug:true)
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 

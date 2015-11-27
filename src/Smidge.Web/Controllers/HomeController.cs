@@ -9,13 +9,16 @@ namespace Smidge.Web.Controllers
         // GET: /<controller>/
         public IActionResult Index()
         {			
-            //return "Hello";
             return View();
         }
 
         public IActionResult SubFolder()
+        {           
+            return View();
+        }
+
+        public IActionResult AllDebug()
         {
-            //return "Hello";
             return View();
         }
     }

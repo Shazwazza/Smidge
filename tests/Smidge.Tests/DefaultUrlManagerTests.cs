@@ -6,6 +6,7 @@ using Moq;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Linq;
+using Microsoft.AspNet.Mvc;
 using Microsoft.Extensions.OptionsModel;
 using Smidge.Options;
 
@@ -21,7 +22,8 @@ namespace Smidge.Tests
             var manager = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
-                Mock.Of<IHasher>());
+                Mock.Of<IHasher>(),
+                Mock.Of<IUrlHelper>());
 
             var result = manager.ParsePath(path);
 
@@ -33,67 +35,79 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Bundle_Url()
         {
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
-                hasher.Object);
+                hasher.Object,
+                urlHelper.Object);
 
             var url = creator.GetUrl("my-bundle", ".js");
 
-            Assert.Equal("sg/my-bundle.js.v1", url);
+            Assert.Equal("~/sg/my-bundle.js.v1", url);
         }
 
         [Fact]
         public void Make_Composite_Url()
         {
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
-                hasher.Object);
+                hasher.Object,
+                urlHelper.Object);
 
             var url = creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js");
 
             Assert.Equal(1, url.Count());
-            Assert.Equal("sg/Test1.Test2.js.v1", url.First().Url);
+            Assert.Equal("~/sg/Test1.Test2.js.v1", url.First().Url);
             Assert.Equal("test1.test2", url.First().Key);
         }
 
         [Fact]
         public void Make_Composite_Url_Splits()
         {
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 14 + 10 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
-                hasher.Object);
+                hasher.Object,
+                urlHelper.Object);
 
             var url = creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js");
 
             Assert.Equal(2, url.Count());
-            Assert.Equal("sg/Test1.js.v1", url.ElementAt(0).Url);
+            Assert.Equal("~/sg/Test1.js.v1", url.ElementAt(0).Url);
             Assert.Equal("test1", url.ElementAt(0).Key);
-            Assert.Equal("sg/Test2.js.v1", url.ElementAt(1).Url);
+            Assert.Equal("~/sg/Test2.js.v1", url.ElementAt(1).Url);
             Assert.Equal("test2", url.ElementAt(1).Key);
         }
 
         [Fact]
         public void Throws_When_Single_Dependency_Too_Long()
         {
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 10 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
-                hasher.Object);
+                hasher.Object,
+                urlHelper.Object);
 
             Assert.Throws<InvalidOperationException>(() => creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js"));
 

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge
@@ -17,13 +19,15 @@ namespace Smidge
     {
 		private IApplicationEnvironment _appEnv;
 		private ISmidgeConfig _config;
+        private readonly IUrlHelper _urlHelper;
         private IHostingEnvironment _hostingEnv;
         private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
 
-        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config)
+        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IUrlHelper urlHelper)
         {
             _appEnv = appEnv;
             _config = config;
+            _urlHelper = urlHelper;
             _hostingEnv = hostingEnv;
         }
 
@@ -48,22 +52,17 @@ namespace Smidge
         {
             if (path.StartsWith("~/"))
             {
-                path = path.TrimStart('~', '/');
+                return _urlHelper.Content(path);
             }
 
             //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
             // logic to work properly
             if (path.StartsWith("//"))
             {
-                path = Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Constants.SchemeDelimiter));
+                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Constants.SchemeDelimiter));
             }
-
-            if (path.StartsWith("/"))
-            {
-                path = path.TrimStart('/');
-            }
-
-            return path;
+            
+            return _urlHelper.Content(path);
         }
 
         /// <summary>
@@ -111,7 +110,8 @@ namespace Smidge
                     : Directory.GetFiles(folder, string.Format("*.{0}", extensionFilter));
                 return files.Select(x => ReverseMapPath(x));
             }
-            return Enumerable.Empty<string>();
+
+            throw new DirectoryNotFoundException($"The directory specified {folder} does not exist");
         }
 
         /// <summary>
@@ -135,8 +135,10 @@ namespace Smidge
         /// <returns></returns>
         public string MapPath(string contentFile)
         {
+            var content = _urlHelper.Content(contentFile);
+
             return Path.Combine(WebRoot.TrimEnd('\\'),
-                contentFile
+                content
                     .Replace("~/", "")
                     .Replace('/', Path.DirectorySeparatorChar)
                     .TrimStart(Path.DirectorySeparatorChar));

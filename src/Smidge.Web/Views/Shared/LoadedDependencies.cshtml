@@ -1,10 +1,11 @@
-﻿@using Smidge.Models;
+﻿@model bool
+@using Smidge.Models;
 @inject Smidge.SmidgeHelper SmidgeHelper
 @inject Smidge.BundleManager BundleManager
 
 <h5>Generated non-named-bundled JS Urls</h5>
 <ul>
-    @foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(debug: true))
+    @foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(debug: Model))
     {
         <li>@item</li>
     }
@@ -12,7 +13,7 @@
 
 <h5>Generated non-named-bundled CSS Urls</h5>
 <ul>
-    @foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync())
+    @foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync(debug: Model))
     {
         <li>@item</li>
     }
@@ -22,7 +23,7 @@
 <ul>
     @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Js))
     {
-        foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(bundleName))
+        foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(bundleName, debug: Model))
         {
             <li>@item</li>
         }
@@ -33,7 +34,7 @@
 <ul>
     @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Css))
     {
-        foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync(bundleName))
+        foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync(bundleName, debug: Model))
         {
             <li>@item</li>
         }
