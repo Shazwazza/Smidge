@@ -5,6 +5,8 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
 $TestsFolder = Join-Path -Path $SolutionRoot -ChildPath "tests/Smidge.Tests";
 
+" Tests folder = $TestsFolder"
+
 Set-Location -Path $TestsFolder
 
 $DNX = "dnx"
@@ -20,3 +22,5 @@ if (-not $?)
 {
 	throw "Tests failed"
 }
+
+Set-Location -Path (Get-Item $MyInvocation.MyCommand.Path).Directory
