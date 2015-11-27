@@ -5,22 +5,28 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
 $TestsFolder = Join-Path -Path $SolutionRoot -ChildPath "tests/Smidge.Tests";
 
-" Tests folder = $TestsFolder"
-
-Set-Location -Path $TestsFolder
-
+$DNU = "dnu"
 $DNX = "dnx"
 $DNVM = "dnvm"
 
 # use the correct version
 & $DNVM use 1.0.0-rc1-final
 
-# run them
-& $DNX test
-
+& $DNU restore "$TestsFolder"
 if (-not $?)
 {
-	throw "Tests failed"
+	throw "The DNU restore process returned an error code."
 }
 
-Set-Location -Path (Get-Item $MyInvocation.MyCommand.Path).Directory
+& $DNU build "$TestsFolder"
+if (-not $?)
+{
+	throw "The DNU build process returned an error code."
+}
+
+# run them
+& $DNX -p "$TestsFolder" test
+if (-not $?)
+{
+	throw "The DNX test process returned an error code."
+}

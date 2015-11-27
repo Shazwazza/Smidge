@@ -46,7 +46,7 @@ $DateYear = (Get-Date).year
 & $DNU restore "$ProjectJsonPath"
 if (-not $?)
 {
-	throw "The DNU build process returned an error code."
+	throw "The DNU restore process returned an error code."
 }
 
 & $DNU build "$ProjectJsonPath"
