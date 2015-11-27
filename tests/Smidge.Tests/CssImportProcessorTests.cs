@@ -38,7 +38,7 @@ div {display: block;}";
 
             Assert.Equal(@"@import url('http://mysite/css/color.css');
 body { color: black; }
-div {display: block;}".Replace(Environment.NewLine, string.Empty), output.Replace(Environment.NewLine, string.Empty));
+div {display: block;}".Replace("\r\n", string.Empty).Replace("\n", string.Empty), output.Replace("\r\n", string.Empty).Replace("\n", string.Empty));
 
             Assert.Equal(4, importPaths.Count());
             Assert.Equal("/css/typography.css", importPaths.ElementAt(0));
