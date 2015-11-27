@@ -1,0 +1,45 @@
+﻿@using Smidge.Models;
+@inject Smidge.SmidgeHelper SmidgeHelper
+@inject Smidge.BundleManager BundleManager
+
+<h5>Generated non-named-bundled JS Urls</h5>
+<ul>
+    @foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(debug: true))
+    {
+        <li>@item</li>
+    }
+</ul>
+
+<h5>Generated non-named-bundled CSS Urls</h5>
+<ul>
+    @foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync())
+    {
+        <li>@item</li>
+    }
+</ul>
+
+<h5>Generated named-bundled JS Urls</h5>
+<ul>
+    @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Js))
+    {
+        foreach (var item in await SmidgeHelper.GenerateJsUrlsAsync(bundleName))
+        {
+            <li>@item</li>
+        }
+    }
+</ul>
+
+<h5>Generated named-bundled CSS Urls</h5>
+<ul>
+    @foreach (var bundleName in BundleManager.GetBundleNames(WebFileType.Css))
+    {
+        foreach (var item in await SmidgeHelper.GenerateCssUrlsAsync(bundleName))
+        {
+            <li>@item</li>
+        }
+    }
+</ul>
+
+<div id="jsOutput">
+    <span>JS loading debug output:</span>
+</div>

@@ -12,5 +12,11 @@ namespace Smidge.Web.Controllers
             //return "Hello";
             return View();
         }
+
+        public IActionResult SubFolder()
+        {
+            //return "Hello";
+            return View();
+        }
     }
 }
