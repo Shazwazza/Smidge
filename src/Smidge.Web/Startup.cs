@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.Builder;
+﻿using System.Linq;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Options;
@@ -22,7 +23,12 @@ namespace Smidge.Web
                 {
                     bundles.Create("test-bundle-1",
                         new JavaScriptFile("~/Js/Bundle1/a1.js"),
-                        new JavaScriptFile("~/Js/Bundle1/a2.js"));
+                        new JavaScriptFile("~/Js/Bundle1/a2.js"))
+                        .OnOrdering(collection =>
+                        {
+                            //return some custom ordering
+                            return collection.OrderBy(x => x.FilePath);
+                        });
 
                     bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
 

@@ -1,6 +1,5 @@
 ﻿using Smidge.FileProcessors;
 using Smidge.Models;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +8,11 @@ namespace Smidge.Options
 {
     public class Bundles
     {
-
-        private readonly ConcurrentDictionary<string, List<IWebFile>> _bundles = new ConcurrentDictionary<string, List<IWebFile>>();
+        private readonly ConcurrentDictionary<string, BundleFileCollection> _bundles = new ConcurrentDictionary<string, BundleFileCollection>();
 
         public IEnumerable<string> GetBundleNames(WebFileType type)
         {
-            return _bundles.Where(x => x.Value.Any(f => f.DependencyType == type)).Select(x => x.Key);
+            return _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Key);
         }
 
         /// <summary>
@@ -25,26 +23,30 @@ namespace Smidge.Options
         /// </remarks>
         public PreProcessPipelineFactory PipelineFactory { get; set; }
 
-        public void Create(string bundleName, params JavaScriptFile[] jsFiles)
+        public BundleFileCollection Create(string bundleName, params JavaScriptFile[] jsFiles)
         {
-            _bundles.TryAdd(bundleName, new List<IWebFile>(jsFiles));
+            var collection = new BundleFileCollection(new List<IWebFile>(jsFiles));
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public void Create(string bundleName, params CssFile[] cssFiles)
+        public BundleFileCollection Create(string bundleName, params CssFile[] cssFiles)
         {
-            _bundles.TryAdd(bundleName, new List<IWebFile>(cssFiles));
+            var collection = new BundleFileCollection(new List<IWebFile>(cssFiles));
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public void Create(string bundleName, WebFileType type, params string[] paths)
+        public BundleFileCollection Create(string bundleName, WebFileType type, params string[] paths)
         {
-            _bundles.TryAdd(
-                bundleName,
-                type == WebFileType.Css
-                ? paths.Select(x => (IWebFile)new CssFile(x)).ToList()
-                : paths.Select(x => (IWebFile)new JavaScriptFile(x)).ToList());
+            var collection = type == WebFileType.Css
+                ? new BundleFileCollection(paths.Select(x => (IWebFile) new CssFile(x)).ToList())
+                : new BundleFileCollection(paths.Select(x => (IWebFile) new JavaScriptFile(x)).ToList());
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public void Create(string bundleName, PreProcessPipeline pipeline, params JavaScriptFile[] jsFiles)
+        public BundleFileCollection Create(string bundleName, PreProcessPipeline pipeline, params JavaScriptFile[] jsFiles)
         {
             foreach (var file in jsFiles)
             {
@@ -53,10 +55,12 @@ namespace Smidge.Options
                     file.Pipeline = pipeline;
                 }
             }
-            _bundles.TryAdd(bundleName, new List<IWebFile>(jsFiles));
+            var collection = new BundleFileCollection(new List<IWebFile>(jsFiles));
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public void Create(string bundleName, PreProcessPipeline pipeline, params CssFile[] cssFiles)
+        public BundleFileCollection Create(string bundleName, PreProcessPipeline pipeline, params CssFile[] cssFiles)
         {
             foreach (var file in cssFiles)
             {
@@ -65,21 +69,26 @@ namespace Smidge.Options
                     file.Pipeline = pipeline;
                 }
             }
-            _bundles.TryAdd(bundleName, new List<IWebFile>(cssFiles));
+            var collection = new BundleFileCollection(new List<IWebFile>(cssFiles));
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public void Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, params string[] paths)
+        public BundleFileCollection Create(string bundleName, PreProcessPipeline pipeline, WebFileType type, params string[] paths)
         {
-            _bundles.TryAdd(
-                bundleName,
-                type == WebFileType.Css
-                ? paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList()
-                : paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }).ToList());
+            var collection = type == WebFileType.Css
+                ? new BundleFileCollection(paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList())
+                : new BundleFileCollection(paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }).ToList());
+            _bundles.TryAdd(bundleName, collection);
+            return collection;
         }
 
-        public bool TryGetValue(string key, out List<IWebFile> value)
+        public bool TryGetValue(string key, out BundleFileCollection value)
         {
-            return _bundles.TryGetValue(key, out value);
+            BundleFileCollection collection;
+            var val = _bundles.TryGetValue(key, out collection);
+            value = val ? collection : null;
+            return val;
         }
     }
 }

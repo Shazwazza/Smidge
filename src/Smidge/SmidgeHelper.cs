@@ -127,7 +127,7 @@ namespace Smidge
         }
 
         /// <summary>
-        /// Generates the list of URLs to render based on what is registered
+        /// Generates the list of URLs to render based on what is dynamically registered
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
@@ -140,11 +140,27 @@ namespace Smidge
             return await GenerateUrlsAsync(bundleName, ".js", debug);
         }
 
+        /// <summary>
+        /// Generates the list of URLs to render based on what is dynamically registered
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
+        {
+            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline, debug);
+        }
+
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
         {
             return await GenerateUrlsAsync(bundleName, ".css", debug);
         }
 
+        /// <summary>
+        /// Generates the URLs a given bundle
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <param name="fileExt"></param>
+        /// <param name="debug"></param>
+        /// <returns></returns>
         private async Task<IEnumerable<string>> GenerateUrlsAsync(string bundleName, string fileExt, bool debug)
         {
             var result = new List<string>();
@@ -186,16 +202,15 @@ namespace Smidge
                 return result;
             }
         }
-
+        
         /// <summary>
-        /// Generates the list of URLs to render based on what is registered
+        /// Generates teh URLs for a given file set
         /// </summary>
+        /// <param name="files"></param>
+        /// <param name="fileType"></param>
+        /// <param name="pipeline"></param>
+        /// <param name="debug"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
-        {
-            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline, debug);
-        }
-
         private async Task<IEnumerable<string>> GenerateUrlsAsync(
             IEnumerable<IWebFile> files, 
             WebFileType fileType,            
@@ -204,22 +219,21 @@ namespace Smidge
         {
             var result = new List<string>();
 
+            var orderedSet = new OrderedFileSet(files,
+                _fileSystemHelper, _request,
+                pipeline ?? _processorFactory.GetDefault(fileType));
+            var orderedFiles = orderedSet.GetOrderedFileSet();
+
             if (debug)
             {
-                return GenerateUrlsDebug(files);
+                return orderedFiles.Select(x => x.FilePath);
             }
             else
             {
-
-                if (pipeline == null)
-                {
-                    pipeline = _processorFactory.GetDefault(fileType);
-                }
-
                 var compression = _request.GetClientCompression();
 
                 //Get the file collection used to create the composite URLs and the external requests
-                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(files);
+                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
 
                 foreach (var batch in fileBatches)
                 {
@@ -242,83 +256,19 @@ namespace Smidge
                             if (!File.Exists(compositeFilePath))
                             {
                                 //need to process/minify these files - need to use their original paths of course
-                                await ProcessWebFilesAsync(batch.Select(x => x.Original), pipeline);
+                                foreach (var file in batch.Select(x => x.Original))
+                                {
+                                    await _fileManager.ProcessAndCacheFileAsync(file);
+                                }
                             }
-
                             result.Add(u.Url);
                         }
                     }
-                    
                 }
-
-                
             }
 
             return result;
 
-        }
-
-
-        /// <summary>
-        /// Minifies (and performs any other operation defined in the pipeline) for each file
-        /// </summary>
-        /// <param name="files"></param>
-        /// <param name="pipeline"></param>
-        /// <returns></returns>
-        private async Task ProcessWebFilesAsync(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
-        {   
-            //we need to do the minify on the original files
-            foreach (var file in files)
-            {   
-                //if the pipeline on the file is null, assign the default one passed in
-                if (file.Pipeline == null)
-                {
-                    file.Pipeline = pipeline;
-                }
-
-                //We need to check if this path is a folder, then iterate the files
-                if (_fileSystemHelper.IsFolder(file.FilePath))
-                {
-                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
-                    foreach (var f in filePaths)
-                    {
-                        await _fileManager.ProcessAndCacheFileAsync(new WebFile
-                        {
-                            FilePath = _fileSystemHelper.NormalizeWebPath(f, _request),
-                            DependencyType = file.DependencyType,
-                            Pipeline = file.Pipeline
-                        });
-                    }
-                }
-                else
-                {
-                    await _fileManager.ProcessAndCacheFileAsync(file);
-                }
-            }
-        }
-
-        private IEnumerable<string> GenerateUrlsDebug(IEnumerable<IWebFile> files)
-        {
-            var result = new List<string>();
-            foreach (var file in files)
-            {
-                file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, _request);
-
-                //We need to check if this path is a folder, then iterate the files
-                if (_fileSystemHelper.IsFolder(file.FilePath))
-                {
-                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
-                    foreach (var f in filePaths)
-                    {
-                        result.Add(_fileSystemHelper.NormalizeWebPath(f, _request));
-                    }
-                }
-                else
-                {
-                    result.Add(file.FilePath);
-                }
-            }
-            return result;
         }
 
         public ISmidgeRequire RequiresJs(JavaScriptFile file)

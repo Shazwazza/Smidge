@@ -9,7 +9,11 @@ namespace Smidge.Models
         string FilePath { get; set; }
         WebFileType DependencyType { get; }
 
-        //int Priority { get; set; }
+        /// <summary>
+        /// The order that this dependency should be rendered
+        /// </summary>
+        int Order { get; set; }
+
         //int Group { get; set; }
         //string PathNameAlias { get; set; }
         //string ForceProvider { get; set; }

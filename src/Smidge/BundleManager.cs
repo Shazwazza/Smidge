@@ -1,29 +1,26 @@
 ﻿using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
-using Smidge.FileProcessors;
 using Smidge.Models;
 using Smidge.Options;
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using Smidge.FileProcessors;
 
 namespace Smidge
 {
    
     public sealed class BundleManager
     {
-        public BundleManager(FileSystemHelper fileSystemHelper, PreProcessPipelineFactory processorFactory, IOptions<Bundles> bundles)
+        public BundleManager(FileSystemHelper fileSystemHelper, IOptions<Bundles> bundles, PreProcessPipelineFactory processorFactory)
         {
-            _processorFactory = processorFactory;
             _bundles = bundles.Value;
-            _fileSystemHelper = fileSystemHelper;                    
+            _fileSystemHelper = fileSystemHelper;
+            _processorFactory = processorFactory;
         }
 
-        private FileSystemHelper _fileSystemHelper;
-        private Bundles _bundles;
-        private PreProcessPipelineFactory _processorFactory;
+        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly Bundles _bundles;
+        private readonly PreProcessPipelineFactory _processorFactory;
 
         public IEnumerable<string> GetBundleNames(WebFileType type)
         {
@@ -32,8 +29,8 @@ namespace Smidge
 
         public bool Exists(string bundleName)
         {
-            List<IWebFile> result;
-            return _bundles.TryGetValue(bundleName, out result);
+            BundleFileCollection collection;
+            return _bundles.TryGetValue(bundleName, out collection);
         }
 
         /// <summary>
@@ -43,10 +40,10 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, CssFile file)
         {
-            List<IWebFile> files;
-            if (_bundles.TryGetValue(bundleName, out files))
+            BundleFileCollection collection;
+            if (_bundles.TryGetValue(bundleName, out collection))
             {
-                files.Add(file);
+                collection.Files.Add(file);
             }
             else
             {
@@ -61,10 +58,10 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, JavaScriptFile file)
         {
-            List<IWebFile> files;
-            if (_bundles.TryGetValue(bundleName, out files))
+            BundleFileCollection collection;
+            if (_bundles.TryGetValue(bundleName, out collection))
             {
-                files.Add(file);
+                collection.Files.Add(file);
             }
             else
             {
@@ -72,43 +69,29 @@ namespace Smidge
             }
         }
 
+        /// <summary>
+        /// Returns the ordered collection of files for the bundle
+        /// </summary>
+        /// <param name="bundleName"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public IEnumerable<IWebFile> GetFiles(string bundleName, HttpRequest request)
         {
-            List<IWebFile> files;
-            if (_bundles.TryGetValue(bundleName, out files))
-            {
-                var fileList = new List<IWebFile>();
-                foreach (var file in files)
-                {
-                    if (file.Pipeline == null)
-                    {
-                        file.Pipeline = _processorFactory.GetDefault(file.DependencyType);
-                    }
+            BundleFileCollection collection;
+            if (!_bundles.TryGetValue(bundleName, out collection)) return null;
 
-                    file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, request);
+            //the file type in the bundle will always be the same
+            var first = collection.Files.FirstOrDefault();
+            if (first == null) return Enumerable.Empty<IWebFile>();
 
-                    //We need to check if this path is a folder, then iterate the files
-                    if (_fileSystemHelper.IsFolder(file.FilePath))
-                    {
-                        var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
-                        foreach (var f in filePaths)
-                        {
-                            fileList.Add(new WebFile
-                            {
-                                FilePath = _fileSystemHelper.NormalizeWebPath(f, request),
-                                DependencyType = file.DependencyType,
-                                Pipeline = file.Pipeline
-                            });
-                        }
-                    }
-                    else
-                    {
-                        fileList.Add(file);
-                    }
-                }
-                return fileList;
-            }
-            return null;
+            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, request,
+                _processorFactory.GetDefault(first.DependencyType));
+            var ordered = orderedSet.GetOrderedFileSet();
+
+            //call the registered callback if any is set
+            return collection.OrderingCallback == null ? ordered : collection.OrderingCallback(ordered);
         }
+
+        
     }
 }
