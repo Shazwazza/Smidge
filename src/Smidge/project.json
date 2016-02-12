@@ -1,10 +1,10 @@
 ﻿{
-    "version": "1.0.0-rc2",
+    "version": "1.0.0-rc3",
     "authors": [ "Shannon Deminick" ],
     "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
     "summary": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
     "title": "Smidge",
-    "copyright": "Copyright © Shannon Deminick 2015",
+    "copyright": "Copyright © Shannon Deminick 2016",
     "projectUrl": "https://github.com/Shazwazza/Smidge/",
     "licenseUrl": "http://opensource.org/licenses/MIT",
     "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
