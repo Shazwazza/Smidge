@@ -69,8 +69,8 @@ There's a couple of methods you can use retrieve the URLs that Smidge will gener
 Task<IEnumerable<string>> SmidgeHelper.GenerateJsUrlsAsync()
 Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
 ```
-    
-Both of these methods return a list of strings and there are several overloads for each which allow you to generate the URLs for pre-defined bundles, or the URLs for runtime registered dependencies. Examples of this can be seen in the demo web site's Index.cshtml: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge.Web/Views/Home/Index.cshtml
+
+__[See Asset URLs](https://github.com/Shazwazza/Smidge/wiki/Asset-Urls) for information about retrieving the debug and non-debug asset urls for your bundles__    
 
 ##Work in progress
 
