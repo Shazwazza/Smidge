@@ -72,6 +72,10 @@ Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
 
 __[See Asset URLs](https://github.com/Shazwazza/Smidge/wiki/Asset-Urls) for information about retrieving the debug and non-debug asset urls for your bundles__    
 
+##Documentation
+
+__[All of the documentation live here](https://github.com/Shazwazza/Smidge/wiki)__
+
 ##Work in progress
 
 I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
