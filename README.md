@@ -38,59 +38,9 @@ services.AddSmidge()
     });
 ```
 
-_There are quite a few overloads for creating bundles._
+If you don't want to create named bundles and just want to declare dependencies individually inside your Views, you can do that too! You can create bundles (named or unnamed) during runtime ... no problem.
 
-### View based declarations:
-
-#### Inline individual declarations:
-
-If you don't want to create named bundles and just want to declare dependencies individually, you can do that too and Smidge will generate the URLs for these dependencies (they are essentially runtime bundles)
-
-Require multiple files
-
-```csharp
-@{ Smidge.RequiresJs("~/Js/test1.js", "~/Js/test2.js"); }
-```
-
-Require a folder - optionally you can also include filters (i.e. this includes all .js files)
-
-```csharp
-@{ Smidge.RequiresJs("~/Js/Stuff*js"); }
-```
-
-Chaining:
-
-```csharp
-@{ Smidge
-    //external resources work too!
-    .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-    .RequiresJs("~/Js/Folder*js")
-    .RequiresCss("~/Css/test1.css", "~/Css/test2.css", "~/Css/test3.css", "~/Css/test4.css");  
-}
-```
-    
-#### Inline bundles:
-
-You can create/declare bundles inline in your views too using this syntax:
-
-JS Bundle:
-
-```csharp
-@{ SmidgeHelper
-        .CreateJsBundle("my-awesome-js-bundle")
-        .RequiresJs("~/Js/test1.js", "~/Js/test2.js")
-        .RequiresJs("~/Js/Folder*js");
-}
-```
-    
-CSS Bundle:
-
-```csharp
-@{ SmidgeHelper
-        .CreateCssBundle("my-cool-css-bundle")
-        .RequiresCss("~/Css/test1.css", "~/Css/test2.css", "~/Css/test3.css");
-}
-```
+__[See Declarations](https://github.com/Shazwazza/Smidge/wiki/Declarations) for full declaration/usage details__
 
 ### Rendering
 
