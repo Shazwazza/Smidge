@@ -13,36 +13,7 @@ Nuget:
 
     Install-Package Smidge -Pre
 
-In Startup.ConfigureServices:
-
-    services.AddSmidge();
-    
-In Startup.Configure
-
-    app.UseSmidge();
-
-Add a config file to your app root (not wwwroot) called **smidge.json** with this content:
-
-```json
-{
-    "dataFolder": "App_Data/Smidge",
-    "version":  "1"
-}
-```
-
-* dataFolder: where the cache files are stored
-* version: can be any string, this is used for cache busting in URLs generated
-
-Create a file in your ~/Views folder:  `_ViewImports.cshtml`
-(This is an MVC 6 way of injecting services into all of your views)
-In `_ViewImports.cshtml` add an injected service and a reference to Smidge's tag helpers:
-
-```csharp
-@inject Smidge.SmidgeHelper Smidge
-@addTagHelper "*, Smidge"
-```
-
-_NOTE: There is a website example project in this source for a reference: https://github.com/Shazwazza/Smidge/tree/master/src/Smidge.Web_
+__[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
 ##Usage
 
