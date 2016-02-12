@@ -19,8 +19,7 @@
     },
 
     "frameworks": {
-        "dnxcore50": { },
-        "dnx451": { }
+        "dnxcore50": { }
     },
 
     "exclude": [

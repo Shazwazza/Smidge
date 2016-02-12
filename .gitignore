@@ -182,3 +182,4 @@ UpgradeLog*.htm
 # Microsoft Fakes
 FakesAssemblies/
 src/Smidge.Web/App_Data/Smidge/*
+.Smidge.boltdata/*
