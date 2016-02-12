@@ -12,6 +12,44 @@ namespace ClientDependency.UnitTests
     public class JsMinifyTest
     {
         [Fact]
+        public async void JsMinify_Escaped_Quotes_In_String_Literal()
+        {
+            var script = "var asdf=\"Some string\\\'s with \\\"quotes\\\" in them\"";
+
+            var minifier = new JsMin();
+
+            //Act
+
+            var output = await minifier.ProcessAsync(new FileProcessContext(script, Mock.Of<IWebFile>()));
+            
+            Assert.Equal("\nvar asdf=\"Some string\\\'s with \\\"quotes\\\" in them\"", output);
+        }
+
+        [Fact]
+        public async void JsMinify_Handles_Regex()
+        {
+            var script1 = @"b.prototype._normalizeURL=function(a){return/^https?:\/\//.test(a)||(a=""http://""+a),a}";
+            var script2 = @"var ex = +  /w$/.test(resizing),
+    ey = +/^ n /.test(resizing); ";
+            var script3 = @"return /["",\n]/.test(text)
+      ? ""\"""" + text.replace(/\"" / g, ""\""\"""") + ""\""""
+      : text; ";
+
+            var minifier = new JsMin();
+
+            //Act
+            
+            var output1 = await minifier.ProcessAsync(new FileProcessContext(script1, Mock.Of<IWebFile>()));
+            Assert.Equal("\n" + script1, output1);
+
+            var output2 = await minifier.ProcessAsync(new FileProcessContext(script2, Mock.Of<IWebFile>()));
+            Assert.Equal("\n" + @"var ex=+/w$/.test(resizing),ey=+/^ n /.test(resizing);", output2);
+
+            var output3 = await minifier.ProcessAsync(new FileProcessContext(script3, Mock.Of<IWebFile>()));
+            Assert.Equal("\n" + @"return /["",\n]/.test(text)?""\""""+text.replace(/\"" /g,""\""\"""")+""\"""":text;", output3);
+        }
+
+        [Fact]
         public async void JsMinify_Minify()
         {
             //Arrange
