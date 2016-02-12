@@ -51,39 +51,9 @@ The easiest way to render bundles is simply by the bundle name:
 <link rel="stylesheet" href="my-cool-css-bundle"/>
 ```
     
-This uses Smidge's custom tag helpers to check if the source is a bundle reference and will output the correct bundle URL.
+This uses Smidge's custom tag helpers to check if the source is a bundle reference and will output the correct bundle URL. You can combine this with environment variables for debug/non-debug modes. Alternatively, you can also use Razor to do the rendering.
 
-Alternatively, if you want to use Razor to output output the `<link>` and `<script>` html tags for you assets, you can use the following example syntax (rendering is done async):
-
-```csharp
-@await Smidge.CssHereAsync()
-@await Smidge.JsHereAsync()
-@await Smidge.JsHereAsync("test-bundle-1")
-@await Smidge.JsHereAsync("test-bundle-2")
-```
-    
-If you are using inline non-bundle named declarations you will need to use the Razor methods above: `Smidge.CssHereAsync()` and `Smidge.JsHereAsync()`
-
-#### Debugging
-
-By default Smidge will combine/compress/minify but while you are developing you probably don't want this to happen. Each of the above rendering methods has an optional boolean 'debug' parameter. If you set this to `true` then the combine/compress/minify is disabled.
-
-The methods `CssHereAsync`, `JsHereAsync`, `GenerateJsUrlsAsync` and `GenerateCssUrlsAsync` all have an optional boolean `debug` parameter. If you are using tag helpers to render your bundles you can simply include a `debug` attribute, for example:
-
-```html
-<script src="my-awesome-js-bundle" type="text/javascript" debug="true"></script>
-```
-
-You can combine this functionality with environment variables, for example:
-
-```html
-<environment names="Development">
-    <script src="my-awesome-js-bundle" type="text/javascript" debug="true"></script>
-</environment>
-<environment names="Staging,Production">
-    <script src="my-awesome-js-bundle" type="text/javascript"></script>
-</environment>
-```
+__[See Rendering](https://github.com/Shazwazza/Smidge/wiki/Rendering) for full rendering & debug mode details__
 
 ### Custom pre-processing pipeline
 
