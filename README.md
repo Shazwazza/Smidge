@@ -59,62 +59,7 @@ __[See Rendering](https://github.com/Shazwazza/Smidge/wiki/Rendering) for full r
 
 It's easy to customize how your files are processed. This can be done at a global/default level, at the bundle level or at an individual file level.
 
-Each processor is of type `Smidge.FileProcessors.IPreProcessor` which contains a single method: `Task<string> ProcessAsync(FileProcessContext fileProcessContext);`. The built-in processors are:
-
-* `CssImportProcessor`
-* `CssUrlProcessor`
-* `CssMinifier`
-* `JsMin`
-
-But you can create and add your own just by adding the instance to the IoC container, for example if you created a dotless processor::
-
-```csharp
-services.AddScoped<IPreProcessor, DotLessProcessor>();
-```
-
-##### Global custom pipeline
-
-If you want to override the default processing pipeline for all files, then you'd add your own implementation of `Smidge.FileProcessors.PreProcessPipelineFactory` to the IoC container after you've called `AddSmidge();`, like:
-
-```csharp
-services.AddSingleton<PreProcessPipelineFactory, MyCustomPreProcessPipelineFactory>();
-```
-
-and override the `GetDefault` method. You can see the default implementation here: https://github.com/Shazwazza/Smidge/blob/master/src/Smidge/FileProcessors/PreProcessPipelineFactory.cs
-
-##### Individual file custom pipeline 
-
-If you want to customize the pipeline for any given file it's really easy. Each registered file is of type `Smidge.Models.IFile` which contains a property called `Pipeline` of type `Smidge.FileProcessors.PreProcessPipeline`. So if you wanted to customize the pipeline for a single JS file, you could do something like:
-
-```csharp
-@inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
-
-@{ Smidge.RequiresJs(new JavaScriptFile("~/Js/test2.js")
-        {
-            Pipeline = PipelineFactory.GetPipeline(
-                //add as many processor types as you want
-                typeof(DotLess), typeof(JsMin))
-        })
-```
-
-##### Bundle level custom pipeline
-
-If you want to customize the pipeline for a particular bundle, you can just create your bundle with a custom pipeline like:
-
-```csharp
-services.AddSmidge()
-    .Configure<Bundles>(bundles =>
-    {                   
-        bundles.Create("test-bundle-3", 
-            bundles.PipelineFactory.GetPipeline(
-                //add as many processor types as you want
-                typeof(DotLess), typeof(JsMin)), 
-            WebFileType.Js, 
-            "~/Js/Bundle2");
-    });
-```
-        
-_There are quite a few overloads for creating bundles with custom pipelines._
+__[See Rendering](https://github.com/Shazwazza/Smidge/wiki/Custom-pre-processing) for information about customizing the pre-process pipeline__
 
 ### URLs
 
