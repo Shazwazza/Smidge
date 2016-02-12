@@ -78,13 +78,13 @@ If you don't want to create named bundles and just want to declare dependencies 
 Require multiple files
 
 ```csharp
-@{ Smidge.RequiresJs("~/Js/test1.js", "Js/test2.js"); }
+@{ Smidge.RequiresJs("~/Js/test1.js", "~/Js/test2.js"); }
 ```
 
 Require a folder - optionally you can also include filters (i.e. this includes all .js files)
 
 ```csharp
-@{ Smidge.RequiresJs("Js/Stuff*js"); }
+@{ Smidge.RequiresJs("~/Js/Stuff*js"); }
 ```
 
 Chaining:
@@ -93,8 +93,8 @@ Chaining:
 @{ Smidge
     //external resources work too!
     .RequiresJs("//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-    .RequiresJs("Js/Folder*js")
-    .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css", "Css/test4.css");  
+    .RequiresJs("~/Js/Folder*js")
+    .RequiresCss("~/Css/test1.css", "~/Css/test2.css", "~/Css/test3.css", "~/Css/test4.css");  
 }
 ```
     
@@ -107,8 +107,8 @@ JS Bundle:
 ```csharp
 @{ SmidgeHelper
         .CreateJsBundle("my-awesome-js-bundle")
-        .RequiresJs("~/Js/test1.js", "Js/test2.js")
-        .RequiresJs("Js/Folder*js");
+        .RequiresJs("~/Js/test1.js", "~/Js/test2.js")
+        .RequiresJs("~/Js/Folder*js");
 }
 ```
     
@@ -117,7 +117,7 @@ CSS Bundle:
 ```csharp
 @{ SmidgeHelper
         .CreateCssBundle("my-cool-css-bundle")
-        .RequiresCss("Css/test1.css", "Css/test2.css", "Css/test3.css");
+        .RequiresCss("~/Css/test1.css", "~/Css/test2.css", "~/Css/test3.css");
 }
 ```
 
@@ -242,7 +242,7 @@ I haven't had time to document all of the features and extensibility points just
 
 ## Copyright & Licence
 
-&copy; 2015 by Shannon Deminick
+&copy; 2016 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
 
