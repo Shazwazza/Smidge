@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 //using Microsoft.AspNet.NodeServices;
 using Smidge.Models;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.FileProcessors;
 
@@ -18,7 +19,7 @@ namespace Smidge
 {
     public static class SmidgeStartup
     {
-        public static IServiceCollection AddSmidge(this IServiceCollection services)
+        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null)
         {
             //services.AddNodeServices(NodeHostingModel.Http);
 
@@ -28,7 +29,14 @@ namespace Smidge
             services.AddSingleton<BundleManager>();
             services.AddSingleton<FileSystemHelper>();
             services.AddSingleton<PreProcessManager>();
-            services.AddSingleton<ISmidgeConfig, SmidgeConfig>();
+            services.AddSingleton<ISmidgeConfig>((p) =>
+            {
+                if(smidgeConfiguration == null)
+                {
+                    return new SmidgeConfig(p.GetRequiredService<IApplicationEnvironment>());
+                }
+                return new SmidgeConfig(smidgeConfiguration);
+            });
             services.AddScoped<SmidgeContext>();
             services.AddScoped<SmidgeHelper>();
             services.AddSingleton<IUrlManager, DefaultUrlManager>();
@@ -54,7 +62,7 @@ namespace Smidge
 
             //Create custom route
             app.UseMvc(routes =>
-            {               
+            {
                 routes.MapRoute(
                     "SmidgeComposite",
                     "sc/{file}",
@@ -66,7 +74,7 @@ namespace Smidge
                     new { controller = "Smidge", action = "Bundle" });
 
             });
-            
+
 
         }
     }
