@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Dnx.Runtime;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,26 +8,29 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge
 {
     public sealed class FileSystemHelper
     {
-		private IApplicationEnvironment _appEnv;
-		private ISmidgeConfig _config;
+        private IApplicationEnvironment _appEnv;
+        private ISmidgeConfig _config;
         private readonly IUrlHelper _urlHelper;
         private IHostingEnvironment _hostingEnv;
         private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private IFileProvider _fileProvider;
 
-        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IUrlHelper urlHelper)
+        public FileSystemHelper(IApplicationEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IUrlHelper urlHelper, IFileProvider fileProvider)
         {
             _appEnv = appEnv;
             _config = config;
             _urlHelper = urlHelper;
             _hostingEnv = hostingEnv;
+            _fileProvider = fileProvider;
+
         }
 
         public static bool IsExternalRequestPath(string path)
@@ -61,7 +63,7 @@ namespace Smidge
             {
                 return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Constants.SchemeDelimiter));
             }
-            
+
             return _urlHelper.Content(path);
         }
 
@@ -76,7 +78,7 @@ namespace Smidge
             {
                 return true;
             }
-                      
+
 
             //the last part doesn't contain a '.'
             var parts = path.Split('/');
@@ -101,17 +103,22 @@ namespace Smidge
             var parts = folderPath.Split('*');
             var folderPart = parts[0];
             var extensionFilter = parts.Length > 1 ? parts[1] : null;
+          
+            var folderContents = _fileProvider.GetDirectoryContents(folderPart);
 
-            var folder = MapPath(folderPart);
-            if (Directory.Exists(folder))
+            if (folderContents.Exists)
             {
-                var files = string.IsNullOrWhiteSpace(extensionFilter)
-                    ? Directory.GetFiles(folder)
-                    : Directory.GetFiles(folder, string.Format("*.{0}", extensionFilter));
-                return files.Select(x => ReverseMapPath(x));
-            }
 
-            throw new DirectoryNotFoundException($"The directory specified {folder} does not exist");
+                var files = string.IsNullOrWhiteSpace(extensionFilter)
+                    ? folderContents
+                    : folderContents.Where(
+                        (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.PhysicalPath) == extensionFilter); // Directory.GetFiles(folder, string.Format("*.{0}", extensionFilter));
+                return files.Select(x => ReverseMapPath(folderPart, x));
+            }
+            else
+            {
+                throw new DirectoryNotFoundException($"The directory specified {folderPart} does not exist");
+            }
         }
 
         /// <summary>
@@ -135,24 +142,28 @@ namespace Smidge
         /// <returns></returns>
         public string MapPath(string contentFile)
         {
-            var content = _urlHelper.Content(contentFile);
+            var path = _hostingEnv.MapPath(contentFile).TrimStart('\\');
+            var file = _fileProvider.GetFileInfo(path);
+            if (file.Exists)
+            {
+                return file.PhysicalPath;
+            }
 
-            return Path.Combine(WebRoot.TrimEnd('\\'),
-                content
-                    .Replace("~/", "")
-                    .Replace('/', Path.DirectorySeparatorChar)
-                    .TrimStart(Path.DirectorySeparatorChar));
+            throw new FileNotFoundException();
         }
 
         /// <summary>
         /// A rudimentary reverse map path function
         /// </summary>
-        /// <param name="fullFilePath"></param>
+        /// <param name="fileInfo"></param>
         /// <returns></returns>
-        public string ReverseMapPath(string fullFilePath)
+        public string ReverseMapPath(string subPath, IFileInfo fileInfo)
         {
-            var reversed = fullFilePath.Substring(WebRoot.Length)
-                .Replace("\\", "/");
+            var subPathDir = subPath.Replace("/", "\\");
+            var subPathIndex = fileInfo.PhysicalPath.IndexOf(subPathDir, StringComparison.OrdinalIgnoreCase);
+            var fileSubPath = fileInfo.PhysicalPath.Substring(subPathIndex);
+
+            var reversed = fileSubPath.Replace("\\", "/");
             if (!reversed.StartsWith("/"))
             {
                 reversed = "/" + reversed;
@@ -191,7 +202,7 @@ namespace Smidge
             finally
             {
                 locker.Release();
-            }           
+            }
         }
 
         /// <summary>
@@ -203,17 +214,6 @@ namespace Smidge
             get
             {
                 return Path.Combine(_appEnv.ApplicationBasePath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
-            }
-        }
-
-        /// <summary>
-        /// Returns the web root
-        /// </summary>
-        public string WebRoot
-        {
-            get
-            {
-                return _hostingEnv.WebRootPath;
             }
         }
 

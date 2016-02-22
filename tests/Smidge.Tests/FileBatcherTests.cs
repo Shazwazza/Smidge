@@ -7,6 +7,7 @@ using Smidge.CompositeFiles;
 using Smidge.Models;
 using System;
 using System.Linq;
+using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Xunit;
@@ -22,11 +23,14 @@ namespace Smidge.Tests
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
+
+            var fileProvider = new Mock<IFileProvider>();
+
             //var options = new SmidgeOptions();
             var appEnv = Mock.Of<IApplicationEnvironment>();
             var config = Mock.Of<ISmidgeConfig>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(appEnv, hostingEnv, config, urlHelper.Object);
+            var fileSystemHelper = new FileSystemHelper(appEnv, hostingEnv, config, urlHelper.Object, fileProvider.Object);
             //var helper = new SmidgeHelper(
             //    new SmidgeContext(Mock.Of<IUrlManager>()),
             //    config,

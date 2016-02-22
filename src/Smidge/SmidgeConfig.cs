@@ -1,8 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.AspNet.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Dnx.Runtime;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge
@@ -21,7 +17,6 @@ namespace Smidge
         {
 
             //  use smidge.json file if it exists for backwards compatibility.
-            var smidgeConfigFilePath = Path.Combine(env.ApplicationBasePath, "smidge.json");
             var cfg = new ConfigurationBuilder()
               .SetBasePath(env.ApplicationBasePath)
               //.AddEnvironmentVariables()                    

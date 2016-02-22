@@ -6,6 +6,8 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Hosting;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc;
 //using Microsoft.AspNet.NodeServices;
 using Smidge.Models;
 using Microsoft.Extensions.OptionsModel;
@@ -19,7 +21,9 @@ namespace Smidge
 {
     public static class SmidgeStartup
     {
-        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null)
+
+
+        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null, IFileProvider fileProvider = null)
         {
             //services.AddNodeServices(NodeHostingModel.Http);
 
@@ -27,11 +31,19 @@ namespace Smidge
             services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<BundleManager>();
-            services.AddSingleton<FileSystemHelper>();
+            services.AddSingleton<FileSystemHelper>((p) =>
+            {
+                var hosting = p.GetRequiredService<IHostingEnvironment>();
+                var provider = fileProvider ?? hosting.WebRootFileProvider;
+                return new FileSystemHelper(p.GetRequiredService<IApplicationEnvironment>(), hosting,
+                    p.GetRequiredService<ISmidgeConfig>(), p.GetRequiredService<IUrlHelper>(), provider);
+            });
+
+
             services.AddSingleton<PreProcessManager>();
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
-                if(smidgeConfiguration == null)
+                if (smidgeConfiguration == null)
                 {
                     return new SmidgeConfig(p.GetRequiredService<IApplicationEnvironment>());
                 }
