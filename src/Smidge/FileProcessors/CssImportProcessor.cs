@@ -50,7 +50,7 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystemHelper.MapPath(string.Format("~/{0}", path));
+                    var filePath = _fileSystemHelper.MapPath(path.StartsWith("/") ? path : string.Format("~/{0}", path));
                     if (System.IO.File.Exists(filePath))
                     {
                         var content = await _fileSystemHelper.ReadContentsAsync(filePath);
