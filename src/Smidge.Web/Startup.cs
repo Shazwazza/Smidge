@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Options;
 using Smidge.Models;
@@ -10,14 +11,25 @@ namespace Smidge.Web
 {
     public class Startup
     {
+        private IConfiguration _config;
+
+        public Startup(IHostingEnvironment env)
+        {
+            var builder = new ConfigurationBuilder()
+               .AddJsonFile("appsettings.json")
+               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+
+            _config = builder.Build();
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-          
+
             services.AddMvc();
 
-            services.AddSmidge()
+            services.AddSmidge(_config) // use services.AddSmidge() to test from smidge.json config.
                 .Configure<SmidgeOptions>(options =>
-                {                    
+                {
                 })
                 .Configure<Bundles>(bundles =>
                 {
@@ -33,7 +45,7 @@ namespace Smidge.Web
                     bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
 
                     bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMin)), WebFileType.Js, "~/Js/Bundle2");
-                    
+
                     bundles.Create("test-bundle-4",
                         new CssFile("~/Css/Bundle1/a1.css"),
                         new CssFile("~/Css/Bundle1/a2.css"));
