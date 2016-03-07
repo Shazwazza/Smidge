@@ -11,15 +11,20 @@ namespace Smidge.Web
 {
     public class Startup
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
 
+        /// <summary>
+        /// Constructor sets up the configuration - for our example we'll load in the config from appsettings.json with
+        /// a sub configuration value of 'smidge'
+        /// </summary>
+        /// <param name="env"></param>
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                .AddJsonFile("appsettings.json")
-               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-
-            _config = builder.Build();
+               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);            
+            var config = builder.Build();
+            _config = config.GetSection("smidge");
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -27,7 +32,8 @@ namespace Smidge.Web
 
             services.AddMvc();
 
-            services.AddSmidge(_config) // use services.AddSmidge() to test from smidge.json config.
+            // Or use services.AddSmidge() to test from smidge.json config.
+            services.AddSmidge(_config) 
                 .Configure<SmidgeOptions>(options =>
                 {
                 })

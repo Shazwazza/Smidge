@@ -8,14 +8,21 @@ namespace Smidge
     /// </summary>
     public class SmidgeConfig : ISmidgeConfig
     {
+        /// <summary>
+        /// Constructor that will use an IConfiguration instance to fetch configuration values from
+        /// </summary>
+        /// <param name="configuration"></param>
         public SmidgeConfig(IConfiguration configuration)
         {
             _config = configuration;
         }
 
+        /// <summary>
+        /// Constructor that will use a smidge.json configuration file in env.ApplicationBasePath
+        /// </summary>
+        /// <param name="env"></param>
         public SmidgeConfig(IApplicationEnvironment env)
         {
-
             //  use smidge.json file if it exists for backwards compatibility.
             var cfg = new ConfigurationBuilder()
               .SetBasePath(env.ApplicationBasePath)
