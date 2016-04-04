@@ -258,19 +258,18 @@ namespace Smidge.FileProcessors
         }
 
         /// <summary>
-        /// write the end and skip all whitespace
+        /// If it's an end of statement char read over whitespace
         /// </summary>
         private bool HandleEndOfStatement()
         {
             if (_theA != '}') return false;
 
-            //write the } and move next
-            Put(_theA);
-            do
+            var peek = Peek();
+            while (peek != Eof && char.IsWhiteSpace((char)peek))
             {
-                _theA = Get();
-            } while (char.IsWhiteSpace((char)_theA));
-
+                Get();
+                peek = Peek();
+            }
             return true;
         }
 
@@ -404,6 +403,7 @@ namespace Smidge.FileProcessors
         private bool HandleRegexLiteral()
         {
             if (_theB != '/') return false;
+            //if (_theA == '/') return false;
 
             //The original testing for regex literals didn't actually work in many cases,
             // for example see these bug reports: 
