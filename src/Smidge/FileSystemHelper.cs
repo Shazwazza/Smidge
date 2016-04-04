@@ -149,7 +149,7 @@ namespace Smidge
                 return file.PhysicalPath;
             }
 
-            throw new FileNotFoundException();
+            throw new FileNotFoundException($"No such file exists {path} (mapped from {contentFile})", path);
         }
 
         /// <summary>

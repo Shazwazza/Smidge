@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Rendering;
-using Smidge.CompositeFiles;
+﻿using Microsoft.AspNet.Mvc.Rendering;
 using Smidge.Models;
 using System;
 using System.Collections.Generic;
@@ -8,9 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Smidge.FileProcessors;
 
 namespace Smidge
@@ -44,10 +40,10 @@ namespace Smidge
         /// <param name="processorFactory"></param>
         public SmidgeHelper(
             SmidgeContext context,
-            ISmidgeConfig config, 
-            PreProcessManager fileManager, 
-            FileSystemHelper fileSystemHelper, 
-            IHasher hasher, 
+            ISmidgeConfig config,
+            PreProcessManager fileManager,
+            FileSystemHelper fileSystemHelper,
+            IHasher hasher,
             BundleManager bundleManager,
             IHttpContextAccessor http,
             PreProcessPipelineFactory processorFactory)
@@ -66,7 +62,7 @@ namespace Smidge
 
         public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
         {
-            var urls = await GenerateJsUrlsAsync(bundleName, debug);            
+            var urls = await GenerateJsUrlsAsync(bundleName, debug);
             var result = new StringBuilder();
 
             foreach (var url in urls)
@@ -165,7 +161,10 @@ namespace Smidge
         {
             var result = new List<string>();
             var bundleExists = _bundleManager.Exists(bundleName);
-            if (!bundleExists) return null;
+            if (!bundleExists)
+            {
+                throw new BundleNotFoundException(bundleName);
+            }
 
             if (debug)
             {
@@ -202,7 +201,7 @@ namespace Smidge
                 return result;
             }
         }
-        
+
         /// <summary>
         /// Generates teh URLs for a given file set
         /// </summary>
@@ -212,8 +211,8 @@ namespace Smidge
         /// <param name="debug"></param>
         /// <returns></returns>
         private async Task<IEnumerable<string>> GenerateUrlsAsync(
-            IEnumerable<IWebFile> files, 
-            WebFileType fileType,            
+            IEnumerable<IWebFile> files,
+            WebFileType fileType,
             PreProcessPipeline pipeline = null,
             bool debug = false)
         {
@@ -282,7 +281,7 @@ namespace Smidge
             foreach (var path in paths)
             {
                 RequiresJs(new JavaScriptFile(path));
-            }            
+            }
             return this;
         }
 
@@ -297,7 +296,7 @@ namespace Smidge
             foreach (var path in paths)
             {
                 RequiresCss(new CssFile(path));
-            }            
+            }
             return this;
         }
 
@@ -315,7 +314,7 @@ namespace Smidge
 
             if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
 
-            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js);            
+            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js);
         }
 
         /// <summary>
