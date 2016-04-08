@@ -77,6 +77,8 @@ namespace Smidge.FileProcessors
         /// </summary>
         private void ExecuteJsMin()
         {
+            _start = false;
+
             if (Peek() == 0xEF)
             {
                 Get();
