@@ -1,4 +1,5 @@
-﻿@using Smidge.Models;
+﻿@using System.Diagnostics
+@using Smidge.Models;
 @using Smidge.FileProcessors;
 @inject Smidge.SmidgeHelper SmidgeHelper
 @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
@@ -7,6 +8,8 @@
 
 <html>
 <head>
+
+    @await SmidgeHelper.JsHereAsync("libs", debug: true)
 
     @{
         SmidgeHelper
@@ -24,9 +27,8 @@
         SmidgeHelper.RequiresCss("~/Css/Folder*css");
     }
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js" type="text/javascript" debug="true"></script>
     <script src="inline-js-bundle" type="text/javascript" debug="true"></script>
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" debug="true" />
+    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css"/>
     <link rel="stylesheet" href="inline-css-bundle" debug="true"/>
     <link rel="stylesheet" href="test-bundle-4" debug="true" />    
 </head>
@@ -36,8 +38,8 @@
     @Html.Partial("LoadedDependencies", true)
 
     @await SmidgeHelper.JsHereAsync(debug:true)
-    @await SmidgeHelper.JsHereAsync("test-bundle-1")
-    @await SmidgeHelper.JsHereAsync("test-bundle-2")
-
+    @await SmidgeHelper.JsHereAsync("test-bundle-1", debug: true)
+    @await SmidgeHelper.JsHereAsync("test-bundle-2", debug: true)
+    
 </body>
 </html>

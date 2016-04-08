@@ -1,4 +1,4 @@
 ﻿{
   "dataFolder": "App_Data/Smidge", //where the cache files are stored
-  "version": "50" //can be any string
+  "version": "53" //can be any string
 }
