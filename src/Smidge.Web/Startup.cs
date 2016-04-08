@@ -41,7 +41,10 @@ namespace Smidge.Web
                 {
                     bundles.Create("test-bundle-1",
                         new JavaScriptFile("~/Js/Bundle1/a1.js"),
-                        new JavaScriptFile("~/Js/Bundle1/a2.js"))
+                        new JavaScriptFile("~/Js/Bundle1/a2.js"),
+                        //NOTE: This is already min'd based on it's file name, therefore
+                        // by convention JsMin should be removed
+                        new JavaScriptFile("~/Js/Bundle1/a3.min.js"))
                         .OnOrdering(collection =>
                         {
                             //return some custom ordering

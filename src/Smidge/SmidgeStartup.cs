@@ -49,7 +49,7 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
-            services.AddScoped<SmidgeContext>();
+            services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
             services.AddSingleton<IUrlManager, DefaultUrlManager>();
             services.AddSingleton<IHasher, Crc32Hasher>();
@@ -60,7 +60,8 @@ namespace Smidge
             //services.AddSingleton<IPreProcessor, NodeMinifier>();
             services.AddScoped<IPreProcessor, CssImportProcessor>();
             services.AddScoped<IPreProcessor, CssUrlProcessor>();
-
+            //conventions
+            services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
 
             //Add the controller models as DI services - these get auto created for model binding
             services.AddTransient<BundleModel>();

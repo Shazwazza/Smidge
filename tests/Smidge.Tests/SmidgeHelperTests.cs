@@ -32,7 +32,7 @@ namespace Smidge.Tests
         private IHasher _hasher = Mock.Of<IHasher>();
         private IEnumerable<IPreProcessor> _preProcessors = Mock.Of<IEnumerable<IPreProcessor>>();
 
-        private SmidgeContext _smidgeContext;
+        private DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private FileSystemHelper _fileSystemHelper;
         private PreProcessManager _preProcessManager;
         private Bundles _bundles;
@@ -47,7 +47,7 @@ namespace Smidge.Tests
         {
             //  var config = Mock.Of<ISmidgeConfig>();
 
-            _smidgeContext = new SmidgeContext(_urlManager);
+            _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
             _fileSystemHelper = new FileSystemHelper(_appEnvironment, _hostingEnvironment, _config, _urlHelper, _fileProvider);
             _preProcessManager = new PreProcessManager(_fileSystemHelper, _hasher);
 
@@ -55,7 +55,7 @@ namespace Smidge.Tests
             _bundlesOptions = new Mock<IOptions<Bundles>>();
             _bundlesOptions.Setup(opt => opt.Value).Returns(_bundles);
 
-            _processorFactory = new PreProcessPipelineFactory(_preProcessors);
+            _processorFactory = new PreProcessPipelineFactory(_preProcessors, new List<IFileProcessingConvention>());
             _bundleManager = new BundleManager(_fileSystemHelper, _bundlesOptions.Object, _processorFactory);
 
             _httpContextAccessor = new Mock<IHttpContextAccessor>();
@@ -70,7 +70,7 @@ namespace Smidge.Tests
         {
 
 
-            var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
+            var sut = new SmidgeHelper(_dynamicallyRegisteredWebFiles, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory, _urlManager);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -85,7 +85,7 @@ namespace Smidge.Tests
         public async Task Generate_Js_Urls_For_Non_Existent_Bundle_Throws_Exception()
         {
 
-            var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
+            var sut = new SmidgeHelper(_dynamicallyRegisteredWebFiles, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory, _urlManager);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -99,7 +99,7 @@ namespace Smidge.Tests
         public async Task CssHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
         {
 
-            var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
+            var sut = new SmidgeHelper(_dynamicallyRegisteredWebFiles, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory, _urlManager);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -118,7 +118,7 @@ namespace Smidge.Tests
         public async Task JsHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
         {
 
-            var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
+            var sut = new SmidgeHelper(_dynamicallyRegisteredWebFiles, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory, _urlManager);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (

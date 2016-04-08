@@ -66,6 +66,8 @@ namespace Smidge.FileProcessors
             {
                 ExecuteJsMin();
             }
+            //ensure there's a semicolon
+            sb.Append(";");
             return Task.FromResult(sb.ToString());
         }
 

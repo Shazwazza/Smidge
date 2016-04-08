@@ -6,11 +6,10 @@ using System.Linq;
 
 namespace Smidge
 {
-    public class SmidgeContext
+    public class DynamicallyRegisteredWebFiles
     {
-        public SmidgeContext(IUrlManager urlCreator)
+        public DynamicallyRegisteredWebFiles()
         {
-            UrlCreator = urlCreator;
             Files = new HashSet<IWebFile>();
         }
 
@@ -31,7 +30,6 @@ namespace Smidge
                 return Files.Where(x => x.DependencyType == WebFileType.Css);
             }
         }
-
-        public IUrlManager UrlCreator { get; private set; }
+        
     }
 }

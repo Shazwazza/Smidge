@@ -9,14 +9,14 @@ namespace Smidge.FileProcessors
     /// <summary>
     /// The pre-processor pipeline defined for a file(s)
     /// </summary>
-    public class PreProcessPipeline
+    public class PreProcessPipeline 
     {
         public PreProcessPipeline(IEnumerable<IPreProcessor> processors)
         {
             Processors = new List<IPreProcessor>();
             Processors.AddRange(processors);
         }
-
+        
         public List<IPreProcessor> Processors { get; private set; }
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
@@ -27,6 +27,15 @@ namespace Smidge.FileProcessors
             }
 
             return fileProcessContext.FileContent;
+        }
+
+        /// <summary>
+        /// Copies the current pipeline
+        /// </summary>
+        /// <returns></returns>
+        public PreProcessPipeline Copy()
+        {
+            return new PreProcessPipeline(new List<IPreProcessor>(Processors));
         }
     }
 

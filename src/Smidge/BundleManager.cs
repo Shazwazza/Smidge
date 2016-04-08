@@ -85,7 +85,8 @@ namespace Smidge
             if (first == null) return Enumerable.Empty<IWebFile>();
 
             var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, request,
-                _processorFactory.GetDefault(first.DependencyType));
+                _processorFactory.GetDefault(first.DependencyType), 
+                _processorFactory.FileProcessingConventions);
             var ordered = orderedSet.GetOrderedFileSet();
 
             //call the registered callback if any is set

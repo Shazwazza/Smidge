@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 
 namespace Smidge
@@ -16,21 +17,22 @@ namespace Smidge
     /// </summary>
     public class SmidgeHelper : ISmidgeRequire
     {
-        private SmidgeContext _context;
+        private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private ISmidgeConfig _config;
-        private PreProcessManager _fileManager;
-        private FileSystemHelper _fileSystemHelper;
-        private HttpRequest _request;
-        private IHasher _hasher;
-        private BundleManager _bundleManager;
-        private FileBatcher _fileBatcher;
-        private PreProcessPipelineFactory _processorFactory;
+        private readonly PreProcessManager _fileManager;
+        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly HttpRequest _request;
+        private readonly IHasher _hasher;
+        private readonly BundleManager _bundleManager;
+        private readonly FileBatcher _fileBatcher;
+        private readonly PreProcessPipelineFactory _processorFactory;
+        private readonly IUrlManager _urlManager;
 
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="dynamicallyRegisteredWebFiles"></param>
         /// <param name="config"></param>
         /// <param name="fileManager"></param>
         /// <param name="fileSystemHelper"></param>
@@ -38,21 +40,24 @@ namespace Smidge
         /// <param name="bundleManager"></param>
         /// <param name="http"></param>
         /// <param name="processorFactory"></param>
+        /// <param name="urlManager"></param>
         public SmidgeHelper(
-            SmidgeContext context,
+            DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             ISmidgeConfig config,
             PreProcessManager fileManager,
             FileSystemHelper fileSystemHelper,
             IHasher hasher,
             BundleManager bundleManager,
             IHttpContextAccessor http,
-            PreProcessPipelineFactory processorFactory)
+            PreProcessPipelineFactory processorFactory,
+            IUrlManager urlManager)
         {
             _processorFactory = processorFactory;
+            _urlManager = urlManager;
             _bundleManager = bundleManager;
             _hasher = hasher;
             _fileManager = fileManager;
-            _context = context;
+            _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
             _config = config;
             _fileSystemHelper = fileSystemHelper;
             _request = http.HttpContext.Request;
@@ -128,7 +133,7 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
-            return await GenerateUrlsAsync(_context.JavaScriptFiles, WebFileType.Js, pipeline, debug);
+            return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.JavaScriptFiles, WebFileType.Js, pipeline, debug);
         }
 
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
@@ -142,7 +147,7 @@ namespace Smidge
         /// <returns></returns>
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
         {
-            return await GenerateUrlsAsync(_context.CssFiles, WebFileType.Css, pipeline, debug);
+            return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.CssFiles, WebFileType.Css, pipeline, debug);
         }
 
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
@@ -184,7 +189,7 @@ namespace Smidge
             else
             {
                 var compression = _request.GetClientCompression();
-                var url = _context.UrlCreator.GetUrl(bundleName, fileExt);
+                var url = _urlManager.GetUrl(bundleName, fileExt);
 
                 //now we need to determine if these files have already been minified
                 var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
@@ -220,7 +225,8 @@ namespace Smidge
 
             var orderedSet = new OrderedFileSet(files,
                 _fileSystemHelper, _request,
-                pipeline ?? _processorFactory.GetDefault(fileType));
+                pipeline ?? _processorFactory.GetDefault(fileType), 
+                _processorFactory.FileProcessingConventions);
             var orderedFiles = orderedSet.GetOrderedFileSet();
 
             if (debug)
@@ -246,7 +252,7 @@ namespace Smidge
                     {
                         //Get the URLs for the batch, this could be more than one resulting URL depending on how many
                         // files are in the batch and the max url length
-                        var compositeUrls = _context.UrlCreator.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
+                        var compositeUrls = _urlManager.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
 
                         foreach (var u in compositeUrls)
                         {
@@ -272,7 +278,7 @@ namespace Smidge
 
         public ISmidgeRequire RequiresJs(JavaScriptFile file)
         {
-            _context.Files.Add(file);
+            _dynamicallyRegisteredWebFiles.Files.Add(file);
             return this;
         }
 
@@ -287,7 +293,7 @@ namespace Smidge
 
         public ISmidgeRequire RequiresCss(CssFile file)
         {
-            _context.Files.Add(file);
+            _dynamicallyRegisteredWebFiles.Files.Add(file);
             return this;
         }
 
