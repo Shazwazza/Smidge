@@ -8,6 +8,7 @@ using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Filters;
@@ -65,7 +66,7 @@ namespace Smidge.Tests
 
 
         [Fact]
-        public async void Generate_Css_Urls_For_Non_Existent_Bundle_Throws_Exception()
+        public async Task Generate_Css_Urls_For_Non_Existent_Bundle_Throws_Exception()
         {
 
 
@@ -81,7 +82,7 @@ namespace Smidge.Tests
 
 
         [Fact]
-        public async void Generate_Js_Urls_For_Non_Existent_Bundle_Throws_Exception()
+        public async Task Generate_Js_Urls_For_Non_Existent_Bundle_Throws_Exception()
         {
 
             var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
@@ -95,7 +96,7 @@ namespace Smidge.Tests
         }
 
         [Fact]
-        public async void CssHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
+        public async Task CssHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
         {
 
             var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
@@ -114,7 +115,7 @@ namespace Smidge.Tests
 
 
         [Fact]
-        public async void JsHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
+        public async Task JsHere_HtmlString_For_Non_Existent_Css_Bundle_Throws_Exception()
         {
 
             var sut = new SmidgeHelper(_smidgeContext, _config, _preProcessManager, _fileSystemHelper, _hasher, _bundleManager, _httpContextAccessor.Object, _processorFactory);
