@@ -11,37 +11,6 @@ namespace Smidge.Tests
     {
 
         [Fact]
-        public void Fonts()
-        {
-            var css = @"@font-face {
-    font-family: 'Open Sans';
-    src: url('../fonts/opensans/OpenSans-Regular-webfont.eot');
-    src: local('Open Sans'), local('OpenSans'),
-         url('../fonts/opensans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/opensans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../fonts/opensans/OpenSans-Regular-webfont.svg#open_sansregular') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Open Sans';
-    src: url('../fonts/opensans/OpenSans-Semibold-webfont.eot');
-    src: local('Open Sans Semibold'), local('OpenSans-Semibold'),
-         url('../fonts/opensans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/opensans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-         url('../fonts/opensans/OpenSans-Semibold-webfont.svg#open_sanssemibold') format('svg');
-    font-weight: 600;
-    font-style: normal;
-}";
-            var minifier = new CssMinifier();
-            var output = minifier.ProcessAsync(new FileProcessContext(css, Mock.Of<IWebFile>())).Result;
-
-            Assert.Equal(@".latest-news article a,.latest-news article a:active,.latest-news article a:hover{color:inherit;}", output);
-
-        }
-
-        [Fact]
         public async Task Ensure_Line_Breaks_Keep_Spaces()
         {
             var css = @".latest-news
