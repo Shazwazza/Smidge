@@ -9,7 +9,8 @@
 <html>
 <head>
 
-    @await SmidgeHelper.JsHereAsync("libs", debug: true)
+    @await SmidgeHelper.JsHereAsync("libs-js", debug: true)
+    @await SmidgeHelper.CssHereAsync("libs-css", debug: true)
 
     @{
         SmidgeHelper

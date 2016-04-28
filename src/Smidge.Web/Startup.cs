@@ -59,7 +59,8 @@ namespace Smidge.Web
                         new CssFile("~/Css/Bundle1/a1.css"),
                         new CssFile("~/Css/Bundle1/a2.css"));
 
-                    bundles.Create("libs", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js","~/Js/Libs/knockout-es5.js");
+                    bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js","~/Js/Libs/knockout-es5.js");
+                    bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
                 });
         }
 
