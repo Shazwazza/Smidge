@@ -53,7 +53,7 @@ namespace Smidge.Web
 
                     bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
 
-                    bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMin)), WebFileType.Js, "~/Js/Bundle2");
+                    bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
 
                     bundles.Create("test-bundle-4",
                         new CssFile("~/Css/Bundle1/a1.css"),

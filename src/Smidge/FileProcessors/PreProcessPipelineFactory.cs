@@ -43,7 +43,7 @@ namespace Smidge.FileProcessors
                     return new PreProcessPipeline(new IPreProcessor[]
                     {
                         //_allProcessors.OfType<NodeMinifier>().Single()
-                        _allProcessors.OfType<JsMin>().Single()
+                        _allProcessors.OfType<JsMinifier>().Single()
                     });
                 case WebFileType.Css:
                 default:
