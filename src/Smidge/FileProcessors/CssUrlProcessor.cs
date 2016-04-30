@@ -11,15 +11,12 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssUrlProcessor : IPreProcessor
     {
-        public CssUrlProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
+        public CssUrlProcessor(IHttpContextAccessor http)
         {
-            _fileSystemHelper = fileSystemHelper;
             _http = http;
         }
 
-
-        private IHttpContextAccessor _http;
-        private FileSystemHelper _fileSystemHelper;
+        private readonly IHttpContextAccessor _http;
 
         public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {

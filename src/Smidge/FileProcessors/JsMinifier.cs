@@ -54,7 +54,7 @@ namespace Smidge.FileProcessors
             return jsMin.ProcessAsync(fileProcessContext);
         }
 
-        protected class JsMin
+        private class JsMin
         {
             private const int Eof = -1;
             private TextReader _sr;
