@@ -55,7 +55,7 @@ namespace Smidge
             services.AddSingleton<IHasher, Crc32Hasher>();
 
             //pre-processors
-            services.AddSingleton<IPreProcessor, JsMin>();
+            services.AddSingleton<IPreProcessor, JsMinifier>();
             services.AddSingleton<IPreProcessor, CssMinifier>();
             //services.AddSingleton<IPreProcessor, NodeMinifier>();
             services.AddScoped<IPreProcessor, CssImportProcessor>();

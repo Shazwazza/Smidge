@@ -183,3 +183,8 @@ UpgradeLog*.htm
 FakesAssemblies/
 src/Smidge.Web/App_Data/Smidge/*
 .Smidge.boltdata/*
+/.vs/config
+/src/Smidge/project.lock.json
+/src/Smidge.Web/Properties
+/src/Smidge.Web/project.lock.json
+/tests/Smidge.Tests/project.lock.json
