@@ -1,9 +1,10 @@
-﻿@using Smidge.Models;
+﻿@using Smidge
+@using Smidge.Models;
 @using Smidge.FileProcessors;
 @inject Smidge.SmidgeHelper SmidgeHelper
 @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
 @inject Smidge.BundleManager BundleManager
-@addTagHelper "*, Smidge"
+@addTagHelper *, Smidge
 
 <html>
 <head>
@@ -17,7 +18,7 @@
             .RequiresJs("~/Js/test1.js", "~/Js/test2.js")
             .RequiresJs(new JavaScriptFile("~/Js/test2.js")
             {
-                Pipeline = PipelineFactory.GetPipeline(typeof(JsMin))
+                Pipeline = PipelineFactory.GetPipeline(typeof(JsMinifier))
             });
         SmidgeHelper
             .CreateCssBundle("inline-css-bundle")

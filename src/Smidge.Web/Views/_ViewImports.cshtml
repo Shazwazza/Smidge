@@ -1,8 +1,8 @@
-﻿@inject Microsoft.Extensions.PlatformAbstractions.IApplicationEnvironment AppEnv;
+﻿@inject Microsoft.Extensions.PlatformAbstractions.ApplicationEnvironment AppEnv; 
 @inject Smidge.SmidgeHelper SmidgeHelper
 @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
 @inject Smidge.BundleManager BundleManager
-@addTagHelper "*, Smidge"
+@addTagHelper *, Smidge
 
 @{
     

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Smidge.Models;
 
 namespace Smidge
 {
@@ -17,19 +18,16 @@ namespace Smidge
     {
         private IHostingEnvironment _appEnv;
         private ISmidgeConfig _config;
-        private readonly IUrlHelper _urlHelper;
         private IHostingEnvironment _hostingEnv;
         private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private IFileProvider _fileProvider;
 
-        public FileSystemHelper(IHostingEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IUrlHelper urlHelper, IFileProvider fileProvider)
+        public FileSystemHelper(IHostingEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider)
         {
             _appEnv = appEnv;
             _config = config;
-            _urlHelper = urlHelper;
             _hostingEnv = hostingEnv;
             _fileProvider = fileProvider;
-
         }
 
         public static bool IsExternalRequestPath(string path)
@@ -47,25 +45,26 @@ namespace Smidge
         /// Takes in a given path and returns it's normalized result, either as a relative path for local files or an absolute web path with a host
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="request"></param>
+        /// <param name="requestParts"></param>
         /// <returns></returns>
-        public string NormalizeWebPath(string path, HttpRequest request)
+        public string NormalizeWebPath(string path, RequestParts requestParts)
         {
-            if (path.StartsWith("~/"))
-            {
-                return _urlHelper.Content(path);
-            }
-
             //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
             // logic to work properly
             if (path.StartsWith("//"))
             {
-                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", request.Scheme, Constants.SchemeDelimiter));
+                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", requestParts.Scheme, Constants.SchemeDelimiter));
             }
 
-            return _urlHelper.Content(path);
+            //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
+            // since it is not dependent on the ActionContext
+            if (string.IsNullOrEmpty(path))
+                return (string)null;
+            if ((int)path[0] == 126)
+                return requestParts.PathBase.Add(new PathString(path.Substring(1))).Value;
+            return path;
         }
-
+        
         /// <summary>
         /// Rudimentary check to see if the path is a folder
         /// </summary>
@@ -141,7 +140,7 @@ namespace Smidge
         /// <returns></returns>
         public string MapPath(string contentFile)
         {
-            var content = _urlHelper.Content(contentFile);
+            var content = contentFile.TrimStart(new[] {'~'});
 
             var fileInfo = _hostingEnv.ContentRootFileProvider.GetFileInfo(content);
             if (fileInfo.Exists)

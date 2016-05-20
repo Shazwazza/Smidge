@@ -3,6 +3,7 @@ using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Smidge
 {
@@ -15,13 +16,13 @@ namespace Smidge
     internal class FileBatcher
     {
         private FileSystemHelper _fileSystemHelper;
+        private readonly RequestParts _requestParts;
         private IHasher _hasher;
-        private HttpRequest _request;
 
-        public FileBatcher(FileSystemHelper fileSystemHelper, HttpRequest request, IHasher hasher)
+        public FileBatcher(FileSystemHelper fileSystemHelper, RequestParts requestParts, IHasher hasher)
         {
             _fileSystemHelper = fileSystemHelper;
-            _request = request;
+            _requestParts = requestParts;
             _hasher = hasher;
         }
 
@@ -48,7 +49,7 @@ namespace Smidge
             var result = new List<WebFileBatch>();
             foreach (var f in files)
             {
-                var webPath = _fileSystemHelper.NormalizeWebPath(f.FilePath, _request);
+                var webPath = _fileSystemHelper.NormalizeWebPath(f.FilePath, _requestParts);
 
                 //if this is an external path then we need to split and start new
                 if (webPath.Contains(Constants.SchemeDelimiter))
@@ -70,7 +71,7 @@ namespace Smidge
                     var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
                     foreach (var p in filePaths)
                     {
-                        var subFile = f.Duplicate(_fileSystemHelper.NormalizeWebPath(p, _request));
+                        var subFile = f.Duplicate(_fileSystemHelper.NormalizeWebPath(p, _requestParts));
                         var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
                         hashedFile.Pipeline = f.Pipeline;
                         current.AddInternal(subFile, hashedFile);

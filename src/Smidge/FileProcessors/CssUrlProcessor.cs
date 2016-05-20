@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
+using Smidge.Models;
 
 namespace Smidge.FileProcessors
 {
@@ -9,17 +10,17 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssUrlProcessor : IPreProcessor
     {
-        public CssUrlProcessor(IHttpContextAccessor http)
+        public CssUrlProcessor(RequestParts reqParts)
         {
-            _http = http;
+            _reqParts = reqParts;
         }
 
-        private readonly IHttpContextAccessor _http;
+        private readonly RequestParts _reqParts;
 
         public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
             //ensure the Urls in the css are changed to absolute
-            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _http.HttpContext.Request);
+            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _reqParts);
 
             return Task.FromResult(parsedUrls);
         }
@@ -31,7 +32,7 @@ namespace Smidge.FileProcessors
         /// <param name="url"></param>
         /// <param name="req"></param>
         /// <returns></returns>
-        internal static string ReplaceUrlsWithAbsolutePaths(string fileContents, string url, HttpRequest req)
+        internal static string ReplaceUrlsWithAbsolutePaths(string fileContents, string url, RequestParts req)
         {
             var uri = new Uri(url, UriKind.RelativeOrAbsolute);
             fileContents = ReplaceUrlsWithAbsolutePaths(fileContents, uri.MakeAbsoluteUri(req));

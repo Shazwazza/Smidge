@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using Microsoft.AspNetCore.Http.Extensions;
+using Smidge.Models;
 
 namespace Smidge
 {
@@ -24,7 +25,7 @@ namespace Smidge
         /// <param name="uri"></param>
         /// <param name="req"></param>
         /// <returns></returns>
-        public static Uri MakeAbsoluteUri(this Uri uri, HttpRequest req)
+        public static Uri MakeAbsoluteUri(this Uri uri, RequestParts req)
         {
             if (!uri.IsAbsoluteUri)
             {

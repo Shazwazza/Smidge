@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Smidge.Models;
 using System.Text;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Smidge.Options;
@@ -13,31 +14,31 @@ namespace Smidge.CompositeFiles
     {
         private ISmidgeConfig _config;
         private IHasher _hasher;
-        private readonly IUrlHelper _urlHelper;
+        private readonly FileSystemHelper _fileSystemHelper;
         private UrlManagerOptions _options;
 
-        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher, IUrlHelper urlHelper)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher, FileSystemHelper fileSystemHelper)
         {
             _hasher = hasher;
-            _urlHelper = urlHelper;
+            _fileSystemHelper = fileSystemHelper;
             _options = options.Value.UrlOptions;
             _config = config;
         }
 
-        public string GetUrl(string bundleName, string fileExtension)
+        public string GetUrl(string bundleName, string fileExtension, HttpRequest request)
         {
             const string handler = "~/{0}/{1}{2}.v{3}";
-            return _urlHelper.Content(
+            return _fileSystemHelper.NormalizeWebPath(
                 string.Format(
                     handler,
                     _options.BundleFilePath,
                     Uri.EscapeUriString(bundleName),
                     fileExtension,
-                    _config.Version));
+                    _config.Version), new RequestParts(request));
 
         }
 
-        public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension)
+        public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension, HttpRequest request)
         {
             var files = new List<FileSetUrl>();
             var currBuilder = new StringBuilder();
@@ -72,7 +73,7 @@ namespace Smidge.CompositeFiles
                     files.Add(new FileSetUrl
                     {
                         Key = _hasher.Hash(output),
-                        Url = GetCompositeUrl(output, fileExtension)
+                        Url = GetCompositeUrl(output, fileExtension, request)
                     });
                     //create some new output
                     currBuilder = new StringBuilder();
@@ -95,7 +96,7 @@ namespace Smidge.CompositeFiles
                 files.Add(new FileSetUrl
                 {
                     Key = _hasher.Hash(output),
-                    Url = GetCompositeUrl(output, fileExtension)
+                    Url = GetCompositeUrl(output, fileExtension, request)
                 });
             }
 
@@ -135,18 +136,18 @@ namespace Smidge.CompositeFiles
             return result;
         }
 
-        private string GetCompositeUrl(string fileKey, string fileExtension)
+        private string GetCompositeUrl(string fileKey, string fileExtension, HttpRequest request)
         {
             //Create a delimited URL query string
 
             const string handler = "~/{0}/{1}{2}.v{3}";
-            return _urlHelper.Content(
+            return _fileSystemHelper.NormalizeWebPath(
                 string.Format(
                     handler,
                     _options.CompositeFilePath,
                     Uri.EscapeUriString(fileKey),
                     fileExtension,
-                    _config.Version));
+                    _config.Version), new RequestParts(request));
         }
     }
 }

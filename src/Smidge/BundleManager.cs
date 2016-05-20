@@ -4,6 +4,7 @@ using Smidge.Models;
 using Smidge.Options;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Smidge.FileProcessors;
 
 namespace Smidge
@@ -73,9 +74,9 @@ namespace Smidge
         /// Returns the ordered collection of files for the bundle
         /// </summary>
         /// <param name="bundleName"></param>
-        /// <param name="request"></param>
+        /// <param name="requestParts"></param>
         /// <returns></returns>
-        public IEnumerable<IWebFile> GetFiles(string bundleName, HttpRequest request)
+        public IEnumerable<IWebFile> GetFiles(string bundleName, RequestParts requestParts)
         {
             BundleFileCollection collection;
             if (!_bundles.TryGetValue(bundleName, out collection)) return null;
@@ -84,7 +85,7 @@ namespace Smidge
             var first = collection.Files.FirstOrDefault();
             if (first == null) return Enumerable.Empty<IWebFile>();
 
-            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, request,
+            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, requestParts,
                 _processorFactory.GetDefault(first.DependencyType), 
                 _processorFactory.FileProcessingConventions);
             var ordered = orderedSet.GetOrderedFileSet();

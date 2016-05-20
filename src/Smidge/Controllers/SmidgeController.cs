@@ -19,34 +19,22 @@ namespace Smidge.Controllers
     [CompositeFileCacheFilter(Order = 3)]        
     public class SmidgeController : Controller
     {
-        private ISmidgeConfig _config;
-        private IHostingEnvironment _env;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly IHasher _hasher;
-        private readonly BundleManager _bundleManager;
-        private IUrlManager _urlManager;
+        private readonly BundleManager _bundleManager;     
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="env"></param>
-        /// <param name="config"></param>
         /// <param name="fileSystemHelper"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
-        /// <param name="urlManager"></param>
         public SmidgeController(
-            IHostingEnvironment env, 
-            ISmidgeConfig config, 
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
-            BundleManager bundleManager,
-            IUrlManager urlManager)
+            BundleManager bundleManager)
         {
-            _urlManager = urlManager;
             _hasher = hasher;
-            _env = env;
-            _config = config;
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
         }
@@ -59,7 +47,7 @@ namespace Smidge.Controllers
         public async Task<FileResult> Bundle(
             [FromServices]BundleModel bundle)
         {  
-            var found = _bundleManager.GetFiles(bundle.FileKey, Request);
+            var found = _bundleManager.GetFiles(bundle.FileKey, new RequestParts(Request));
             if (found == null || !found.Any())
             {
                 //TODO: Throw an exception, this will result in an exception anyways

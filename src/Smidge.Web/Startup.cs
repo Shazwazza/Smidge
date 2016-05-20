@@ -1,6 +1,7 @@
-﻿using System.Linq;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
+﻿using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Options;
@@ -11,6 +12,19 @@ namespace Smidge.Web
 {
     public class Startup
     {
+        // Entry point for the application.
+        public static void Main(string[] args)
+        {
+            var host = new WebHostBuilder()
+              .UseKestrel()
+              .UseContentRoot(Directory.GetCurrentDirectory())
+              .UseIISIntegration()
+              .UseStartup<Startup>()
+              .Build();
+
+            host.Run();
+        }
+
         private readonly IConfiguration _config;
 
         /// <summary>
@@ -21,8 +35,9 @@ namespace Smidge.Web
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
-               .AddJsonFile("appsettings.json")
-               .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);            
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
             var config = builder.Build();
             _config = config.GetSection("smidge");
         }
@@ -33,7 +48,7 @@ namespace Smidge.Web
             services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.
-            services.AddSmidge(_config) 
+            services.AddSmidge(_config)
                 .Configure<SmidgeOptions>(options =>
                 {
                 })
@@ -59,15 +74,13 @@ namespace Smidge.Web
                         new CssFile("~/Css/Bundle1/a1.css"),
                         new CssFile("~/Css/Bundle1/a2.css"));
 
-                    bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js","~/Js/Libs/knockout-es5.js");
+                    bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
                     bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
                 });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseIISPlatformHandler();
-
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {

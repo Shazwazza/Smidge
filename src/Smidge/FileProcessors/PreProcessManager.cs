@@ -1,10 +1,9 @@
-﻿using Smidge.Models;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading.Tasks;
-using Smidge.FileProcessors;
+using Smidge.Models;
 
-namespace Smidge
+namespace Smidge.FileProcessors
 {
     public sealed class PreProcessManager
     {

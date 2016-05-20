@@ -1,10 +1,11 @@
 ﻿@using System.Diagnostics
+@using Smidge
 @using Smidge.Models;
 @using Smidge.FileProcessors;
 @inject Smidge.SmidgeHelper SmidgeHelper
 @inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
 @inject Smidge.BundleManager BundleManager
-@addTagHelper "*, Smidge"
+@addTagHelper *, Smidge
 
 <html>
 <head>

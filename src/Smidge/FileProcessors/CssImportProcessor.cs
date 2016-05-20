@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Smidge.FileProcessors
 {
@@ -14,14 +15,13 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssImportProcessor : IPreProcessor
     {
-        public CssImportProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
+        public CssImportProcessor(FileSystemHelper fileSystemHelper, RequestParts requestParts)
         {
             _fileSystemHelper = fileSystemHelper;
-            _http = http;
+            _reqParts = requestParts;
         }
-
         
-        private IHttpContextAccessor _http;
+        private RequestParts _reqParts;
         private FileSystemHelper _fileSystemHelper;
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
@@ -34,10 +34,10 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_http.HttpContext.Request);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_reqParts);
                 var absolute = uri.ToAbsolutePath(importPath);
 
-                var path = _fileSystemHelper.NormalizeWebPath(absolute, _http.HttpContext.Request);
+                var path = _fileSystemHelper.NormalizeWebPath(absolute, _reqParts);
                 //is it external?
                 if (path.Contains(Constants.SchemeDelimiter))
                 {

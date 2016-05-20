@@ -51,11 +51,16 @@ namespace Smidge.TagHelpers
                         builder.WriteTo(writer, _encoder);
                     }
                     writer.Flush();
-                    output.PostElement.SetContent(writer.ToString());
+                    output.PostElement.SetHtmlContent(new HtmlString(writer.ToString()));
                 }
                 //This ensures the original tag is not written.
                 output.TagName = null;
-            }           
+            }
+            else
+            {
+                //use what is there
+                output.Attributes.SetAttribute("src", Source);
+            }
         }
     }
 }

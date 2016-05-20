@@ -4,11 +4,15 @@ using Smidge.CompositeFiles;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.FileProviders;
 //using Microsoft.AspNetCore.NodeServices;
 using Smidge.Models;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.FileProcessors;
 
@@ -22,18 +26,21 @@ namespace Smidge
 
         public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null, IFileProvider fileProvider = null)
         {
+            services.AddSingleton<ApplicationEnvironment>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<RequestParts>(provider => new RequestParts(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
+
             //services.AddNodeServices(NodeHostingModel.Http);
 
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
-            services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();
-            services.AddSingleton<PreProcessPipelineFactory>();
+            services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();            
             services.AddSingleton<BundleManager>();
             services.AddSingleton<FileSystemHelper>((p) =>
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(p.GetRequiredService<IHostingEnvironment>(), hosting,
-                    p.GetRequiredService<ISmidgeConfig>(), p.GetRequiredService<IUrlHelper>(), provider);
+                return new FileSystemHelper(p.GetRequiredService<IHostingEnvironment>(), hosting, p.GetRequiredService<ISmidgeConfig>(), provider);
             });
 
 
@@ -48,15 +55,17 @@ namespace Smidge
             });
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
-            services.AddSingleton<IUrlManager, DefaultUrlManager>();
+            services.AddScoped<IUrlManager, DefaultUrlManager>();
             services.AddSingleton<IHasher, Crc32Hasher>();
 
+            
+            services.AddScoped<PreProcessPipelineFactory>();
             //pre-processors
-            services.AddSingleton<IPreProcessor, JsMinifier>();
-            services.AddSingleton<IPreProcessor, CssMinifier>();
-            //services.AddSingleton<IPreProcessor, NodeMinifier>();
-            services.AddSingleton<IPreProcessor, CssImportProcessor>();
-            services.AddSingleton<IPreProcessor, CssUrlProcessor>();
+            services.AddScoped<IPreProcessor, JsMinifier>();
+            services.AddScoped<IPreProcessor, CssMinifier>();
+            //services.AddScoped<IPreProcessor, NodeMinifier>();
+            services.AddScoped<IPreProcessor, CssImportProcessor>();
+            services.AddScoped<IPreProcessor, CssUrlProcessor>();
             //conventions
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
 
