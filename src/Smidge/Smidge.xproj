@@ -7,8 +7,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>c304b5b8-0750-4b60-b6d0-06208639d560</ProjectGuid>
     <RootNamespace>Smidge</RootNamespace>
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">..\..\artifacts\obj\$(MSBuildProjectName)</BaseIntermediateOutputPath>
-    <OutputPath Condition="'$(OutputPath)'=='' ">..\..\artifacts\bin\$(MSBuildProjectName)\</OutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AssemblyName>Smidge</AssemblyName>
@@ -29,6 +30,6 @@
       <UserProperties project_1json__JSONSchema="http://www.asp.net/media/4878834/project.json" />
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.Props" />
-  <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" />
+  <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.Props" />
+  <Import Project="$(VSToolsPath)\DotNet.Web\Microsoft.DotNet.Web.targets" />
 </Project>

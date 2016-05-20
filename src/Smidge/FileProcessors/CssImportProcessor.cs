@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
 using Smidge.Models;
 using System;
 using System.Collections.Generic;
@@ -8,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 
 namespace Smidge.FileProcessors
 {

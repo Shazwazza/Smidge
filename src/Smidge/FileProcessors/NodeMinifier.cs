@@ -1,5 +1,5 @@
 //using System.Threading.Tasks;
-//using Microsoft.AspNet.NodeServices;
+//using Microsoft.AspNetCore.NodeServices;
 
 //namespace Smidge.FileProcessors
 //{

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Smidge.Models;
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,6 @@ namespace Smidge
         /// any external requests.
         /// </summary>
         /// <param name="files"></param>
-        /// <param name="externalRequests">Returns a collection of external requests found in the collection</param>
         /// <returns></returns>
         /// <remarks>
         /// We need to get a collection of files that have their cached/hashed paths, this is used 

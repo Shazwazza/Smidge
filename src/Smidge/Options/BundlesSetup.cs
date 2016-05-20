@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.OptionsModel;
+﻿using Microsoft.Extensions.Options;
 using Smidge.FileProcessors;
 using System;
 

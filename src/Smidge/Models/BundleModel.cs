@@ -1,7 +1,7 @@
 ﻿using Smidge.CompositeFiles;
 using System;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Smidge.Models
 {

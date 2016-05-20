@@ -1,17 +1,14 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Smidge.CompositeFiles;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc;
-//using Microsoft.AspNet.NodeServices;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
+//using Microsoft.AspNetCore.NodeServices;
 using Smidge.Models;
-using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.Options;
 using Smidge.Options;
 using Smidge.FileProcessors;
 
@@ -35,7 +32,7 @@ namespace Smidge
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(p.GetRequiredService<IApplicationEnvironment>(), hosting,
+                return new FileSystemHelper(p.GetRequiredService<IHostingEnvironment>(), hosting,
                     p.GetRequiredService<ISmidgeConfig>(), p.GetRequiredService<IUrlHelper>(), provider);
             });
 
@@ -45,7 +42,7 @@ namespace Smidge
             {
                 if (smidgeConfiguration == null)
                 {
-                    return new SmidgeConfig(p.GetRequiredService<IApplicationEnvironment>());
+                    return new SmidgeConfig(p.GetRequiredService<IHostingEnvironment>());
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });

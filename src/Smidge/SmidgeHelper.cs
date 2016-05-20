@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Smidge.Models;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 

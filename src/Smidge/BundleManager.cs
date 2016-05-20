@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.Http;
-using Microsoft.Extensions.OptionsModel;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Smidge.Models;
 using Smidge.Options;
 using System.Collections.Generic;

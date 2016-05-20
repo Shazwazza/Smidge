@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Smidge.Models;
-using Microsoft.AspNet.Http;
 using System.Text;
 using System.Linq;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Smidge.Options;
 
 namespace Smidge.CompositeFiles

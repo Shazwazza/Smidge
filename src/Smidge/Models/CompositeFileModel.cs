@@ -1,5 +1,5 @@
 ﻿using Smidge.CompositeFiles;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Smidge.Models
 {
@@ -10,19 +10,9 @@ namespace Smidge.Models
             : base("file", urlManager, accessor)
         {
             //Creates a single hash of the full url (which can include many files)
-            _fileSetKey = hasher.Hash(string.Join(".", ParsedPath.Names));
+            FileKey = hasher.Hash(string.Join(".", ParsedPath.Names));
         }
 
-        private string _fileSetKey;
-
-        public override string FileKey
-        {
-            get
-            {
-                return _fileSetKey;
-            }
-        }
-
-        
+        public override string FileKey { get; }
     }
 }

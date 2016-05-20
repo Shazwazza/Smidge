@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNet.Http;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
 
 namespace Smidge.FileProcessors
 {

@@ -1,7 +1,6 @@
-﻿using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Smidge.Models;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace Smidge
@@ -9,12 +8,11 @@ namespace Smidge
 
     public static class HttpExtensions
     {
-        
-
         /// <summary>
         /// Checks if the incoming request is asking for content that has been changed based on the If-None-Match (ETag) header
         /// </summary>
-        /// <param name="http"></param>
+        /// <param name="request"></param>
+        /// <param name="etag"></param>
         /// <remarks>
         /// This is used to determine a 304 response code
         /// </remarks>

@@ -1,25 +1,43 @@
 ﻿{
-    "version": "1.0.0-rc4",
-    "authors": [ "Shannon Deminick" ],
-    "description": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
-    "summary": "A lightweight ASP.Net 5 library for runtime CSS and JavaScript file management, minification, combination & compression",
-    "title": "Smidge",
-    "copyright": "Copyright © Shannon Deminick 2016",
+  "version": "1.0.0-rc5",
+  "authors": [ "Shannon Deminick" ],
+  "description": "A lightweight ASP.Net Core library for runtime CSS and JavaScript file management, minification, combination & compression",
+
+  "packOptions": {
+    "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
     "projectUrl": "https://github.com/Shazwazza/Smidge/",
     "licenseUrl": "http://opensource.org/licenses/MIT",
-    "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
-
-    "dependencies": {
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-rc1-final", 
-        "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
-        "Microsoft.Extensions.Configuration": "1.0.0-rc1-final",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0-rc1-final", 
-        "Microsoft.Dnx.Runtime": "1.0.0-rc1-final",
-        "System.IO.Compression": "4.0.0-*"  
-    },
-     
-    "frameworks": {
-        "dnxcore50": { },
-        "dnx451": { }
+    "summary": "A lightweight ASP.Net Core library for runtime CSS and JavaScript file management, minification, combination & compression",
+    "title": "Smidge",
+    "copyright": "Copyright © Shannon Deminick 2016",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/Shazwazza/Smidge/"
     }
+  },
+
+
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "version": "1.0.0-rc2-3002702",
+      "type": "default"
+    },
+
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-rc2-final",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-rc2-final",
+    "System.IO.Compression": "4.0.0-*"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
+    }
+    //, "net461": { }
+  }
 }

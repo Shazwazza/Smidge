@@ -1,17 +1,11 @@
-﻿using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Dnx.Runtime;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
 using Smidge.Models;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Smidge.Controllers
 {
@@ -26,7 +20,7 @@ namespace Smidge.Controllers
     public class SmidgeController : Controller
     {
         private ISmidgeConfig _config;
-        private IApplicationEnvironment _env;
+        private IHostingEnvironment _env;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly IHasher _hasher;
         private readonly BundleManager _bundleManager;
@@ -42,7 +36,7 @@ namespace Smidge.Controllers
         /// <param name="bundleManager"></param>
         /// <param name="urlManager"></param>
         public SmidgeController(
-            IApplicationEnvironment env, 
+            IHostingEnvironment env, 
             ISmidgeConfig config, 
             FileSystemHelper fileSystemHelper, 
             IHasher hasher, 
