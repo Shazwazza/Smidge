@@ -21,11 +21,10 @@ namespace Smidge
         private readonly PreProcessManager _fileManager;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly BundleManager _bundleManager;
-        private readonly IHttpContextAccessor _http;
-        private readonly IVirtualPathTranslator _virtualPathTranslator;
         private readonly FileBatcher _fileBatcher;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IUrlManager _urlManager;
+        private readonly IRequestHelper _requestHelper;
 
 
         /// <summary>
@@ -36,28 +35,27 @@ namespace Smidge
         /// <param name="fileSystemHelper"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
-        /// <param name="http"></param>
         /// <param name="processorFactory"></param>
         /// <param name="urlManager"></param>
+        /// <param name="requestHelper"></param>
         public SmidgeHelper(
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             PreProcessManager fileManager,
             FileSystemHelper fileSystemHelper,
             IHasher hasher,
             BundleManager bundleManager,
-            IHttpContextAccessor http,
             PreProcessPipelineFactory processorFactory,
-            IUrlManager urlManager)
+            IUrlManager urlManager,
+            IRequestHelper requestHelper)
         {
             _processorFactory = processorFactory;
             _urlManager = urlManager;
+            _requestHelper = requestHelper;
             _bundleManager = bundleManager;
-            _http = http;
             _fileManager = fileManager;
             _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
             _fileSystemHelper = fileSystemHelper;
-            _virtualPathTranslator = new RequestParts(_http.HttpContext.Request);
-            _fileBatcher = new FileBatcher(_fileSystemHelper, _virtualPathTranslator, hasher);
+            _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
         }
 
         public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
@@ -169,7 +167,7 @@ namespace Smidge
             if (debug)
             {
                 var urls = new List<string>();
-                var files = _bundleManager.GetFiles(bundleName, _virtualPathTranslator);
+                var files = _bundleManager.GetFiles(bundleName, _requestHelper);
                 foreach (var d in files)
                 {
                     urls.Add(d.FilePath);
@@ -183,14 +181,14 @@ namespace Smidge
             }
             else
             {
-                var compression = _http.HttpContext.Request.GetClientCompression();
+                var compression = _requestHelper.GetClientCompression();
                 var url = _urlManager.GetUrl(bundleName, fileExt);
 
                 //now we need to determine if these files have already been minified
                 var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
                 if (!File.Exists(compositeFilePath))
                 {
-                    var files = _bundleManager.GetFiles(bundleName, _virtualPathTranslator);
+                    var files = _bundleManager.GetFiles(bundleName, _requestHelper);
                     //we need to do the minify on the original files
                     foreach (var file in files)
                     {
@@ -219,7 +217,7 @@ namespace Smidge
             var result = new List<string>();
 
             var orderedSet = new OrderedFileSet(files,
-                _fileSystemHelper, _virtualPathTranslator,
+                _fileSystemHelper, _requestHelper,
                 pipeline ?? _processorFactory.GetDefault(fileType), 
                 _processorFactory.FileProcessingConventions);
             var orderedFiles = orderedSet.GetOrderedFileSet();
@@ -230,7 +228,7 @@ namespace Smidge
             }
             else
             {
-                var compression = _http.HttpContext.Request.GetClientCompression();
+                var compression = _requestHelper.GetClientCompression();
                 
                 //Get the file collection used to create the composite URLs and the external requests
                 var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);

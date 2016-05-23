@@ -19,27 +19,14 @@ namespace Smidge.Tests
         [Fact]
         public void Get_Composite_File_Collection_For_Url_Generation()
         {
-            var files = new[] { "", "" };
-
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
 
             var fileProvider = new Mock<IFileProvider>();
 
-            //var options = new SmidgeOptions();
             var config = Mock.Of<ISmidgeConfig>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object);
-            //var helper = new SmidgeHelper(
-            //    new SmidgeContext(Mock.Of<IUrlManager>()),
-            //    config,
-            //    new FileMinifyManager(fileSystemHelper, options),
-            //    new FileSystemHelper(appEnv, hostingEnv, config),
-            //    Mock.Of<IHasher>(),
-            //    new BundleManager(fileSystemHelper),
-            //    Mock.Of<IContextAccessor<HttpRequest>>(x => x.Value == Mock.Of<HttpRequest>()));
-
-            var batcher = new FileBatcher(fileSystemHelper, urlHelper.Object, Mock.Of<IHasher>());
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object);          
+            var batcher = new FileBatcher(fileSystemHelper, urlHelper, Mock.Of<IHasher>());
 
             //test a mix start/ending with external
             var result = batcher.GetCompositeFileCollectionForUrlGeneration(new IWebFile[] {

@@ -12,13 +12,13 @@ namespace Smidge.CompositeFiles
     {
         private readonly ISmidgeConfig _config;
         private readonly IHasher _hasher;
-        private readonly IVirtualPathTranslator _virtualPathTranslator;
+        private readonly IRequestHelper _requestHelper;
         private readonly UrlManagerOptions _options;
 
-        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher, IVirtualPathTranslator virtualPathTranslator)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, ISmidgeConfig config, IHasher hasher, IRequestHelper requestHelper)
         {
             _hasher = hasher;
-            _virtualPathTranslator = virtualPathTranslator;
+            _requestHelper = requestHelper;
             _options = options.Value.UrlOptions;
             _config = config;
         }
@@ -26,7 +26,7 @@ namespace Smidge.CompositeFiles
         public string GetUrl(string bundleName, string fileExtension)
         {
             const string handler = "~/{0}/{1}{2}.v{3}";
-            return _virtualPathTranslator.Content(
+            return _requestHelper.Content(
                 string.Format(
                     handler,
                     _options.BundleFilePath,
@@ -139,7 +139,7 @@ namespace Smidge.CompositeFiles
             //Create a delimited URL query string
 
             const string handler = "~/{0}/{1}{2}.v{3}";
-            return _virtualPathTranslator.Content(
+            return _requestHelper.Content(
                 string.Format(
                     handler,
                     _options.CompositeFilePath,

@@ -1,7 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc.Filters;
+﻿using System;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Smidge.Models;
 
 namespace Smidge.Controllers
 {
+
     /// <summary>
     /// Adds the compression headers
     /// </summary>
@@ -13,7 +17,8 @@ namespace Smidge.Controllers
         /// <param name="context"></param>
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            context.HttpContext.Response.AddCompressionResponseHeader(context.HttpContext.Request.GetClientCompression());
+            var requestHelper = new RequestHelper(context.HttpContext.Request);
+            context.HttpContext.Response.AddCompressionResponseHeader(requestHelper.GetClientCompression());
         }
     }
 

@@ -20,7 +20,7 @@ namespace Smidge
         {
             if (_type == WebFileType.Css)
                 throw new InvalidOperationException("Cannot add css file to a js bundle");
-            if (FileSystemHelper.IsExternalRequestPath(file.FilePath))
+            if (RequestHelper.IsExternalRequestPath(file.FilePath))
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
 
             _bundleManager.AddToBundle(_bundleName, file);
@@ -34,7 +34,7 @@ namespace Smidge
 
             foreach (var path in paths)
             {
-                if (FileSystemHelper.IsExternalRequestPath(path))
+                if (RequestHelper.IsExternalRequestPath(path))
                     throw new InvalidOperationException("Cannot process an external file as part of a bundle");
                 _bundleManager.AddToBundle(_bundleName, new JavaScriptFile(path));
             }
@@ -45,7 +45,7 @@ namespace Smidge
         {
             if (_type == WebFileType.Js)
                 throw new InvalidOperationException("Cannot add js file to a css bundle");
-            if (FileSystemHelper.IsExternalRequestPath(file.FilePath))
+            if (RequestHelper.IsExternalRequestPath(file.FilePath))
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
             _bundleManager.AddToBundle(_bundleName, file);
             return this;
@@ -58,7 +58,7 @@ namespace Smidge
 
             foreach (var path in paths)
             {
-                if (FileSystemHelper.IsExternalRequestPath(path))
+                if (RequestHelper.IsExternalRequestPath(path))
                     throw new InvalidOperationException("Cannot process an external file as part of a bundle");
                 _bundleManager.AddToBundle(_bundleName, new CssFile(path));
             }

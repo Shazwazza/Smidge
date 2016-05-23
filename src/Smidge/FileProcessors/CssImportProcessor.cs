@@ -15,14 +15,16 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssImportProcessor : IPreProcessor
     {
-        public CssImportProcessor(FileSystemHelper fileSystemHelper, RequestParts requestParts)
+        public CssImportProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
         {
             _fileSystemHelper = fileSystemHelper;
-            _reqParts = requestParts;
+            _reqParts = new RequestHelper(http.HttpContext.Request);
+            _request = http.HttpContext.Request;
         }
-        
-        private RequestParts _reqParts;
-        private FileSystemHelper _fileSystemHelper;
+
+        private readonly HttpRequest _request;
+        private readonly RequestHelper _reqParts;
+        private readonly FileSystemHelper _fileSystemHelper;
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
@@ -34,7 +36,7 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_reqParts);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_request);
                 var absolute = uri.ToAbsolutePath(importPath);
 
                 var path = _reqParts.Content(absolute);
@@ -47,7 +49,7 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystemHelper.MapPath(path.StartsWith("/") ? path : string.Format("~/{0}", path));
+                    var filePath = _fileSystemHelper.MapWebPath(path.StartsWith("/") ? path : string.Format("~/{0}", path));
                     if (System.IO.File.Exists(filePath))
                     {
                         var content = await _fileSystemHelper.ReadContentsAsync(filePath);
@@ -90,7 +92,7 @@ namespace Smidge.FileProcessors
                 if (urlMatch.Success && urlMatch.Groups.Count >= 2)
                 {
                     var path = urlMatch.Groups[1].Value.Trim('\'', '"');
-                    if (FileSystemHelper.IsExternalRequestPath(path)) continue;
+                    if (RequestHelper.IsExternalRequestPath(path)) continue;
                 }
                 
                 //Strip the import statement                
@@ -100,7 +102,7 @@ namespace Smidge.FileProcessors
                 var filePath = match.Groups.Cast<Group>().Where(x => !string.IsNullOrEmpty(x.Value)).Last().Value.Trim('\'', '"');
 
                 //Ignore external imports - this will occur if they are not wrapped in a url block
-                if (FileSystemHelper.IsExternalRequestPath(filePath)) continue;
+                if (RequestHelper.IsExternalRequestPath(filePath)) continue;
 
                 pathsFound.Add(filePath);
             }

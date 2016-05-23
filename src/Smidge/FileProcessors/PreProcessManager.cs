@@ -76,7 +76,7 @@ namespace Smidge.FileProcessors
 
             if (!File.Exists(cacheFile))
             {
-                var filePath = _fileSystemHelper.MapPath(file.FilePath);
+                var filePath = _fileSystemHelper.MapWebPath(file.FilePath);
                 
                 //doesn't exist, throw as thsi shouldn't happen
                 if (File.Exists(filePath) == false) throw new FileNotFoundException("No file found with path " + filePath);

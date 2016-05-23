@@ -47,7 +47,7 @@ namespace Smidge.Controllers
         public async Task<FileResult> Bundle(
             [FromServices]BundleModel bundle)
         {  
-            var found = _bundleManager.GetFiles(bundle.FileKey, new RequestParts(Request));
+            var found = _bundleManager.GetFiles(bundle.FileKey, new RequestHelper(Request));
             if (found == null || !found.Any())
             {
                 //TODO: Throw an exception, this will result in an exception anyways

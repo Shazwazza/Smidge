@@ -11,6 +11,9 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Smidge
 {
+    /// <summary>
+    /// Singleton class that exposes methods for dealing with the file system
+    /// </summary>
     public sealed class FileSystemHelper
     {
         private readonly ISmidgeConfig _config;
@@ -25,16 +28,12 @@ namespace Smidge
             _fileProvider = fileProvider;
         }
 
-        public static bool IsExternalRequestPath(string path)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config)
         {
-            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
-            {
-                return true;
-            }
-            return false;
-        }
+            _config = config;
+            _hostingEnv = hostingEnv;
+            _fileProvider = hostingEnv.WebRootFileProvider;
+        }        
 
         /// <summary>
         /// Rudimentary check to see if the path is a folder
@@ -109,11 +108,11 @@ namespace Smidge
         /// </summary>
         /// <param name="contentFile"></param>
         /// <returns></returns>
-        public string MapPath(string contentFile)
+        public string MapWebPath(string contentFile)
         {
             var content = contentFile.TrimStart(new[] {'~'});
 
-            var fileInfo = _hostingEnv.ContentRootFileProvider.GetFileInfo(content);
+            var fileInfo = _hostingEnv.WebRootFileProvider.GetFileInfo(content);
             if (fileInfo.Exists)
                 return fileInfo.PhysicalPath;
 
@@ -123,6 +122,7 @@ namespace Smidge
         /// <summary>
         /// A rudimentary reverse map path function
         /// </summary>
+        /// <param name="subPath"></param>
         /// <param name="fileInfo"></param>
         /// <returns></returns>
         public string ReverseMapPath(string subPath, IFileInfo fileInfo)
@@ -184,6 +184,5 @@ namespace Smidge
                 return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
             }
         }
-
     }
 }

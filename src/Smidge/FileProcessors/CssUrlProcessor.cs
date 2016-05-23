@@ -10,17 +10,17 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssUrlProcessor : IPreProcessor
     {
-        public CssUrlProcessor(RequestParts reqParts)
+        public CssUrlProcessor(IHttpContextAccessor http)
         {
-            _reqParts = reqParts;
+            _request = http.HttpContext.Request;
         }
 
-        private readonly RequestParts _reqParts;
+        private readonly HttpRequest _request;
 
         public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
             //ensure the Urls in the css are changed to absolute
-            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _reqParts);
+            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _request);
 
             return Task.FromResult(parsedUrls);
         }
@@ -32,7 +32,7 @@ namespace Smidge.FileProcessors
         /// <param name="url"></param>
         /// <param name="req"></param>
         /// <returns></returns>
-        internal static string ReplaceUrlsWithAbsolutePaths(string fileContents, string url, RequestParts req)
+        internal static string ReplaceUrlsWithAbsolutePaths(string fileContents, string url, HttpRequest req)
         {
             var uri = new Uri(url, UriKind.RelativeOrAbsolute);
             fileContents = ReplaceUrlsWithAbsolutePaths(fileContents, uri.MakeAbsoluteUri(req));

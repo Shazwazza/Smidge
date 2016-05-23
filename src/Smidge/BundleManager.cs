@@ -74,9 +74,9 @@ namespace Smidge
         /// Returns the ordered collection of files for the bundle
         /// </summary>
         /// <param name="bundleName"></param>
-        /// <param name="virtualPathTranslator"></param>
+        /// <param name="requestHelper"></param>
         /// <returns></returns>
-        public IEnumerable<IWebFile> GetFiles(string bundleName, IVirtualPathTranslator virtualPathTranslator)
+        public IEnumerable<IWebFile> GetFiles(string bundleName, IRequestHelper requestHelper)
         {
             BundleFileCollection collection;
             if (!_bundles.TryGetValue(bundleName, out collection)) return null;
@@ -85,7 +85,7 @@ namespace Smidge
             var first = collection.Files.FirstOrDefault();
             if (first == null) return Enumerable.Empty<IWebFile>();
 
-            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, virtualPathTranslator,
+            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, requestHelper,
                 _processorFactory.GetDefault(first.DependencyType), 
                 _processorFactory.FileProcessingConventions);
             var ordered = orderedSet.GetOrderedFileSet();

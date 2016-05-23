@@ -25,7 +25,7 @@ namespace Smidge
         /// <param name="uri"></param>
         /// <param name="req"></param>
         /// <returns></returns>
-        public static Uri MakeAbsoluteUri(this Uri uri, RequestParts req)
+        public static Uri MakeAbsoluteUri(this Uri uri, HttpRequest req)
         {
             if (!uri.IsAbsoluteUri)
             {

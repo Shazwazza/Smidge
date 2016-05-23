@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 using Microsoft.Extensions.PlatformAbstractions;
+using Smidge.Models;
 
 namespace Smidge.Tests
 {
@@ -17,14 +18,12 @@ namespace Smidge.Tests
         [Fact]
         public void Normalize_Web_Path_Virtual_Path()
         {
-            //TODO: Test the real RequestPath
 
             var url = "~/test/hello.js";
 
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => "/" + s.TrimStart('~', '/'));
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
            
-            var result = urlHelper.Object.Content(url);
+            var result = urlHelper.Content(url);
 
             Assert.Equal("/test/hello.js", result);
         }
@@ -32,14 +31,12 @@ namespace Smidge.Tests
         [Fact]
         public void Normalize_Web_Path_Relative()
         {
-            //TODO: Test the real RequestPath
 
             var url = "test/hello.js";
 
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-          
-            var result = urlHelper.Object.Content(url);
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var result = urlHelper.Content(url);
 
             Assert.Equal("test/hello.js", result);
         }
@@ -47,13 +44,11 @@ namespace Smidge.Tests
         [Fact]
         public void Normalize_Web_Path_Absolute()
         {
-            //TODO: Test the real RequestPath
 
             var url = "/test/hello.js";
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-            
-            var result = urlHelper.Object.Content(url);
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var result = urlHelper.Content(url);
 
             Assert.Equal("/test/hello.js", result);
         }
@@ -61,13 +56,11 @@ namespace Smidge.Tests
         [Fact]
         public void Normalize_Web_Path_External_Schemaless()
         {
-            //TODO: Test the real RequestPath
 
             var url = "//test.com/hello.js";
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-           
-            var result = urlHelper.Object.Content(url);
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var result = urlHelper.Content(url);
 
             Assert.Equal("http://test.com/hello.js", result);
         }
@@ -75,13 +68,12 @@ namespace Smidge.Tests
         [Fact]
         public void Normalize_Web_Path_External_With_Schema()
         {
-            //TODO: Test the real RequestPath
 
             var url = "http://test.com/hello.js";
-            var urlHelper = new Mock<IVirtualPathTranslator>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-           
-            var result = urlHelper.Object.Content(url);
+            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+
+            var result = urlHelper.Content(url);
 
             Assert.Equal("http://test.com/hello.js", result);
         }
@@ -105,11 +97,10 @@ namespace Smidge.Tests
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject"),
-                Mock.Of<ISmidgeConfig>(),
-                fileProvider.Object);
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject" && x.WebRootFileProvider == fileProvider.Object),
+                Mock.Of<ISmidgeConfig>());
 
-            var result = helper.MapPath(url);
+            var result = helper.MapWebPath(url);
 
             Assert.Equal(filePath, result);
         }
@@ -136,11 +127,10 @@ namespace Smidge.Tests
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath),
-                Mock.Of<ISmidgeConfig>(),                
-                fileProvider.Object);
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
+                Mock.Of<ISmidgeConfig>());
 
-            var result = helper.MapPath(url);
+            var result = helper.MapWebPath(url);
 
             Assert.Equal(filePath, result);
         }
@@ -165,11 +155,10 @@ namespace Smidge.Tests
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath),
-                Mock.Of<ISmidgeConfig>(),
-                fileProvider.Object);
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
+                Mock.Of<ISmidgeConfig>());
 
-            var result = helper.MapPath(url);
+            var result = helper.MapWebPath(url);
 
             Assert.Equal(filePath, result);
         }
@@ -197,11 +186,10 @@ namespace Smidge.Tests
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath),
-                Mock.Of<ISmidgeConfig>(),
-                fileProvider.Object);
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
+                Mock.Of<ISmidgeConfig>());
 
-            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.MapPath(url));
+            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.MapWebPath(url));
 
             //    var result = helper.MapPath(url);
 
@@ -230,9 +218,8 @@ namespace Smidge.Tests
 
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath),
-                Mock.Of<ISmidgeConfig>(),
-                fileProvider.Object);
+                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
+                Mock.Of<ISmidgeConfig>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);
 

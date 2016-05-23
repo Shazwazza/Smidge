@@ -20,7 +20,7 @@
   "dependencies": {
     "Microsoft.NETCore.App": {
       "version": "1.0.0-rc2-3002702",
-      "type": "default"
+      "type": "platform"
     },
 
     "Microsoft.Extensions.DependencyInjection": "1.0.0-rc2-final",

@@ -11,26 +11,18 @@ namespace Smidge.Models
     /// </summary>
     public class BundleModel : RequestModel
     {
-        public BundleModel(IUrlManager urlManager, IActionContextAccessor accessor)
-            : base("bundle", urlManager, accessor)
+        public BundleModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
+            : base("bundle", urlManager, accessor, requestHelper)
         {
             if (!ParsedPath.Names.Any())
             {
                 throw new InvalidOperationException("The bundle route value does not contain a bundle name");
             }
 
-            _bundleName = ParsedPath.Names.Single();
+            FileKey = ParsedPath.Names.Single();
 
         }
 
-        private string _bundleName;
-
-        public override string FileKey
-        {
-            get
-            {
-                return _bundleName;
-            }
-        }
+        public override string FileKey { get; }
     }
 }

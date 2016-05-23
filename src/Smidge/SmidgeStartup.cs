@@ -29,7 +29,7 @@ namespace Smidge
             services.AddSingleton<ApplicationEnvironment>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AddScoped<IVirtualPathTranslator, RequestParts>(provider => new RequestParts(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
+            services.AddScoped<IRequestHelper, RequestHelper>(provider => new RequestHelper(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
 
             //services.AddNodeServices(NodeHostingModel.Http);
 
