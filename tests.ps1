@@ -3,33 +3,19 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 " PSScriptFilePath = $PSScriptFilePath"
 
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
-$TestsFolder = Join-Path -Path $SolutionRoot -ChildPath "tests/Smidge.Tests";
+$ProjectJsonPath = Join-Path -Path $SolutionRoot -ChildPath "tests\Smidge.Tests\project.json"
 
-$DNU = "dnu"
-$DNX = "dnx"
-$DNVM = "dnvm"
+$DOTNET = "dotnet"
 
-# ensure the correct version
-& $DNVM install 1.0.0-rc1-update1
-
-# use the correct version
-& $DNVM use 1.0.0-rc1-update1
-
-& $DNU restore "$TestsFolder"
+& $DOTNET restore "$ProjectJsonPath"
 if (-not $?)
 {
-	throw "The DNU restore process returned an error code."
-}
-
-& $DNU build "$TestsFolder"
-if (-not $?)
-{
-	throw "The DNU build process returned an error code."
+	throw "The dotnet restore process returned an error code."
 }
 
 # run them
-& $DNX -p "$TestsFolder" test
+& $DOTNET -p "$ProjectJsonPath" test
 if (-not $?)
 {
-	throw "The DNX test process returned an error code."
+	throw "The dotnet test process returned an error code."
 }
