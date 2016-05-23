@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
@@ -7,9 +7,9 @@ using Smidge.CompositeFiles;
 using Smidge.Models;
 using System;
 using System.Linq;
-using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Smidge.Tests
@@ -21,16 +21,15 @@ namespace Smidge.Tests
         {
             var files = new[] { "", "" };
 
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = new Mock<IVirtualPathTranslator>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
 
             var fileProvider = new Mock<IFileProvider>();
 
             //var options = new SmidgeOptions();
-            var appEnv = Mock.Of<IApplicationEnvironment>();
             var config = Mock.Of<ISmidgeConfig>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(appEnv, hostingEnv, config, urlHelper.Object, fileProvider.Object);
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object);
             //var helper = new SmidgeHelper(
             //    new SmidgeContext(Mock.Of<IUrlManager>()),
             //    config,
@@ -40,7 +39,7 @@ namespace Smidge.Tests
             //    new BundleManager(fileSystemHelper),
             //    Mock.Of<IContextAccessor<HttpRequest>>(x => x.Value == Mock.Of<HttpRequest>()));
 
-            var batcher = new FileBatcher(fileSystemHelper, Mock.Of<HttpRequest>(), Mock.Of<IHasher>());
+            var batcher = new FileBatcher(fileSystemHelper, urlHelper.Object, Mock.Of<IHasher>());
 
             //test a mix start/ending with external
             var result = batcher.GetCompositeFileCollectionForUrlGeneration(new IWebFile[] {

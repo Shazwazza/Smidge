@@ -29,7 +29,7 @@ namespace Smidge
             services.AddSingleton<ApplicationEnvironment>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AddScoped<RequestParts>(provider => new RequestParts(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
+            services.AddScoped<IVirtualPathTranslator, RequestParts>(provider => new RequestParts(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
 
             //services.AddNodeServices(NodeHostingModel.Http);
 
@@ -40,7 +40,7 @@ namespace Smidge
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(p.GetRequiredService<IHostingEnvironment>(), hosting, p.GetRequiredService<ISmidgeConfig>(), provider);
+                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider);
             });
 
 

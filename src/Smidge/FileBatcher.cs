@@ -16,13 +16,13 @@ namespace Smidge
     internal class FileBatcher
     {
         private FileSystemHelper _fileSystemHelper;
-        private readonly RequestParts _requestParts;
+        private readonly IVirtualPathTranslator _virtualPathTranslator;
         private IHasher _hasher;
 
-        public FileBatcher(FileSystemHelper fileSystemHelper, RequestParts requestParts, IHasher hasher)
+        public FileBatcher(FileSystemHelper fileSystemHelper, IVirtualPathTranslator virtualPathTranslator, IHasher hasher)
         {
             _fileSystemHelper = fileSystemHelper;
-            _requestParts = requestParts;
+            _virtualPathTranslator = virtualPathTranslator;
             _hasher = hasher;
         }
 
@@ -49,7 +49,7 @@ namespace Smidge
             var result = new List<WebFileBatch>();
             foreach (var f in files)
             {
-                var webPath = _fileSystemHelper.NormalizeWebPath(f.FilePath, _requestParts);
+                var webPath = _virtualPathTranslator.Content(f.FilePath);
 
                 //if this is an external path then we need to split and start new
                 if (webPath.Contains(Constants.SchemeDelimiter))
@@ -71,7 +71,7 @@ namespace Smidge
                     var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
                     foreach (var p in filePaths)
                     {
-                        var subFile = f.Duplicate(_fileSystemHelper.NormalizeWebPath(p, _requestParts));
+                        var subFile = f.Duplicate(_virtualPathTranslator.Content(p));
                         var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
                         hashedFile.Pipeline = f.Pipeline;
                         current.AddInternal(subFile, hashedFile);

@@ -6,8 +6,8 @@ using Moq;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Linq;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Smidge.Options;
 
 namespace Smidge.Tests
@@ -23,7 +23,7 @@ namespace Smidge.Tests
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 Mock.Of<IHasher>(),
-                Mock.Of<IUrlHelper>());
+                Mock.Of<IVirtualPathTranslator>());
 
             var result = manager.ParsePath(path);
 
@@ -35,7 +35,7 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Bundle_Url()
         {
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = new Mock<IVirtualPathTranslator>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
@@ -54,7 +54,7 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Composite_Url()
         {
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = new Mock<IVirtualPathTranslator>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
@@ -75,7 +75,7 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Composite_Url_Splits()
         {
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = new Mock<IVirtualPathTranslator>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
@@ -98,7 +98,7 @@ namespace Smidge.Tests
         [Fact]
         public void Throws_When_Single_Dependency_Too_Long()
         {
-            var urlHelper = new Mock<IUrlHelper>();
+            var urlHelper = new Mock<IVirtualPathTranslator>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());

@@ -17,11 +17,11 @@ namespace Smidge
         private readonly PreProcessPipeline _defaultPipeline;
         private readonly IEnumerable<IFileProcessingConvention> _allConventions;
         private readonly FileSystemHelper _fileSystemHelper;
-        private readonly RequestParts _requestParts;
+        private readonly IVirtualPathTranslator _virtualPathTranslator;
 
         public OrderedFileSet(IEnumerable<IWebFile> files,
-            FileSystemHelper fileSystemHelper, 
-            RequestParts requestParts,
+            FileSystemHelper fileSystemHelper,
+            IVirtualPathTranslator virtualPathTranslator,
             PreProcessPipeline defaultPipeline, 
             IEnumerable<IFileProcessingConvention> allConventions)
         {
@@ -29,7 +29,7 @@ namespace Smidge
             _defaultPipeline = defaultPipeline;
             _allConventions = allConventions;
             _fileSystemHelper = fileSystemHelper;
-            _requestParts = requestParts;
+            _virtualPathTranslator = virtualPathTranslator;
         }
 
         public IEnumerable<IWebFile> GetOrderedFileSet()
@@ -43,7 +43,7 @@ namespace Smidge
                 {
                     file.Pipeline = _defaultPipeline.Copy();
                 }
-                file.FilePath = _fileSystemHelper.NormalizeWebPath(file.FilePath, _requestParts);
+                file.FilePath = _virtualPathTranslator.Content(file.FilePath);
 
                 //We need to check if this path is a folder, then iterate the files
                 if (_fileSystemHelper.IsFolder(file.FilePath))
@@ -55,7 +55,7 @@ namespace Smidge
                         {
                             customOrdered.Add(new WebFile
                             {
-                                FilePath = _fileSystemHelper.NormalizeWebPath(f, _requestParts),
+                                FilePath = _virtualPathTranslator.Content(f),
                                 DependencyType = file.DependencyType,
                                 Pipeline = file.Pipeline,
                                 Order = file.Order
@@ -65,7 +65,7 @@ namespace Smidge
                         {
                             defaultOrdered.Add(new WebFile
                             {
-                                FilePath = _fileSystemHelper.NormalizeWebPath(f, _requestParts),
+                                FilePath = _virtualPathTranslator.Content(f),
                                 DependencyType = file.DependencyType,
                                 Pipeline = file.Pipeline,
                                 Order = file.Order

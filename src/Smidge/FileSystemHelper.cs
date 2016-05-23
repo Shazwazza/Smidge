@@ -1,30 +1,25 @@
 ﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
-using Smidge.Models;
 
 namespace Smidge
 {
     public sealed class FileSystemHelper
     {
-        private IHostingEnvironment _appEnv;
-        private ISmidgeConfig _config;
-        private IHostingEnvironment _hostingEnv;
-        private ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
-        private IFileProvider _fileProvider;
+        private readonly ISmidgeConfig _config;
+        private readonly IHostingEnvironment _hostingEnv;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly IFileProvider _fileProvider;
 
-        public FileSystemHelper(IHostingEnvironment appEnv, IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider)
         {
-            _appEnv = appEnv;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = fileProvider;
@@ -41,30 +36,6 @@ namespace Smidge
             return false;
         }
 
-        /// <summary>
-        /// Takes in a given path and returns it's normalized result, either as a relative path for local files or an absolute web path with a host
-        /// </summary>
-        /// <param name="path"></param>
-        /// <param name="requestParts"></param>
-        /// <returns></returns>
-        public string NormalizeWebPath(string path, RequestParts requestParts)
-        {
-            //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
-            // logic to work properly
-            if (path.StartsWith("//"))
-            {
-                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", requestParts.Scheme, Constants.SchemeDelimiter));
-            }
-
-            //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
-            // since it is not dependent on the ActionContext
-            if (string.IsNullOrEmpty(path))
-                return (string)null;
-            if ((int)path[0] == 126)
-                return requestParts.PathBase.Add(new PathString(path.Substring(1))).Value;
-            return path;
-        }
-        
         /// <summary>
         /// Rudimentary check to see if the path is a folder
         /// </summary>
@@ -210,7 +181,7 @@ namespace Smidge
         {
             get
             {
-                return Path.Combine(_appEnv.ContentRootPath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
+                return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
             }
         }
 

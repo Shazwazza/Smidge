@@ -37,7 +37,7 @@ namespace Smidge.FileProcessors
                 var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_reqParts);
                 var absolute = uri.ToAbsolutePath(importPath);
 
-                var path = _fileSystemHelper.NormalizeWebPath(absolute, _reqParts);
+                var path = _reqParts.Content(absolute);
                 //is it external?
                 if (path.Contains(Constants.SchemeDelimiter))
                 {
