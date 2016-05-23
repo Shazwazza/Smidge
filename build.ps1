@@ -15,14 +15,7 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
 
-$DNU = "dnu"
-$DNVM = "dnvm"
-
-# ensure the correct version
-& $DNVM install 1.0.0-rc1-update1
-
-# use the correct version
-& $DNVM use 1.0.0-rc1-update1
+$DOTNET = "dotnet"
 
 # Make sure we don't have a release folder for this version already
 $BuildFolder = Join-Path -Path $SolutionRoot -ChildPath "build";
@@ -46,20 +39,20 @@ $DateYear = (Get-Date).year
 
 # Build the proj in release mode
 
-& $DNU restore "$ProjectJsonPath"
+& $DOTNET restore "$ProjectJsonPath"
 if (-not $?)
 {
-	throw "The DNU restore process returned an error code."
+	throw "The dotnet restore process returned an error code."
 }
 
-& $DNU build "$ProjectJsonPath"
+& $DOTNET build "$ProjectJsonPath"
 if (-not $?)
 {
-	throw "The DNU build process returned an error code."
+	throw "The dotnet build process returned an error code."
 }
 
-& $DNU pack "$ProjectJsonPath" --configuration Release --out "$ReleaseFolder"
+& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder"
 if (-not $?)
 {
-	throw "The DNU pack process returned an error code."
+	throw "The dotnet pack process returned an error code."
 }
