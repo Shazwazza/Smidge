@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;
@@ -44,8 +45,9 @@ namespace Smidge.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<ApplicationEnvironment>();
 
-            services.AddMvc();
+            services.AddMvc();            
 
             // Or use services.AddSmidge() to test from smidge.json config.
             services.AddSmidge(_config)

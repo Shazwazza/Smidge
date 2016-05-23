@@ -7,10 +7,14 @@
     "preserveCompilationContext": true
   },
 
+  "runtimeOptions": {
+    "gcServer": true
+  },
+
   "dependencies": {
     "Microsoft.NETCore.App": {
       "version": "1.0.0-rc2-3002702",
-      "type": "build"
+      "type": "platform"
     },
     "System.IO.Compression": "4.1.0-rc2-24027",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-rc2-final",
@@ -19,7 +23,10 @@
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-rc2-final",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-final",
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview1-final",
+    "Microsoft.AspNetCore.Razor.Tools": {
+      "version": "1.0.0-preview1-final",
+      "type": "build"
+    },
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-rc2-final",
     "Smidge": "1.0.0-*"
   },
@@ -30,17 +37,6 @@
       "imports": "portable-net45+win8+dnxcore50"
     },
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
-      "version": "1.0.0-preview1-final",
-      "imports": "portable-net45+win8+dnxcore50"
-    },
-    "Microsoft.EntityFrameworkCore.Tools": {
-      "version": "1.0.0-preview1-final",
-      "imports": [
-        "portable-net45+win8+dnxcore50",
-        "portable-net45+win8"
-      ]
-    },
-    "Microsoft.Extensions.SecretManager.Tools": {
       "version": "1.0.0-preview1-final",
       "imports": "portable-net45+win8+dnxcore50"
     },
@@ -60,12 +56,6 @@
         "dnxcore50"
       ]
     }
-  },
-
-  "runtimes": {
-    "osx.10.11-x64": { },
-    "ubuntu.14.04-x64": { },
-    "win10-x64": { }
   },
 
   "publishOptions": {

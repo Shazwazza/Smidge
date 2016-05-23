@@ -24,9 +24,10 @@ namespace Smidge
     {
 
 
-        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null, IFileProvider fileProvider = null)
-        {
-            services.AddSingleton<ApplicationEnvironment>();
+        public static IServiceCollection AddSmidge(this IServiceCollection services, 
+            IConfiguration smidgeConfiguration = null, 
+            IFileProvider fileProvider = null)
+        {            
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
             services.AddScoped<IRequestHelper, RequestHelper>(provider => new RequestHelper(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
