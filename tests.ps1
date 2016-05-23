@@ -7,14 +7,14 @@ $ProjectJsonPath = Join-Path -Path $SolutionRoot -ChildPath "tests\Smidge.Tests\
 
 $DOTNET = "dotnet"
 
-& $DOTNET restore "$ProjectJsonPath"
-if (-not $?)
-{
-	throw "The dotnet restore process returned an error code."
-}
+#& $DOTNET restore "$ProjectJsonPath"
+#if (-not $?)
+#{
+#	throw "The dotnet restore process returned an error code."
+#}
 
 # run them
-& $DOTNET -p "$ProjectJsonPath" test
+& $DOTNET test "$ProjectJsonPath"
 if (-not $?)
 {
 	throw "The dotnet test process returned an error code."
