@@ -3,11 +3,11 @@
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
-A lightweight **ASP.Net 5** library for _runtime_ CSS and JavaScript file management, minification, combination & compression. 
+A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
 
 ## Install
 
-_Currently supporting DNX 4.5.1 & DNXCore 5.0, built against **rc1-final**_
+_Currently supporting ASP.NET Core 1.0, built against **Microsoft.NETCore.App 1.0.0-rc2-3002702**_
 
 Nuget:
 
@@ -74,7 +74,7 @@ __[See Asset URLs](https://github.com/Shazwazza/Smidge/wiki/Asset-Urls) for info
 
 ##Documentation
 
-__[All of the documentation live here](https://github.com/Shazwazza/Smidge/wiki)__
+__[All of the documentation lives here](https://github.com/Shazwazza/Smidge/wiki)__
 
 ##Work in progress
 
