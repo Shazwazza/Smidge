@@ -188,3 +188,4 @@ src/Smidge.Web/App_Data/Smidge/*
 /src/Smidge.Web/Properties
 /src/Smidge.Web/project.lock.json
 /tests/Smidge.Tests/project.lock.json
+test/Smidge.Tests/project.lock.json

@@ -1,13 +1,20 @@
 param (
 	[Parameter(Mandatory=$true)]
-	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)")]
+	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)|^\d+\.\d+\.\d+-\w+-\d+$")]
 	[string]
 	$ReleaseVersionNumber,
-	[Parameter(Mandatory=$true)]
+	[Parameter(Mandatory=$false)]
 	[string]
 	[AllowEmptyString()]
 	$PreReleaseName
 )
+
+if([string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains("-"))
+{
+	$parts = $ReleaseVersionNumber.Split("-")
+	$ReleaseVersionNumber = $parts[0]
+	$PreReleaseName = "-" + $parts[1] + "-" + $parts[2]
+}
 
 $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 
