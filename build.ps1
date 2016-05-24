@@ -39,7 +39,9 @@ $DateYear = (Get-Date).year
 
 # Build the proj in release mode
 
-& $DOTNET restore "$ProjectJsonPath"
+& $DOTNET --info
+
+& $DOTNET restore
 if (-not $?)
 {
 	throw "The dotnet restore process returned an error code."

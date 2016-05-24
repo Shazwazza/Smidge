@@ -28,7 +28,11 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TagHelpers": "1.0.0-rc2-final",
-    "Smidge": "1.0.0-*"
+
+    "Smidge": {
+      "target": "project",
+      "version": "1.0.0-*"
+    }
   },
 
   "tools": {
@@ -53,7 +57,8 @@
     "netcoreapp1.0": {
       "imports": [
         "dotnet5.6",
-        "dnxcore50"
+        "dnxcore50",
+        "portable-net45+win8"
       ]
     }
   },

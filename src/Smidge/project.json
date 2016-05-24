@@ -4,7 +4,7 @@
   "description": "A lightweight ASP.Net Core library for runtime CSS and JavaScript file management, minification, combination & compression",
 
   "packOptions": {
-    "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnet5" ],
+    "tags": [ "css", "javascript", "minify", "compression", "combination", "aspnetcore" ],
     "projectUrl": "https://github.com/Shazwazza/Smidge/",
     "licenseUrl": "http://opensource.org/licenses/MIT",
     "summary": "A lightweight ASP.Net Core library for runtime CSS and JavaScript file management, minification, combination & compression",
@@ -17,11 +17,7 @@
   },
 
 
-  "dependencies": {
-    "Microsoft.NETCore.App": {
-      "version": "1.0.0-rc2-3002702"
-    },
-
+  "dependencies": {   
     "Microsoft.Extensions.DependencyInjection": "1.0.0-rc2-final",
     "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
     "Microsoft.Extensions.Configuration": "1.0.0-rc2-final",
@@ -33,8 +29,19 @@
     "netcoreapp1.0": {
       "imports": [
         "dotnet5.6",
-        "dnxcore50"
-      ]
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "version": "1.0.0-rc2-3002702"
+        }
+      }
+    },
+    "net461": {
+      "dependencies": {
+        "Microsoft.NETCore.Platforms": "1.0.1-rc2-24027"
+      }
     }
   }
 }
