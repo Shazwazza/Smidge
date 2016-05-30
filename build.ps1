@@ -1,6 +1,6 @@
 param (
 	[Parameter(Mandatory=$true)]
-	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)|^\d+\.\d+\.\d+-\w+-\d+$")]
+	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)|^\d+\.\d+\.\d+-(\w|-)+$")]
 	[string]
 	$ReleaseVersionNumber,
 	[Parameter(Mandatory=$false)]
