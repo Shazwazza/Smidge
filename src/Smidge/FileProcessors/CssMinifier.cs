@@ -28,240 +28,251 @@ namespace Smidge.FileProcessors
         {
             using (var reader = new StringReader(fileProcessContext.FileContent))
             {
-                return Task.FromResult(Minify(reader));
+                var cssMin = new CssMin();
+                return Task.FromResult(cssMin.Minify(reader));
             }
         }
 
-        const int EOF = -1;
-
-        TextReader tr;
-        StringBuilder sb;
-        int theA;
-        int theB;
-        int theLookahead = EOF;
-
-
-        /// <summary>
-        /// Minify the input script
-        /// </summary>
-        /// <param name="reader"></param>
-        /// <returns></returns>
-        public string Minify(TextReader reader)
+        private class CssMin
         {
-            sb = new StringBuilder();
-            tr = reader;
-            theA = '\n';
-            theB = 0;
-            theLookahead = EOF;
-            cssmin();
-            return sb.ToString();
-        }
+            private const int Eof = -1;
 
-        /// <summary>
-        /// Excute the actual minify
-        /// </summary>
-        void cssmin()
-        {
-            action(3);
-            while (theA != EOF)
+            private TextReader _tr;
+            private StringBuilder _sb;
+            int _theA;
+            int _theB;
+            int _theLookahead = Eof;
+
+
+            /// <summary>
+            /// Minify the input script
+            /// </summary>
+            /// <param name="reader"></param>
+            /// <returns></returns>
+            public string Minify(TextReader reader)
             {
-                switch (theA)
+                _sb = new StringBuilder();
+                _tr = reader;
+                _theA = '\n';
+                _theB = 0;
+                _theLookahead = Eof;
+                ExecuteCssMin();
+                return _sb.ToString();
+            }
+
+            /// <summary>
+            /// Excute the actual minify
+            /// </summary>
+            private void ExecuteCssMin()
+            {
+                Action(3);
+                while (_theA != Eof)
                 {
-                    case ' ':
-                        {
-                            switch (theB)
+                    switch (_theA)
+                    {
+                        case ' ':
                             {
-                                case ' ':        //body.Replace("  ", String.Empty);
-                                case '{':        //body = body.Replace(" {", "{");
-                                case ':':        //body = body.Replace(" {", "{");
-                                case '\n':       //body = body.Replace(" \n", "\n");
-                                case '\r':       //body = body.Replace(" \r", "\r");
-                                case '\t':       //body = body.Replace(" \t", "\t");
-                                    action(2);
-                                    break;
-                                default:
-                                    action(1);
-                                    break;
+                                switch (_theB)
+                                {
+                                    case ' ':        //body.Replace("  ", String.Empty);
+                                    case '{':        //body = body.Replace(" {", "{");
+                                    case ':':        //body = body.Replace(" {", "{");
+                                    case '\n':       //body = body.Replace(" \n", "\n");
+                                    case '\r':       //body = body.Replace(" \r", "\r");
+                                    case '\t':       //body = body.Replace(" \t", "\t");
+                                        Action(2);
+                                        break;
+                                    default:
+                                        Action(1);
+                                        break;
+                                }
+                                break;
+                            }
+                        case '\t':              //body = body.Replace("\t", "");
+                        case '\r':              //body = body.Replace("\r", "");
+                            Action(2);
+                            break;
+                        case '\n':              //body = body.Replace("\n", "");
+                            if (char.IsWhiteSpace((char)_theB))
+                            {
+                                //skip over whitespace
+                                Action(3);
+                            }
+                            else
+                            {
+                                //convert the line break to a space except when in the beginning
+                                //TODO: this isn't the best place to put this logic since all puts are done
+                                // in the action, but i don't see any other way to do this,
+                                //we could set theA = ' ' and call action(1) ?
+                                if (_sb.Length > 0) Put(' ');
+                                Action(2);
                             }
                             break;
-                        }
-                    case '\t':              //body = body.Replace("\t", "");
-                    case '\r':              //body = body.Replace("\r", "");
-                        action(2);
-                        break;
-                    case '\n':              //body = body.Replace("\n", "");
-                        if (char.IsWhiteSpace((char)theB))
-                        {
+                        case '}':
+                        case '{':
+                        case ':':
+                        case ',':
+                        case ';':
                             //skip over whitespace
-                            action(3);
-                        }
-                        else
-                        {
-                            //convert the line break to a space except when in the beginning
-                            //TODO: this isn't the best place to put this logic since all puts are done
-                            // in the action, but i don't see any other way to do this,
-                            //we could set theA = ' ' and call action(1) ?
-                            if (sb.Length > 0) put(' ');
-                            action(2);
-                        }
-                        break;
-                    case '}':
-                    case '{':
-                    case ':':
-                    case ',':
-                    case ';':
-                        //skip over whitespace
-                        action(char.IsWhiteSpace((char)theB) ? 3 : 1);
-                        break;
-                    default:
-                        action(1);
-                        break;
-                }
-            }
-        }
-        /* action -- do something! What you do is determined by the argument:
-                1   Output A. Copy B to A. Get the next B.
-                2   Copy B to A. Get the next B. (Delete A).
-                3   Get the next B. (Delete B).
-        */
-        void action(int d)
-        {
-            if (d <= 1)
-            {
-                put(theA);
-            }
-            if (d <= 2)
-            {
-                theA = theB;
-                if (theA == '\'' || theA == '"')
-                {
-                    for (;;)
-                    {
-                        put(theA);
-                        theA = get();
-                        if (theA == theB)
-                        {
+                            Action(char.IsWhiteSpace((char)_theB) ? 3 : 1);
                             break;
-                        }
-                        if (theA <= '\n')
-                        {
-                            throw new FormatException(string.Format("Error: unterminated string literal: {0}\n", theA));
-                        }
-                        if (theA == '\\')
-                        {
-                            put(theA);
-                            theA = get();
-                        }
+                        default:
+                            Action(1);
+                            break;
                     }
                 }
             }
-            if (d <= 3)
+            /* action -- do something! What you do is determined by the argument:
+                    1   Output A. Copy B to A. Get the next B.
+                    2   Copy B to A. Get the next B. (Delete A).
+                    3   Get the next B. (Delete B).
+            */
+
+            private void Action(int d)
             {
-                theB = next();
-                if (theB == '/' && (theA == '(' || theA == ',' || theA == '=' ||
-                                    theA == '[' || theA == '!' || theA == ':' ||
-                                    theA == '&' || theA == '|' || theA == '?' ||
-                                    theA == '{' || theA == '}' || theA == ';' ||
-                                    theA == '\n'))
+                if (d <= 1)
                 {
-                    put(theA);
-                    put(theB);
-                    for (;;)
-                    {
-                        theA = get();
-                        if (theA == '/')
-                        {
-                            break;
-                        }
-                        else if (theA == '\\')
-                        {
-                            put(theA);
-                            theA = get();
-                        }
-                        else if (theA <= '\n')
-                        {
-                            throw new FormatException(string.Format("Error: unterminated Regular Expression literal : {0}.\n", theA));
-                        }
-                        put(theA);
-                    }
-                    theB = next();
+                    Put(_theA);
                 }
-            }
-        }
-        /* next -- get the next character, excluding comments. peek() is used to see
-                if a '/' is followed by a '*'.
-        */
-        int next()
-        {
-            int c = get();
-            if (c == '/')
-            {
-                switch (peek())
+                if (d <= 2)
                 {
-                    case '*':
+                    _theA = _theB;
+                    if (_theA == '\'' || _theA == '"')
+                    {
+                        for (;;)
                         {
-                            get();
-                            for (;;)
+                            Put(_theA);
+                            _theA = Get();
+                            if (_theA == _theB)
                             {
-                                switch (get())
+                                break;
+                            }
+                            if (_theA <= '\n')
+                            {
+                                throw new FormatException(string.Format("Error: unterminated string literal: {0}\n", _theA));
+                            }
+                            if (_theA == '\\')
+                            {
+                                Put(_theA);
+                                _theA = Get();
+                            }
+                        }
+                    }
+                }
+                if (d <= 3)
+                {
+                    _theB = Next();
+                    if (_theB == '/' && (_theA == '(' || _theA == ',' || _theA == '=' ||
+                                        _theA == '[' || _theA == '!' || _theA == ':' ||
+                                        _theA == '&' || _theA == '|' || _theA == '?' ||
+                                        _theA == '{' || _theA == '}' || _theA == ';' ||
+                                        _theA == '\n'))
+                    {
+                        Put(_theA);
+                        Put(_theB);
+                        for (;;)
+                        {
+                            _theA = Get();
+                            if (_theA == '/')
+                            {
+                                break;
+                            }
+                            else if (_theA == '\\')
+                            {
+                                Put(_theA);
+                                _theA = Get();
+                            }
+                            else if (_theA <= '\n')
+                            {
+                                throw new FormatException(string.Format("Error: unterminated Regular Expression literal : {0}.\n", _theA));
+                            }
+                            Put(_theA);
+                        }
+                        _theB = Next();
+                    }
+                }
+            }
+            /* next -- get the next character, excluding comments. peek() is used to see
+                    if a '/' is followed by a '*'.
+            */
+
+            private int Next()
+            {
+                int c = Get();
+                if (c == '/')
+                {
+                    switch (Peek())
+                    {
+                        case '*':
+                            {
+                                Get();
+                                for (;;)
                                 {
-                                    case '*':
-                                        {
-                                            if (peek() == '/')
+                                    switch (Get())
+                                    {
+                                        case '*':
                                             {
-                                                get();
-                                                return ' ';
+                                                if (Peek() == '/')
+                                                {
+                                                    Get();
+                                                    return ' ';
+                                                }
+                                                break;
                                             }
-                                            break;
-                                        }
-                                    case EOF:
-                                        {
-                                            throw new FormatException("Error: Unterminated comment.\n");
-                                        }
+                                        case Eof:
+                                            {
+                                                throw new FormatException("Error: Unterminated comment.\n");
+                                            }
+                                    }
                                 }
                             }
-                        }
-                    default:
-                        {
-                            return c;
-                        }
+                        default:
+                            {
+                                return c;
+                            }
+                    }
                 }
-            }
-            return c;
-        }
-        /* peek -- get the next character without getting it.
-        */
-        int peek()
-        {
-            theLookahead = get();
-            return theLookahead;
-        }
-        /* get -- return the next character from stdin. Watch out for lookahead. If
-                the character is a control character, translate it to a space or
-                linefeed.
-        */
-        int get()
-        {
-            int c = theLookahead;
-            theLookahead = EOF;
-            if (c == EOF)
-            {
-                c = tr.Read();
-            }
-            if (c >= ' ' || c == '\n' || c == EOF)
-            {
                 return c;
             }
-            if (c == '\r')
+            /* peek -- get the next character without getting it.
+            */
+
+            private int Peek()
             {
-                return '\n';
+                _theLookahead = Get();
+                return _theLookahead;
             }
-            return ' ';
+            /* get -- return the next character from stdin. Watch out for lookahead. If
+                    the character is a control character, translate it to a space or
+                    linefeed.
+            */
+
+            private int Get()
+            {
+                int c = _theLookahead;
+                _theLookahead = Eof;
+                if (c == Eof)
+                {
+                    c = _tr.Read();
+                }
+                if (c >= ' ' || c == '\n' || c == Eof)
+                {
+                    return c;
+                }
+                if (c == '\r')
+                {
+                    return '\n';
+                }
+                return ' ';
+            }
+
+            private void Put(int c)
+            {
+                _sb.Append((char)c);
+            }
         }
-        void put(int c)
-        {
-            sb.Append((char)c);
-        }
+
+
     }
 
     ///// <summary>
