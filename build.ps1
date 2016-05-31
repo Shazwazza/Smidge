@@ -13,7 +13,7 @@ if([string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains(
 {
 	$parts = $ReleaseVersionNumber.Split("-")
 	$ReleaseVersionNumber = $parts[0]
-	$PreReleaseName = "-" + $parts[1] + "-" + $parts[2]
+	$PreReleaseName = "-" + $parts[1]
 }
 
 $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName

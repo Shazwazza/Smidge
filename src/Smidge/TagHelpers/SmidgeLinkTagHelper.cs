@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders;
+using Microsoft.AspNetCore.Mvc.TagHelpers;
 
 namespace Smidge.TagHelpers
 {
@@ -23,6 +24,14 @@ namespace Smidge.TagHelpers
             _encoder = encoder;
         }
 
+        /// <summary>
+        /// TODO: Need to figure out why we need this. If the order is default and executes 'after' the 
+        /// default tag helpers like the script tag helper and url resolution tag helper, the url resolution
+        /// doesn't actually work, it simply doesn't get passed through. Not sure if this is a bug or if I'm 
+        /// doing it wrong. In the meantime, setting this to execute before the defaults works.
+        /// </summary>
+        public override int Order => -2000;
+
         [HtmlAttributeName("href")]
         public string Source { get; set; }
 
@@ -31,6 +40,14 @@ namespace Smidge.TagHelpers
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            // Pass through attribute that is also a well-known HTML attribute.
+            // this is required to make sure that other tag helpers executing against this element have
+            // the value copied across
+            if (Source != null)
+            {
+                output.CopyHtmlAttribute("href", context);
+            }
+
             if (_bundleManager.Exists(Source))
             {
                 var result = (await _smidgeHelper.GenerateCssUrlsAsync(Source, Debug)).ToArray();
@@ -53,12 +70,7 @@ namespace Smidge.TagHelpers
                 }
                 //This ensures the original tag is not written.
                 output.TagName = null;
-            }
-            else
-            {
-                //use what is there
-                output.Attributes.SetAttribute("href", Source);
-            }
+            }            
         }
     }
 }

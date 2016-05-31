@@ -1,10 +1,6 @@
 ﻿@using Smidge
 @using Smidge.Models;
 @using Smidge.FileProcessors;
-@inject Smidge.SmidgeHelper SmidgeHelper
-@inject Smidge.FileProcessors.PreProcessPipelineFactory PipelineFactory
-@inject Smidge.BundleManager BundleManager
-@addTagHelper *, Smidge
 
 <html>
 <head>
@@ -42,5 +38,6 @@
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 
+    <script src="~/Js/non-bundled.js" type="text/javascript"></script>
 </body>
 </html>
