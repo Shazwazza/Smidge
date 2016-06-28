@@ -31,7 +31,7 @@ namespace Smidge
             {
                 if (req.Path.HasValue)
                 {
-                    var fullUri = UriHelper.Encode(req.Scheme, req.Host, req.PathBase, req.Path, req.QueryString);                        
+                    var fullUri = req.GetEncodedUrl();                        
                     //var uriHelper = new UriHelper(req);
                     //var fullUri = uriHelper.GetFullUri();
                     var reqUri = new Uri(fullUri);
