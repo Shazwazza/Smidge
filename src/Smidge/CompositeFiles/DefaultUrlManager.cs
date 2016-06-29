@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Smidge.Models;
 using System.Text;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using Smidge.Options;
 
@@ -25,15 +26,14 @@ namespace Smidge.CompositeFiles
 
         public string GetUrl(string bundleName, string fileExtension)
         {
-            const string handler = "~/{0}/{1}{2}.v{3}";
-            return _requestHelper.Content(
-                string.Format(
-                    handler,
-                    _options.BundleFilePath,
-                    Uri.EscapeUriString(bundleName),
-                    fileExtension,
-                    _config.Version));
+            var url = BuildUrl(
+                _options.UrlPattern,
+                _options.BundleFilePath,
+                Uri.EscapeUriString(bundleName),
+                fileExtension,
+                _config.Version);
 
+            return _requestHelper.Content(url);
         }
 
         public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension)
@@ -136,16 +136,81 @@ namespace Smidge.CompositeFiles
 
         private string GetCompositeUrl(string fileKey, string fileExtension)
         {
-            //Create a delimited URL query string
+            var url = BuildUrl(
+                _options.UrlPattern, 
+                _options.CompositeFilePath, 
+                Uri.EscapeUriString(fileKey), 
+                fileExtension, 
+                _config.Version);
 
-            const string handler = "~/{0}/{1}{2}.v{3}";
-            return _requestHelper.Content(
-                string.Format(
-                    handler,
-                    _options.CompositeFilePath,
-                    Uri.EscapeUriString(fileKey),
-                    fileExtension,
-                    _config.Version));
+            return _requestHelper.Content(url);
         }
+
+        public static string BuildUrl(string pattern, string path, string name, string ext, string version)
+        {
+            pattern = pattern.Trim();
+
+            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(path));
+            if (string.IsNullOrWhiteSpace(pattern)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(pattern));            
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+            if (string.IsNullOrWhiteSpace(ext)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(ext));
+            if (string.IsNullOrWhiteSpace(version)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(version));
+
+            if (!ext.StartsWith("."))
+                throw new FormatException("The file extension is not formatted correctly and must begin with '.'");
+
+            if (!pattern.StartsWith("~/"))
+                throw new FormatException("The URL pattern is not formatted correctly and must begin with '~/'");
+            
+            //strip the . from the file extension, that can be part of the pattern
+            ext = ext.TrimStart('.');
+
+            var matches = UrlPatternTokens.Matches(pattern);
+
+            if (matches.Count != 4)
+                throw new FormatException("The URL pattern is not formatted correctly and must contain the correct tokens");
+            
+            var lastIndex = 0;
+            var sb = new StringBuilder();
+            foreach (Match r in matches)
+            {
+                var delim = pattern.Substring(lastIndex, r.Index - lastIndex);
+
+                if (sb.Length > 0)
+                {
+                    //if there's already a string, we need to validate that there is some delimiter
+                    //between each match, otherwise we cannot parse it the other way around
+                    if (delim.Length == 0)
+                        throw new FormatException("The URL pattern is not formatted correctly, it must contain some delimiter text between each token");
+                }
+                sb.Append(delim);
+                lastIndex = (r.Index + r.Length);
+
+                switch (r.Value)
+                {
+                    case "{Path}":
+                        sb.Append(path);
+                        break;
+                    case "{Name}":
+                        sb.Append(name);
+                        break;
+                    case "{Ext}":
+                        sb.Append(ext);
+                        break;
+                    case "{Version}":
+                        sb.Append(version);
+                        break;
+                }                
+            }
+
+            if (lastIndex < pattern.Length - 1)
+            {
+                sb.Append(pattern.Substring(lastIndex, (pattern.Length) - lastIndex));
+            }
+
+            return sb.ToString();
+        }
+
+        private static readonly Regex UrlPatternTokens = new Regex("({Path}){1}|({Name}){1}|({Ext}){1}|({Version}){1}", RegexOptions.Compiled);
     }
 }

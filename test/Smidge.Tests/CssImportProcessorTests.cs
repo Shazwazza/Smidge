@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Smidge.Tests
 {
+
     public class CssImportProcessorTests
     {
         [Fact]
