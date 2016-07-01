@@ -26,6 +26,7 @@ namespace Smidge.Tests
         private readonly PreProcessManager _preProcessManager;
         private Bundles _bundles;
         private Mock<IOptions<Bundles>> _bundlesOptions;
+        private Mock<IOptions<SmidgeOptions>> _smidgeOptions;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly BundleManager _bundleManager;
         private readonly IRequestHelper _requestHelper;
@@ -45,7 +46,11 @@ namespace Smidge.Tests
             _bundlesOptions = new Mock<IOptions<Bundles>>();
             _bundlesOptions.Setup(opt => opt.Value).Returns(_bundles);
 
-            _processorFactory = new PreProcessPipelineFactory(_preProcessors, new List<IFileProcessingConvention>());
+            _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
+            _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
+
+            _processorFactory = new PreProcessPipelineFactory(_preProcessors, 
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
             _bundleManager = new BundleManager(_fileSystemHelper, _bundlesOptions.Object, _processorFactory);
 
             _requestHelper = Mock.Of<IRequestHelper>();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Linq;
+using Smidge.Options;
 
 namespace Smidge.FileProcessors
 {
@@ -10,11 +11,11 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class PreProcessPipelineFactory
     {
-        public IEnumerable<IFileProcessingConvention> FileProcessingConventions { get; set; }
+        public FileProcessingConventions FileProcessingConventions { get; set; }
 
         private readonly IEnumerable<IPreProcessor> _allProcessors;
 
-        public PreProcessPipelineFactory(IEnumerable<IPreProcessor> allProcessors, IEnumerable<IFileProcessingConvention> fileProcessingConventions)
+        public PreProcessPipelineFactory(IEnumerable<IPreProcessor> allProcessors, FileProcessingConventions fileProcessingConventions)
         {
             FileProcessingConventions = fileProcessingConventions;
             _allProcessors = allProcessors;

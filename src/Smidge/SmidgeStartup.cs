@@ -68,6 +68,7 @@ namespace Smidge
             services.AddScoped<IPreProcessor, CssImportProcessor>();
             services.AddScoped<IPreProcessor, CssUrlProcessor>();
             //conventions
+            services.AddSingleton<FileProcessingConventions>();
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
 
             //Add the controller models as DI services - these get auto created for model binding

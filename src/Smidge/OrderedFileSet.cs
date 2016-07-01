@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Smidge.FileProcessors;
 using Smidge.Models;
+using Smidge.Options;
 
 namespace Smidge
 {
@@ -15,19 +16,19 @@ namespace Smidge
     {
         private readonly IEnumerable<IWebFile> _files;
         private readonly PreProcessPipeline _defaultPipeline;
-        private readonly IEnumerable<IFileProcessingConvention> _allConventions;
+        private readonly FileProcessingConventions _conventions;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
 
         public OrderedFileSet(IEnumerable<IWebFile> files,
             FileSystemHelper fileSystemHelper,
             IRequestHelper requestHelper,
-            PreProcessPipeline defaultPipeline, 
-            IEnumerable<IFileProcessingConvention> allConventions)
+            PreProcessPipeline defaultPipeline,
+            FileProcessingConventions conventions)
         {
             _files = files;
             _defaultPipeline = defaultPipeline;
-            _allConventions = allConventions;
+            _conventions = conventions;
             _fileSystemHelper = fileSystemHelper;
             _requestHelper = requestHelper;
         }
@@ -98,7 +99,7 @@ namespace Smidge
             //Here we can apply some rules about the pipeline based on conventions.
             // For example, if the file name ends with .min.js we don't want to have JsMin execute,
             // there could be others of course and this should be configurable.
-            foreach (var convention in _allConventions)
+            foreach (var convention in _conventions.Values)
             {
                 if (curr != null)
                 {
