@@ -53,6 +53,7 @@ namespace Smidge.Web
             services.AddSmidge(_config)
                 .Configure<SmidgeOptions>(options =>
                 {
+                    options.UrlOptions.UrlPattern = "~/{Path}/{Name}{Ext}.v{Version}";
                 })
                 .Configure<Bundles>(bundles =>
                 {
