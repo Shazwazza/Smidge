@@ -7,7 +7,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 
 ## Install
 
-_Currently supporting ASP.NET Core 1.0, built against **Microsoft.NETStandard.1.6** & .Net 4.5.2_
+_Currently supporting ASP.NET Core 1.0, built against **NETStandard.1.6** & **.Net Framework 4.5.2**_
 
 Nuget:
 
