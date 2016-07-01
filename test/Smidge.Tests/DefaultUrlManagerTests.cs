@@ -15,33 +15,6 @@ namespace Smidge.Tests
 {
     public class DefaultUrlManagerTests
     {
-        [Theory]
-        [InlineData("~/{Path}/{Name}.{Ext}.v{Version}", "abc", "hello", ".js", "123", "~/abc/hello.js.v123")]
-        [InlineData("~/{Name}/{Path}/{Version}.{Ext}", "abc", "hello", ".js", "123", "~/hello/abc/123.js")]
-        [InlineData("~/{Version}.{Name}.{Ext}.{Path}", "abc", "hello", ".js", "123", "~/123.hello.js.abc")]
-        [InlineData("   ~/{Version}/{Name}/{Ext}/{Path}  ", "abc", "hello", ".js", "123", "~/123/hello/js/abc")]
-        [InlineData("~/Extra{Version}/{Name}/{Ext}/{Path}Stuff", "abc", "hello", ".js", "123", "~/Extra123/hello/js/abcStuff")]
-        public void Parse_Url_Pattern(string pattern, string path, string name, string ext, string version, string expected)
-        {
-            var result = DefaultUrlManager.BuildUrl(pattern, path, name, ext, version);
-            Assert.Equal(expected, result);
-        }
-
-        [Theory]
-        [InlineData("~/{Path}/{Name}/{Ext}")]
-        [InlineData("~/{Path}/{Name}/{Version}")]
-        [InlineData("~/{Path}/{Ext}/{Version}")]
-        [InlineData("~/{Name}/{Ext}/{Version}")]
-        [InlineData("/{Path}/{Name}/{Ext}.v{Version}")]
-        [InlineData("~{Path}/{Name}/{Ext}.v{Version}")]
-        [InlineData("~/{Path}{Name}/{Ext}.v{Version}")]
-        [InlineData("~/{Path}/{Name}{Ext}.v{Version}")]
-        [InlineData("~/{Path}/{Name}/{Ext}{Version}")]
-        public void Validates_Url_Pattern(string pattern)
-        {
-            Assert.Throws<FormatException>(() => DefaultUrlManager.BuildUrl(pattern, "abc", "hello", ".js", "123"));            
-        }
-
         [Fact]
         public void Parse_Path()
         {
