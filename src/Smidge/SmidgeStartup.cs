@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.FileProviders;
 //using Microsoft.AspNetCore.NodeServices;
 using Smidge.Models;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.FileProcessors;
+using Smidge.NodeServices;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -59,12 +61,22 @@ namespace Smidge
             services.AddScoped<IUrlManager, DefaultUrlManager>();
             services.AddSingleton<IHasher, Crc32Hasher>();
 
-            
+            services.AddSingleton<SmidgeNodeServices>(provider =>
+            {
+                var env = provider.GetRequiredService<IHostingEnvironment>();
+                return new SmidgeNodeServices(Configuration.CreateNodeServices(
+                    new NodeServicesOptions
+                    {
+                        ProjectPath = env.ContentRootPath,
+                        WatchFileExtensions = new string[] {}
+                    }));
+            });
+                
             services.AddScoped<PreProcessPipelineFactory>();
             //pre-processors
             services.AddScoped<IPreProcessor, JsMinifier>();
             services.AddScoped<IPreProcessor, CssMinifier>();
-            //services.AddScoped<IPreProcessor, NodeMinifier>();
+            services.AddScoped<IPreProcessor, UglifyNodeMinifier>();
             services.AddScoped<IPreProcessor, CssImportProcessor>();
             services.AddScoped<IPreProcessor, CssUrlProcessor>();
             //conventions
