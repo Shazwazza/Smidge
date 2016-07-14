@@ -7,11 +7,11 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 
 ## Install
 
-_Currently supporting ASP.NET Core 1.0, built against **Microsoft.NETCore.App 1.0.0-rc2-3002702**_
+_Currently supporting ASP.NET Core 1.0, built against **NETStandard.1.6** & **.Net Framework 4.5.2**_
 
 Nuget:
 
-    Install-Package Smidge -Pre
+    Install-Package Smidge
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
@@ -76,9 +76,7 @@ __[See Asset URLs](https://github.com/Shazwazza/Smidge/wiki/Asset-Urls) for info
 
 __[All of the documentation lives here](https://github.com/Shazwazza/Smidge/wiki)__
 
-##Work in progress
-
-I haven't had time to document all of the features and extensibility points just yet and some of them are not quite finished but all of the usages documented above work.
+I haven't had time to document all of the features and extensibility points just yet but I'm working on it :)
 
 ## Copyright & Licence
 
