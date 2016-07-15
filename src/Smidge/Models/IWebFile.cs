@@ -1,5 +1,6 @@
 ﻿using Smidge.FileProcessors;
 using System;
+using System.IO;
 
 namespace Smidge.Models
 {
@@ -24,5 +25,6 @@ namespace Smidge.Models
         /// file type will be applied.
         /// </summary>
         PreProcessPipeline Pipeline { get; set; }
+
     }
 }

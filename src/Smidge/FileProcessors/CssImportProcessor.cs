@@ -49,23 +49,26 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystemHelper.MapWebPath(path.StartsWith("/") ? path : string.Format("~/{0}", path));
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        var content = await _fileSystemHelper.ReadContentsAsync(filePath);
-                        
-                        //This needs to be put back through the whole pre-processor pipeline before being added,
-                        // so we'll clone the original webfile with it's new path, this will inherit the whole pipeline,
-                        // and then we'll execute the pipeline for that file
-                        var clone = fileProcessContext.WebFile.Duplicate(path);
-                        var processed = await clone.Pipeline.ProcessAsync(new FileProcessContext(content, clone));
+                    var filePath = _fileSystemHelper.GetFileInfo(path);
+                    var content = await _fileSystemHelper.ReadContentsAsync(filePath);
 
-                        sb.Append(processed);
-                    }
-                    else
-                    {
-                        //TODO: Need to log this
-                    }
+                    //This needs to be put back through the whole pre-processor pipeline before being added,
+                    // so we'll clone the original webfile with it's new path, this will inherit the whole pipeline,
+                    // and then we'll execute the pipeline for that file
+                    var clone = fileProcessContext.WebFile.Duplicate(path);
+                    var processed = await clone.Pipeline.ProcessAsync(new FileProcessContext(content, clone));
+
+                    sb.Append(processed);
+
+                    ////  _fileSystemHelper.MapWebPath(path.StartsWith("/") ? path : string.Format("~/{0}", path));
+                    //if (System.IO.File.Exists(filePath))
+                    //{
+                       
+                    //}
+                    //else
+                    //{
+                    //    //TODO: Need to log this
+                    //}
                 }
 
             }

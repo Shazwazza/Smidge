@@ -8,9 +8,25 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Smidge.Models;
 
 namespace Smidge
 {
+
+    public sealed class FileWatcher
+    {
+
+        private readonly IFileProvider _fileProvider;
+
+        public FileWatcher(IFileProvider fileProvider)
+        {
+            _fileProvider = fileProvider;
+        }
+
+
+
+    }
+
     /// <summary>
     /// Singleton class that exposes methods for dealing with the file system
     /// </summary>
@@ -33,7 +49,33 @@ namespace Smidge
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = hostingEnv.WebRootFileProvider;
-        }        
+        }
+
+        public IFileInfo GetFileInfo(IWebFile webfile)
+        {
+            var path = webfile.FilePath.TrimStart(new[] { '~' });
+            var fileInfo = _fileProvider.GetFileInfo(path);
+
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath} (mapped from {path})", fileInfo.PhysicalPath);
+            }
+
+            return fileInfo;
+        }
+
+        public IFileInfo GetFileInfo(string filePath)
+        {
+            var path = filePath.TrimStart(new[] { '~' });
+            var fileInfo = _fileProvider.GetFileInfo(path);
+
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath} (mapped from {path})", fileInfo.PhysicalPath);
+            }
+
+            return fileInfo;
+        }
 
         /// <summary>
         /// Rudimentary check to see if the path is a folder
@@ -42,11 +84,17 @@ namespace Smidge
         /// <returns></returns>
         public bool IsFolder(string path)
         {
-            if (path.EndsWith("/"))
+
+            var fileInfo = _fileProvider.GetFileInfo(path);
+            if (fileInfo.IsDirectory)
             {
                 return true;
             }
 
+            if (path.EndsWith("/"))
+            {
+                return true;
+            }
 
             //the last part doesn't contain a '.'
             var parts = path.Split('/');
@@ -71,7 +119,7 @@ namespace Smidge
             var parts = folderPath.Split('*');
             var folderPart = parts[0];
             var extensionFilter = parts.Length > 1 ? parts[1] : null;
-          
+
             var folderContents = _fileProvider.GetDirectoryContents(folderPart);
 
             if (folderContents.Exists)
@@ -104,22 +152,6 @@ namespace Smidge
         }
 
         /// <summary>
-        /// A rudimentary map path function
-        /// </summary>
-        /// <param name="contentFile"></param>
-        /// <returns></returns>
-        public string MapWebPath(string contentFile)
-        {
-            var content = contentFile.TrimStart(new[] {'~'});
-
-            var fileInfo = _hostingEnv.WebRootFileProvider.GetFileInfo(content);
-            if (fileInfo.Exists)
-                return fileInfo.PhysicalPath;
-
-            throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath} (mapped from {contentFile})", fileInfo.PhysicalPath);            
-        }
-
-        /// <summary>
         /// A rudimentary reverse map path function
         /// </summary>
         /// <param name="subPath"></param>
@@ -139,10 +171,9 @@ namespace Smidge
             return "~" + reversed;
         }
 
-
-        internal async Task<string> ReadContentsAsync(string filePath)
+        internal async Task<string> ReadContentsAsync(IFileInfo fileInfo)
         {
-            using (var fileStream = File.OpenRead(filePath))
+            using (var fileStream = fileInfo.CreateReadStream())
             using (var reader = new StreamReader(fileStream))
             {
                 return await reader.ReadToEndAsync();
@@ -183,6 +214,13 @@ namespace Smidge
             {
                 return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
             }
+        }
+
+        public void Watch(IWebFile webFile, Action<object> action)
+        {
+            var path = webFile.FilePath.TrimStart(new[] { '~' });
+            var changeToken = _fileProvider.Watch(path);
+            changeToken.RegisterChangeCallback(action, webFile);
         }
     }
 }

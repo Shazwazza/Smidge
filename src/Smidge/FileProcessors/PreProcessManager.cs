@@ -25,7 +25,7 @@ namespace Smidge.FileProcessors
         public async Task ProcessAndCacheFileAsync(IWebFile file)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
-			if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
+            if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
 
             switch (file.DependencyType)
             {
@@ -76,19 +76,30 @@ namespace Smidge.FileProcessors
 
             if (!File.Exists(cacheFile))
             {
-                var filePath = _fileSystemHelper.MapWebPath(file.FilePath);
-                
-                //doesn't exist, throw as thsi shouldn't happen
-                if (File.Exists(filePath) == false) throw new FileNotFoundException("No file found with path " + filePath);
-
-                var contents = await _fileSystemHelper.ReadContentsAsync(filePath);
+                //  var filePath = _fileSystemHelper.MapWebPath(file.FilePath);
+                var fileInfo = _fileSystemHelper.GetFileInfo(file);
+                var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo);
 
                 //process the file
                 var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file));
 
                 //save it to the cache path
                 await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+
+                // watch this file for changes:
+
+                _fileSystemHelper.Watch(file, (f) =>
+                {
+                    //
+                    var x = f;
+                    var message = "some file changed..";
+
+
+                });
             }
+
+
+
         }
 
     }
