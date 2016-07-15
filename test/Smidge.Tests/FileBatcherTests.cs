@@ -28,6 +28,11 @@ namespace Smidge.Tests
             var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object);          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, Mock.Of<IHasher>());
 
+            var file = new Mock<IFileInfo>();
+            file.Setup(a => a.IsDirectory).Returns(false);
+            file.SetupAllProperties();
+            fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
+
             //test a mix start/ending with external
             var result = batcher.GetCompositeFileCollectionForUrlGeneration(new IWebFile[] {
                     Mock.Of<IWebFile>(f => f.FilePath == "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"),

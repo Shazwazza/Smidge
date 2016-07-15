@@ -77,95 +77,12 @@ namespace Smidge.Tests
 
             Assert.Equal("http://test.com/hello.js", result);
         }
+        
+        
+        
 
         [Fact]
-        public void Map_Path_Absolute()
-        {
-
-            var url = "/Js/Test1.js";
-            var fileProvider = new Mock<IFileProvider>();
-            var file = new Mock<IFileInfo>();
-            string filePath = "C:\\MySolution\\MyProject\\Js\\Test1.js";
-
-            file.Setup(x => x.Exists).Returns(true);
-            file.Setup(x => x.IsDirectory).Returns(false);
-            file.Setup(x => x.Name).Returns(System.IO.Path.GetFileName(url));
-            file.Setup(x => x.PhysicalPath).Returns(filePath);
-
-            fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
-
-            var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-            var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == "C:\\MySolution\\MyProject" && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>());
-
-            var result = helper.MapWebPath(url);
-
-            Assert.Equal(filePath, result);
-        }
-
-        [Fact]
-        public void Map_Path_Virtual_Path()
-        {
-
-            var webRootPath = "C:\\MySolution\\MyProject";
-
-            var url = "~/Js/Test1.js";
-
-            var fileProvider = new Mock<IFileProvider>();
-            var file = new Mock<IFileInfo>();
-            string filePath = Path.Combine(webRootPath, "Js\\Test1.js");
-
-            file.Setup(x => x.Exists).Returns(true);
-            file.Setup(x => x.IsDirectory).Returns(false);
-            file.Setup(x => x.Name).Returns(System.IO.Path.GetFileName(url));
-            file.Setup(x => x.PhysicalPath).Returns(filePath);
-
-            fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
-
-            var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-            var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>());
-
-            var result = helper.MapWebPath(url);
-
-            Assert.Equal(filePath, result);
-        }
-
-        [Fact]
-        public void Map_Path_Relative_Path()
-        {
-            var url = "Js/Test1.js";
-            var fileProvider = new Mock<IFileProvider>();
-
-            var webRootPath = "C:\\MySolution\\MyProject";
-            var file = new Mock<IFileInfo>();
-            string filePath = Path.Combine(webRootPath, "Js\\Test1.js");
-
-            file.Setup(x => x.Exists).Returns(true);
-            file.Setup(x => x.IsDirectory).Returns(false);
-            file.Setup(x => x.Name).Returns(System.IO.Path.GetFileName(url));
-            file.Setup(x => x.PhysicalPath).Returns(filePath);
-
-            fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
-
-            var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
-            var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>());
-
-            var result = helper.MapWebPath(url);
-
-            Assert.Equal(filePath, result);
-        }
-
-
-        [Fact]
-        public void Map_Path_Non_Existent_File_Throws_Informative_Exception()
+        public void Get_File_Info_Non_Existent_File_Throws_Informative_Exception()
         {
 
             var webRootPath = "C:\\MySolution\\MyProject";
@@ -189,7 +106,7 @@ namespace Smidge.Tests
                 Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
                 Mock.Of<ISmidgeConfig>());
 
-            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.MapWebPath(url));
+            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetFileInfo(url));
 
             //    var result = helper.MapPath(url);
 

@@ -71,7 +71,7 @@ namespace Smidge
 
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath} (mapped from {path})", fileInfo.PhysicalPath);
+                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath);
             }
 
             return fileInfo;
@@ -159,16 +159,24 @@ namespace Smidge
         /// <returns></returns>
         public string ReverseMapPath(string subPath, IFileInfo fileInfo)
         {
-            var subPathDir = subPath.Replace("/", "\\");
-            var subPathIndex = fileInfo.PhysicalPath.IndexOf(subPathDir, StringComparison.OrdinalIgnoreCase);
-            var fileSubPath = fileInfo.PhysicalPath.Substring(subPathIndex);
-
-            var reversed = fileSubPath.Replace("\\", "/");
+            var reversed = subPath.Replace("\\", "/");
             if (!reversed.StartsWith("/"))
             {
-                reversed = "/" + reversed;
+                reversed = $"/{reversed}";
             }
-            return "~" + reversed;
+            //if (!reversed.StartsWith("~"))
+            //{
+            //    reversed = $"~{reversed}";
+            //}
+            if (!reversed.EndsWith(fileInfo.Name))
+            {
+                return $"~{reversed}/{fileInfo.Name}";
+            }
+            else
+            {
+                return $"~{reversed}";
+            }
+           
         }
 
         internal async Task<string> ReadContentsAsync(IFileInfo fileInfo)
