@@ -128,7 +128,7 @@ namespace Smidge
                 var files = string.IsNullOrWhiteSpace(extensionFilter)
                     ? folderContents
                     : folderContents.Where(
-                        (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.PhysicalPath) == string.Format(".{0}", extensionFilter));
+                        (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.Name) == string.Format(".{0}", extensionFilter));
                 return files.Select(x => ReverseMapPath(folderPart, x));
             }
             else
