@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Smidge.Hashing;
 
 namespace Smidge.Controllers
 {
@@ -45,7 +46,7 @@ namespace Smidge.Controllers
         /// <param name="bundle">The bundle model</param>
         /// <returns></returns>       
         public async Task<FileResult> Bundle(
-            [FromServices]BundleModel bundle)
+            [FromServices]BundleRequestModel bundle)
         {  
             var found = _bundleManager.GetFiles(bundle.FileKey, new RequestHelper(Request));
             if (found == null || !found.Any())

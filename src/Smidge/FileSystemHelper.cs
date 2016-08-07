@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Smidge.Hashing;
 using Smidge.Models;
 
 namespace Smidge
@@ -36,16 +37,19 @@ namespace Smidge
         private readonly IHostingEnvironment _hostingEnv;
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private readonly IFileProvider _fileProvider;
+        private readonly IHasher _hasher;
 
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
         {
+            _hasher = hasher;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = fileProvider;
         }
 
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
         {
+            _hasher = hasher;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = hostingEnv.WebRootFileProvider;
@@ -224,11 +228,49 @@ namespace Smidge
             }
         }
 
-        public void Watch(IWebFile webFile, Action<object> action)
+        /// <summary>
+        /// Returns a file's hash
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="extension"></param>
+        /// <returns></returns>
+        public string GetFileHash(IWebFile file, string extension)
         {
-            var path = webFile.FilePath.TrimStart(new[] { '~' });
-            var changeToken = _fileProvider.Watch(path);
-            changeToken.RegisterChangeCallback(action, webFile);
+            var hashName = _hasher.Hash(file.FilePath) + extension;
+            return hashName;
         }
+
+        /// <summary>
+        /// Returns a file's hash which includes it's timestamp
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="fileInfo"></param>
+        /// <param name="extension"></param>
+        /// <returns></returns>
+        public string GetFileHash(IWebFile file, IFileInfo fileInfo, string extension)
+        {
+            var lastWrite = fileInfo.LastModified;
+            var hashName = _hasher.Hash(file.FilePath + lastWrite) + extension;
+            return hashName;
+        }
+
+        /// <summary>
+        /// Registers a file to be watched with a callback for when it is modified
+        /// </summary>
+        /// <param name="webFile"></param>
+        /// <param name="fileModifiedCallback"></param>
+        public void Watch(WatchedFile webFile, Action<WatchedFile> fileModifiedCallback)
+        {
+            var path = webFile.WebFile.FilePath.TrimStart(new[] { '~' });
+            var changeToken = _fileProvider.Watch(path);
+            _fileWatchers.Add(changeToken.RegisterChangeCallback(o =>
+            {
+                //call the callback with the strongly typed object
+                fileModifiedCallback((WatchedFile) o);
+            }, webFile));
+        }
+
+        //TODO: We need an unwatch
+        private readonly List<IDisposable> _fileWatchers = new List<IDisposable>();
     }
 }

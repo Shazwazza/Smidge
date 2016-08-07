@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Smidge
+﻿namespace Smidge.Hashing
 {
     public interface IHasher
     {

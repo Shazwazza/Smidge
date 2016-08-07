@@ -11,13 +11,10 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class PreProcessPipelineFactory
     {
-        public FileProcessingConventions FileProcessingConventions { get; set; }
-
         private readonly IEnumerable<IPreProcessor> _allProcessors;
 
-        public PreProcessPipelineFactory(IEnumerable<IPreProcessor> allProcessors, FileProcessingConventions fileProcessingConventions)
-        {
-            FileProcessingConventions = fileProcessingConventions;
+        public PreProcessPipelineFactory(IEnumerable<IPreProcessor> allProcessors)
+        {     
             _allProcessors = allProcessors;
         }        
 

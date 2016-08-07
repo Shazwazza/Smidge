@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Smidge;
+using Smidge.Hashing;
 using Smidge.FileProcessors;
 using Smidge.Options;
 using Xunit;
@@ -24,8 +26,6 @@ namespace Smidge.Tests
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly PreProcessManager _preProcessManager;
-        private Bundles _bundles;
-        private Mock<IOptions<Bundles>> _bundlesOptions;
         private Mock<IOptions<SmidgeOptions>> _smidgeOptions;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly BundleManager _bundleManager;
@@ -39,19 +39,16 @@ namespace Smidge.Tests
             //  var config = Mock.Of<ISmidgeConfig>();
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
-            _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider);
-            _preProcessManager = new PreProcessManager(_fileSystemHelper, _hasher);
-
-            _bundles = new Bundles();
-            _bundlesOptions = new Mock<IOptions<Bundles>>();
-            _bundlesOptions.Setup(opt => opt.Value).Returns(_bundles);
-
+            _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider, _hasher);
+                        
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
 
-            _processorFactory = new PreProcessPipelineFactory(_preProcessors, 
+            _preProcessManager = new PreProcessManager(_fileSystemHelper);
+
+            _processorFactory = new PreProcessPipelineFactory(_preProcessors);
+            _bundleManager = new BundleManager(_fileSystemHelper, _processorFactory, _smidgeOptions.Object,
                 new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
-            _bundleManager = new BundleManager(_fileSystemHelper, _bundlesOptions.Object, _processorFactory);
 
             _requestHelper = Mock.Of<IRequestHelper>();
         }
@@ -64,7 +61,8 @@ namespace Smidge.Tests
 
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
-                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper);
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -81,7 +79,8 @@ namespace Smidge.Tests
 
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
-                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper);
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -97,7 +96,8 @@ namespace Smidge.Tests
 
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
-                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper);
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -118,7 +118,8 @@ namespace Smidge.Tests
 
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
-                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper);
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (

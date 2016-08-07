@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Smidge.CompositeFiles;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.FileProcessors;
+using Smidge.Hashing;
 using Smidge.NodeServices;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
@@ -37,13 +39,12 @@ namespace Smidge
             //services.AddNodeServices(NodeHostingModel.Http);
 
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
-            services.AddTransient<IConfigureOptions<Bundles>, BundlesSetup>();            
             services.AddSingleton<BundleManager>();
-            services.AddSingleton<FileSystemHelper>((p) =>
+            services.AddSingleton<FileSystemHelper>(p =>
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider);
+                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
             });
 
 
@@ -84,13 +85,13 @@ namespace Smidge
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
 
             //Add the controller models as DI services - these get auto created for model binding
-            services.AddTransient<BundleModel>();
+            services.AddTransient<BundleRequestModel>();
             services.AddTransient<CompositeFileModel>();
 
             return services;
         }
-
-        public static void UseSmidge(this IApplicationBuilder app)
+        
+        public static void UseSmidge(this IApplicationBuilder app, Action<BundleManager> configureBundles = null)
         {
 
             //Create custom route
@@ -105,9 +106,13 @@ namespace Smidge
                     "SmidgeBundle",
                     "sb/{bundle}",
                     new { controller = "Smidge", action = "Bundle" });
-
             });
 
+            if (configureBundles != null)
+            {
+                var bundleFactory = app.ApplicationServices.GetRequiredService<BundleManager>();
+                configureBundles(bundleFactory);
+            }
 
         }
     }

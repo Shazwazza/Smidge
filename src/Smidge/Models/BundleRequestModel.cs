@@ -9,9 +9,9 @@ namespace Smidge.Models
     /// <summary>
     /// Model for an inbound request for a bundle
     /// </summary>
-    public class BundleModel : RequestModel
+    public class BundleRequestModel : RequestModel
     {
-        public BundleModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
+        public BundleRequestModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
             : base("bundle", urlManager, accessor, requestHelper)
         {
             if (!ParsedPath.Names.Any())

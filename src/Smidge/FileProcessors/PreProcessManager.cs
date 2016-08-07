@@ -1,74 +1,65 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Smidge.Models;
+using Smidge.Options;
 
 namespace Smidge.FileProcessors
 {
+    /// <summary>
+    /// This performs the pre-processing on an IWebFile based on it's pipeline and writes the processed output to file cache
+    /// </summary>
     public sealed class PreProcessManager
     {
-        private FileSystemHelper _fileSystemHelper;
-        private IHasher _hasher;
-
-        public PreProcessManager(FileSystemHelper fileSystemHelper, IHasher hasher)
+        private readonly FileSystemHelper _fileSystemHelper;
+        
+        public PreProcessManager(FileSystemHelper fileSystemHelper)
         {
-            _hasher = hasher;
             _fileSystemHelper = fileSystemHelper;
         }
 
         /// <summary>
-        /// If the current asset/request requires minification, this will check the cache for its existence, if it doesn't
-        /// exist, it will process it and store the cache file. Lastly, it sets the file path for the JavaScript file.
+        /// This will first check if the file is in cache and if not it will 
+        /// run all pre-processors assigned to the file and store the output in a persisted file cache.
         /// </summary>
         /// <param name="file"></param>
+        /// <param name="fileWatchOptions"></param>
         /// <returns></returns>
-        public async Task ProcessAndCacheFileAsync(IWebFile file)
+        public async Task ProcessAndCacheFileAsync(IWebFile file, FileWatchOptions fileWatchOptions)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
             if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
 
-            switch (file.DependencyType)
-            {
-                case WebFileType.Js:
-                    await ProcessJsFile(file);
-                    break;
-                case WebFileType.Css:
-                    await ProcessCssFile(file);
-                    break;
-            }
+            await ProcessFile(file, fileWatchOptions);
         }
 
-        private async Task ProcessCssFile(IWebFile file)
+        private async Task ProcessFile(IWebFile file, FileWatchOptions fileWatchOptions)
         {
-            await ProcessFile(file, ".css");
-        }
+            var extension = Path.GetExtension(file.FilePath);
 
-        private async Task ProcessJsFile(IWebFile file)
-        {
-            await ProcessFile(file, ".js");
-        }
-
-        private async Task ProcessFile(IWebFile file, string extension)
-        {
             //If Its external throw an exception this is not allowed. 
             if (file.FilePath.Contains(Constants.SchemeDelimiter))
             {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
             };
 
+            //if watching is enabled, need to include the timestamp in the hash
+            IFileInfo fileInfo = null;
+            string hashName;
+            if (fileWatchOptions.Enabled)
+            {
+                fileInfo = _fileSystemHelper.GetFileInfo(file);
+                hashName = _fileSystemHelper.GetFileHash(file, fileInfo, extension);
+            }
+            else
+            {
+                hashName = _fileSystemHelper.GetFileHash(file, extension);
+            }
+
             //check if it's in cache
-
-            //TODO: If we make the hash as part of the last write time of the file, then the hash will be different
-            // which means it will be a new cached file which means we can have auto-changing of files. Versioning
-            // will still be manual but that would just be up to the client cache, not the server cache. But,
-            // before we do that we need to consider performance because this means that for every file that is hashed
-            // we'd need to lookup it's last write time so that all hashes match which isn't really ideal.
-
-            //var filePath = _fileSystemHelper.MapPath(file.FilePath);
-            //var lastWrite = File.GetLastWriteTimeUtc(filePath);
-            //var hashName = _hasher.Hash(file.FilePath + lastWrite) + extension;
-
-            var hashName = _hasher.Hash(file.FilePath) + extension;
+                        
             var cacheDir = _fileSystemHelper.CurrentCacheFolder;
             var cacheFile = Path.Combine(cacheDir, hashName);
 
@@ -76,8 +67,40 @@ namespace Smidge.FileProcessors
 
             if (!File.Exists(cacheFile))
             {
-                //  var filePath = _fileSystemHelper.MapWebPath(file.FilePath);
-                var fileInfo = _fileSystemHelper.GetFileInfo(file);
+                //look up the file info if it hasn't been done already
+                fileInfo = fileInfo ?? _fileSystemHelper.GetFileInfo(file);
+
+                var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo);
+
+                //process the file
+                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file));
+
+                //save it to the cache path
+                await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+
+                if (fileWatchOptions.Enabled)
+                {
+                    // watch this file for changes:
+                    _fileSystemHelper.Watch(new WatchedFile(file, fileInfo), FileModified);
+                }                
+            }
+        }
+
+        
+
+        private async Task ReProcessFile(IWebFile file, IFileInfo fileInfo)
+        {
+            var extension = Path.GetExtension(file.FilePath);
+
+            var hashName = _fileSystemHelper.GetFileHash(file, fileInfo, extension);
+
+            var cacheDir = _fileSystemHelper.CurrentCacheFolder;
+            var cacheFile = Path.Combine(cacheDir, hashName);
+
+            Directory.CreateDirectory(cacheDir);
+
+            if (!File.Exists(cacheFile))
+            {
                 var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo);
 
                 //process the file
@@ -87,20 +110,17 @@ namespace Smidge.FileProcessors
                 await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
 
                 // watch this file for changes:
-
-                _fileSystemHelper.Watch(file, (f) =>
-                {
-                    //
-                    var x = f;
-                    var message = "some file changed..";
-
-
-                });
+                _fileSystemHelper.Watch(new WatchedFile(file, fileInfo), FileModified);
             }
-
-
-
         }
 
+        /// <summary>
+        /// Executed when a processed file is modified
+        /// </summary>
+        /// <param name="file"></param>
+        private void FileModified(WatchedFile file)
+        {
+            ReProcessFile(file.WebFile, file.FileInfo).Wait();
+        }
     }
 }

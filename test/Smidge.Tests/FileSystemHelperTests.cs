@@ -9,6 +9,7 @@ using Microsoft.Extensions.FileProviders;
 using Xunit;
 using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Models;
+using Smidge.Hashing;
 
 namespace Smidge.Tests
 {
@@ -101,10 +102,12 @@ namespace Smidge.Tests
             fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
 
             var urlHelper = new Mock<IUrlHelper>();
+            var hasher = Mock.Of<IHasher>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
                 Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>());
+                Mock.Of<ISmidgeConfig>(),
+                hasher);
 
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetFileInfo(url));
 
@@ -136,7 +139,8 @@ namespace Smidge.Tests
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
                 Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>());
+                Mock.Of<ISmidgeConfig>(),
+                Mock.Of<IHasher>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);
 

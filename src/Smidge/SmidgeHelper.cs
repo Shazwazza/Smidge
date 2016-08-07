@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
+using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge
 {
@@ -17,41 +19,45 @@ namespace Smidge
     public class SmidgeHelper : ISmidgeRequire
     {
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
-        private readonly PreProcessManager _fileManager;
+        private readonly PreProcessManager _preProcessManager;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly BundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IUrlManager _urlManager;
         private readonly IRequestHelper _requestHelper;
+        private readonly FileProcessingConventions _fileProcessingConventions;
 
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="dynamicallyRegisteredWebFiles"></param>
-        /// <param name="fileManager"></param>
+        /// <param name="preProcessManager"></param>
         /// <param name="fileSystemHelper"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
         /// <param name="processorFactory"></param>
         /// <param name="urlManager"></param>
         /// <param name="requestHelper"></param>
+        /// <param name="fileProcessingConventions"></param>
         public SmidgeHelper(
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
-            PreProcessManager fileManager,
+            PreProcessManager preProcessManager,
             FileSystemHelper fileSystemHelper,
             IHasher hasher,
             BundleManager bundleManager,
             PreProcessPipelineFactory processorFactory,
             IUrlManager urlManager,
-            IRequestHelper requestHelper)
+            IRequestHelper requestHelper,
+            FileProcessingConventions fileProcessingConventions)
         {
             _processorFactory = processorFactory;
             _urlManager = urlManager;
             _requestHelper = requestHelper;
+            _fileProcessingConventions = fileProcessingConventions;
             _bundleManager = bundleManager;
-            _fileManager = fileManager;
+            _preProcessManager = preProcessManager;
             _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
             _fileSystemHelper = fileSystemHelper;
             _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
@@ -130,7 +136,7 @@ namespace Smidge
 
         public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateUrlsAsync(bundleName, ".js", debug);
+            return await GenerateBundleUrlsAsync(bundleName, ".js", debug);
         }
 
         /// <summary>
@@ -144,63 +150,62 @@ namespace Smidge
 
         public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateUrlsAsync(bundleName, ".css", debug);
+            return await GenerateBundleUrlsAsync(bundleName, ".css", debug);
         }
 
         /// <summary>
-        /// Generates the URLs a given bundle
+        /// Generates the URLs for a given bundle
         /// </summary>
         /// <param name="bundleName"></param>
         /// <param name="fileExt"></param>
         /// <param name="debug"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<string>> GenerateUrlsAsync(string bundleName, string fileExt, bool debug)
+        private async Task<IEnumerable<string>> GenerateBundleUrlsAsync(string bundleName, string fileExt, bool debug)
         {
             var result = new List<string>();
-            var bundleExists = _bundleManager.Exists(bundleName);
-            if (!bundleExists)
+
+            var bundle = _bundleManager.GetBundle(bundleName);
+            if (bundle == null)
             {
                 throw new BundleNotFoundException(bundleName);
             }
 
-            if (debug)
-            {
-                var urls = new List<string>();
+            //get the bundle options from the bundle if they have been set otherwise with the defaults
+            var bundleOptions = debug
+                ? (bundle.BundleOptions == null ? _bundleManager.DefaultBundleOptions.DebugOptions : bundle.BundleOptions.DebugOptions)
+                : (bundle.BundleOptions == null ? _bundleManager.DefaultBundleOptions.ProductionOptions : bundle.BundleOptions.ProductionOptions);                
+            
+            //if not processing as composite files, then just use their native file paths
+            if (!bundleOptions.ProcessAsCompositeFile)
+            {                
                 var files = _bundleManager.GetFiles(bundleName, _requestHelper);
                 foreach (var d in files)
                 {
-                    urls.Add(d.FilePath);
-                }
-
-                foreach (var url in urls)
-                {
-                    result.Add(url);
-                }
+                    result.Add(d.FilePath);
+                }                
                 return result;
             }
-            else
+
+            var compression = bundleOptions.CompressResult ? _requestHelper.GetClientCompression() : CompressionType.none;
+            var url = _urlManager.GetUrl(bundleName, fileExt);
+
+            //now we need to determine if these files have already been minified
+            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
+            if (!File.Exists(compositeFilePath))
             {
-                var compression = _requestHelper.GetClientCompression();
-                var url = _urlManager.GetUrl(bundleName, fileExt);
-
-                //now we need to determine if these files have already been minified
-                var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
-                if (!File.Exists(compositeFilePath))
+                var files = _bundleManager.GetFiles(bundleName, _requestHelper);
+                //we need to do the minify on the original files
+                foreach (var file in files)
                 {
-                    var files = _bundleManager.GetFiles(bundleName, _requestHelper);
-                    //we need to do the minify on the original files
-                    foreach (var file in files)
-                    {
-                        await _fileManager.ProcessAndCacheFileAsync(file);
-                    }
+                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions.FileWatchOptions);
                 }
-                result.Add(url);
-                return result;
             }
+            result.Add(url);
+            return result;
         }
 
         /// <summary>
-        /// Generates teh URLs for a given file set
+        /// Generates the URLs for a dynamically registered set of files (non pre-defined bundle)
         /// </summary>
         /// <param name="files"></param>
         /// <param name="fileType"></param>
@@ -217,8 +222,8 @@ namespace Smidge
 
             var orderedSet = new OrderedFileSet(files,
                 _fileSystemHelper, _requestHelper,
-                pipeline ?? _processorFactory.GetDefault(fileType), 
-                _processorFactory.FileProcessingConventions);
+                pipeline ?? _processorFactory.GetDefault(fileType),
+                _fileProcessingConventions);
             var orderedFiles = orderedSet.GetOrderedFileSet();
 
             if (debug)
@@ -255,7 +260,12 @@ namespace Smidge
                                 //need to process/minify these files - need to use their original paths of course
                                 foreach (var file in batch.Select(x => x.Original))
                                 {
-                                    await _fileManager.ProcessAndCacheFileAsync(file);
+                                    await _preProcessManager.ProcessAndCacheFileAsync(file,
+                                        //TODO: Need to make global bundle options for dynamically registered files
+                                        new Options.FileWatchOptions
+                                        {
+                                            Enabled = false
+                                        });
                                 }
                             }
                             result.Add(u.Url);

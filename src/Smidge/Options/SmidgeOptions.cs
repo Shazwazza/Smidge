@@ -6,21 +6,22 @@ using System.Collections.Generic;
 namespace Smidge.Options
 {
     /// <summary>
-    /// Allows developers to specify custom options on startup
+    /// The global options for Smidge
     /// </summary>
     public sealed class SmidgeOptions
     {
         /// <summary>
-        /// Constructor sets defaults
+        /// Gets/sets the pipeline factory
         /// </summary>
-        public SmidgeOptions()
-        {
-            UrlOptions = new UrlManagerOptions();
-            FileProcessingConventions = new FileProcessingConventionsCollection
-            {
-                typeof(MinifiedFilePathConvention)
-            };
-        }
+        /// <remarks>
+        /// This will be set with the BundlesSetup class
+        /// </remarks>
+        public PreProcessPipelineFactory PipelineFactory { get; set; }
+
+        /// <summary>
+        /// Gets/sets the default bundle options
+        /// </summary>
+        public BundleEnvironmentOptions DefaultBundleOptions { get; set; }
 
         /// <summary>
         /// Defines the URL options for Smidge bundle URLs
@@ -33,6 +34,6 @@ namespace Smidge.Options
         /// <remarks>
         /// This acts like a filter, the actual instances of IFileProcessingConvention will be created via IoC
         /// </remarks>
-        public ICollection<Type> FileProcessingConventions { get; private set; }
+        public ICollection<Type> FileProcessingConventions { get; set; }
     }
 }

@@ -4,7 +4,6 @@ using System.IO;
 
 namespace Smidge.Models
 {
-
     public interface IWebFile
     {
         string FilePath { get; set; }

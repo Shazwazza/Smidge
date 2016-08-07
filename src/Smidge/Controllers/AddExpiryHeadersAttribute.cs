@@ -3,6 +3,7 @@ using Smidge.Models;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Smidge.Hashing;
 
 namespace Smidge.Controllers
 {

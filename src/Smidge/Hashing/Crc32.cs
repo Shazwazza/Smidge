@@ -3,40 +3,13 @@
 // Released under MS-PL : 6-Apr-09
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Smidge
+namespace Smidge.Hashing
 {
-
-    public class Md5Hasher : IHasher
-    {
-        public string Hash(string input)
-        {
-            using (var md5 = MD5.Create())
-            {
-                var byteArray = md5.ComputeHash(Encoding.Unicode.GetBytes(input));
-                return byteArray.Aggregate("", (current, b) => current + b.ToString("x2"));
-            }
-        }
-    }
-
-    public class Crc32Hasher : IHasher
-    {
-        public string Hash(string input)
-        {
-            using (var crc = new Crc32())
-            {
-                var byteArray = crc.ComputeHash(Encoding.Unicode.GetBytes(input));
-                return byteArray.Aggregate("", (current, b) => current + b.ToString("x2"));
-            }
-        }
-    }
-
     /// <summary>Implements a 32-bits cyclic redundancy check (CRC) hash algorithm.</summary>
     /// <remarks>This class is not intended to be used for security purposes. For security applications use MD5, SHA1, SHA256, SHA384, 
     /// or SHA512 in the System.Security.Cryptography namespace.</remarks>

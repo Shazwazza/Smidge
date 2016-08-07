@@ -51,33 +51,10 @@ namespace Smidge.Web
 
             // Or use services.AddSmidge() to test from smidge.json config.
             services.AddSmidge(_config)
+                //Set the global Smidge options
                 .Configure<SmidgeOptions>(options =>
                 {
-                })
-                .Configure<Bundles>(bundles =>
-                {
-                    bundles.Create("test-bundle-1",
-                        new JavaScriptFile("~/Js/Bundle1/a1.js"),
-                        new JavaScriptFile("~/Js/Bundle1/a2.js"),
-                        //NOTE: This is already min'd based on it's file name, therefore
-                        // by convention JsMin should be removed
-                        new JavaScriptFile("~/Js/Bundle1/a3.min.js"))
-                        .OnOrdering(collection =>
-                        {
-                            //return some custom ordering
-                            return collection.OrderBy(x => x.FilePath);
-                        });
-
-                    bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
-
-                    bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
-
-                    bundles.Create("test-bundle-4",
-                        new CssFile("~/Css/Bundle1/a1.css"),
-                        new CssFile("~/Css/Bundle1/a2.css"));
-
-                    bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
-                    bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
+                    //options.FileWatchOptions.Enabled = true;
                 });
         }
 
@@ -102,7 +79,34 @@ namespace Smidge.Web
                 routes.MapRoute("Default", "{controller=Home}/{action=Index}/{id?}");
             });
 
-            app.UseSmidge();
+            app.UseSmidge(bundles =>
+            {
+                //Create pre-defined bundles
+
+                bundles.Create("test-bundle-1",
+                    new JavaScriptFile("~/Js/Bundle1/a1.js"),
+                    new JavaScriptFile("~/Js/Bundle1/a2.js"),
+                    //NOTE: This is already min'd based on it's file name, therefore
+                    // by convention JsMin should be removed
+                    new JavaScriptFile("~/Js/Bundle1/a3.min.js"))
+                    .WithOptions(bundles.DefaultBundleOptions)
+                    .OnOrdering(collection =>
+                    {
+                            //return some custom ordering
+                            return collection.OrderBy(x => x.FilePath);
+                    });
+
+                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
+
+                bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
+
+                bundles.Create("test-bundle-4",
+                    new CssFile("~/Css/Bundle1/a1.css"),
+                    new CssFile("~/Css/Bundle1/a2.css"));
+
+                bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
+                bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
+            });
         }
     }
 }
