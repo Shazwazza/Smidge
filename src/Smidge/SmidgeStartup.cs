@@ -19,6 +19,7 @@ using Smidge.Options;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.NodeServices;
+using Microsoft.AspNetCore.Http.Extensions;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -34,7 +35,8 @@ namespace Smidge
         {            
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            services.AddScoped<IRequestHelper, RequestHelper>(provider => new RequestHelper(provider.GetRequiredService<IHttpContextAccessor>().HttpContext.Request));
+            services.AddSingleton<IRequestHelper, RequestHelper>();
+            services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
 
             //services.AddNodeServices(NodeHostingModel.Http);
 
@@ -73,13 +75,13 @@ namespace Smidge
                     }));
             });
                 
-            services.AddScoped<PreProcessPipelineFactory>();
+            services.AddSingleton<PreProcessPipelineFactory>();
             //pre-processors
-            services.AddScoped<IPreProcessor, JsMinifier>();
-            services.AddScoped<IPreProcessor, CssMinifier>();
-            services.AddScoped<IPreProcessor, UglifyNodeMinifier>();
-            services.AddScoped<IPreProcessor, CssImportProcessor>();
-            services.AddScoped<IPreProcessor, CssUrlProcessor>();
+            services.AddSingleton<IPreProcessor, JsMinifier>();
+            services.AddSingleton<IPreProcessor, CssMinifier>();
+            services.AddSingleton<IPreProcessor, UglifyNodeMinifier>();
+            services.AddSingleton<IPreProcessor, CssImportProcessor>();
+            services.AddSingleton<IPreProcessor, CssUrlProcessor>();
             //conventions
             services.AddSingleton<FileProcessingConventions>();
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
@@ -93,6 +95,25 @@ namespace Smidge
         
         public static void UseSmidge(this IApplicationBuilder app, Action<BundleManager> configureBundles = null)
         {
+            //middleware to auto-configure the base path + url for use with the IWebsiteInfo
+            // if the registered typed is AutoWebsiteInfo
+            var siteInfo = app.ApplicationServices.GetRequiredService<IWebsiteInfo>() as AutoWebsiteInfo;
+            if (siteInfo != null)
+            {
+                app.Use(async (context, next) =>
+                {
+                    if (!siteInfo.IsConfigured)
+                    {
+                        //TODO: Check for nulls here
+                        siteInfo.ConfigureOnce(
+                            context.Request.PathBase, 
+                            //TODO: This could be any URI for the site, need to clean this up
+                            // probably just need the SchemaAndServer + the PathBase
+                            new Uri(context.Request.GetEncodedUrl()));
+                    }
+                    await next.Invoke();
+                });
+            }            
 
             //Create custom route
             app.UseMvc(routes =>

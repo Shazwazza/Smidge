@@ -1,4 +1,8 @@
-﻿using Smidge.FileProcessors;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
+using Moq;
+using Smidge.FileProcessors;
+using Smidge.Hashing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +17,12 @@ namespace Smidge.Tests
         {
             var cssWithImport = @"@import url(""//fonts.googleapis.com/css?subset=latin,cyrillic-ext,latin-ext,cyrillic&family=Open+Sans+Condensed:300|Open+Sans:400,600,400italic,600italic|Merriweather:400,300,300italic,400italic,700,700italic|Roboto+Slab:400,300"");
 @import url(""//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"");";
-
+                        
             IEnumerable<string> importPaths;
-            var output = CssImportProcessor.ParseImportStatements(cssWithImport, out importPaths);
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo, new RequestHelper(websiteInfo));
+            var output = cssImportProcessor.ParseImportStatements(cssWithImport, out importPaths);
 
             Assert.Equal(output, cssWithImport);
         }
@@ -34,7 +41,10 @@ body { color: black; }
 div {display: block;}";
 
             IEnumerable<string> importPaths;
-            var output = CssImportProcessor.ParseImportStatements(css, out importPaths);
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo, new RequestHelper(websiteInfo));
+            var output = cssImportProcessor.ParseImportStatements(css, out importPaths);
 
             Assert.Equal(@"@import url('http://mysite/css/color.css');
 body { color: black; }

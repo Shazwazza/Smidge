@@ -15,16 +15,19 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssImportProcessor : IPreProcessor
     {
-        public CssImportProcessor(FileSystemHelper fileSystemHelper, IHttpContextAccessor http)
+        public CssImportProcessor(FileSystemHelper fileSystemHelper, IWebsiteInfo siteInfo, IRequestHelper requestHelper)
         {
+            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
+            if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
+            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
             _fileSystemHelper = fileSystemHelper;
-            _reqParts = new RequestHelper(http.HttpContext.Request);
-            _request = http.HttpContext.Request;
+            _siteInfo = siteInfo;
+            _requestHelper = requestHelper;
         }
 
-        private readonly HttpRequest _request;
-        private readonly RequestHelper _reqParts;
         private readonly FileSystemHelper _fileSystemHelper;
+        private readonly IWebsiteInfo _siteInfo;
+        private readonly IRequestHelper _requestHelper;
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
@@ -36,10 +39,10 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_request);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.BaseUrl);
                 var absolute = uri.ToAbsolutePath(importPath);
 
-                var path = _reqParts.Content(absolute);
+                var path = _requestHelper.Content(absolute);
                 //is it external?
                 if (path.Contains(Constants.SchemeDelimiter))
                 {
@@ -84,7 +87,7 @@ namespace Smidge.FileProcessors
         /// <param name="content">The original css contents</param>
         /// <param name="importedPaths"></param>
         /// <returns></returns>
-        internal static string ParseImportStatements(string content, out IEnumerable<string> importedPaths)
+        internal string ParseImportStatements(string content, out IEnumerable<string> importedPaths)
         {
             var pathsFound = new List<string>();
             var matches = RegexStatements.ImportCssRegex.Matches(content);
@@ -95,7 +98,7 @@ namespace Smidge.FileProcessors
                 if (urlMatch.Success && urlMatch.Groups.Count >= 2)
                 {
                     var path = urlMatch.Groups[1].Value.Trim('\'', '"');
-                    if (RequestHelper.IsExternalRequestPath(path)) continue;
+                    if (_requestHelper.IsExternalRequestPath(path)) continue;
                 }
                 
                 //Strip the import statement                
@@ -105,7 +108,7 @@ namespace Smidge.FileProcessors
                 var filePath = match.Groups.Cast<Group>().Where(x => !string.IsNullOrEmpty(x.Value)).Last().Value.Trim('\'', '"');
 
                 //Ignore external imports - this will occur if they are not wrapped in a url block
-                if (RequestHelper.IsExternalRequestPath(filePath)) continue;
+                if (_requestHelper.IsExternalRequestPath(filePath)) continue;
 
                 pathsFound.Add(filePath);
             }

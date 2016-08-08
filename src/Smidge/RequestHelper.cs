@@ -3,32 +3,22 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 
-namespace Smidge.Models
+namespace Smidge
 {
     public class RequestHelper : IRequestHelper
     {
-        private readonly string _scheme;
-        private readonly PathString _pathBase;
-        private readonly IHeaderDictionary _headers;
-        private readonly HttpRequest _request;
-
-        public RequestHelper(HttpRequest request)
+        public RequestHelper(IWebsiteInfo siteInfo)
         {
-            _request = request;
+            if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
+
+            Scheme = siteInfo.BaseUrl.Scheme;
+            PathBase = siteInfo.BasePath;
         }
 
-        public RequestHelper(string scheme, PathString pathBase, IHeaderDictionary headers)
-        {
-            _scheme = scheme;
-            _pathBase = pathBase;
-            _headers = headers;
-        }
+        private string Scheme { get; }
+        private PathString PathBase { get; }
 
-        private string Scheme => _request != null ? _request.Scheme : _scheme;
-        private PathString PathBase => _request?.PathBase ?? _pathBase;
-        private IHeaderDictionary Headers => _request != null ? _request.Headers : _headers;
-
-        public static bool IsExternalRequestPath(string path)
+        public bool IsExternalRequestPath(string path)
         {
             if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                  || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
@@ -69,16 +59,16 @@ namespace Smidge.Models
         /// If IE 6 is detected, we will ignore compression as it's known that some versions of IE 6
         /// have issues with it.
         /// </summary>
-        public CompressionType GetClientCompression()
+        public CompressionType GetClientCompression(IHeaderDictionary headers)
         {
             var type = CompressionType.none;
-            var agentHeader = (string)Headers[HttpConstants.UserAgent];
+            var agentHeader = (string)headers[HttpConstants.UserAgent];
             if (agentHeader != null && agentHeader.Contains("MSIE 6"))
             {
                 return type;
             }
 
-            string acceptEncoding = Headers[HttpConstants.AcceptEncoding];
+            string acceptEncoding = headers[HttpConstants.AcceptEncoding];
 
             if (!string.IsNullOrEmpty(acceptEncoding))
             {

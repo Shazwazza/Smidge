@@ -34,9 +34,8 @@
       "imports": "dnxcore50"
     },
     "net452": {
-      "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1",
-        "System.IO.Compression": "4.0.0"
+      "frameworkDependencies": {
+        "System.IO.Compression": ""
       }
     }
   }

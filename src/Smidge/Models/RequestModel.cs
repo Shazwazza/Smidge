@@ -14,7 +14,7 @@ namespace Smidge.Models
             //default 
             LastFileWriteTime = DateTime.Now;
 
-            Compression = requestHelper.GetClientCompression();
+            Compression = requestHelper.GetClientCompression(accessor.ActionContext.HttpContext.Request.Headers);
 
             var bundleId = (string)accessor.ActionContext.RouteData.Values[valueName];
             ParsedPath = urlManager.ParsePath(bundleId);

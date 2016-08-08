@@ -48,7 +48,7 @@ namespace Smidge.Controllers
         public async Task<FileResult> Bundle(
             [FromServices]BundleRequestModel bundle)
         {  
-            var found = _bundleManager.GetFiles(bundle.FileKey, new RequestHelper(Request));
+            var found = _bundleManager.GetFiles(bundle.FileKey);
             if (found == null || !found.Any())
             {
                 //TODO: Throw an exception, this will result in an exception anyways
@@ -74,9 +74,7 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for composite files
         /// </summary>
-        /// <param name="s">The file key to lookup</param>
-        /// <param name="t">The type of file</param>
-        /// <param name="v">The version</param>
+        /// <param name="file"></param>
         /// <returns></returns>
         public async Task<FileResult> Composite(
              [FromServices]CompositeFileModel file)

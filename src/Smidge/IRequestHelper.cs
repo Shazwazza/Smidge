@@ -1,7 +1,9 @@
-﻿namespace Smidge
+﻿using Microsoft.AspNetCore.Http;
+
+namespace Smidge
 {
     /// <summary>
-    /// Used to transform a virtual path to an absolute path
+    /// Utility class for working with current requests and path info
     /// </summary>
     public interface IRequestHelper
     {
@@ -16,6 +18,8 @@
         /// Returns the compression type for the current request
         /// </summary>
         /// <returns></returns>
-        CompressionType GetClientCompression();
+        CompressionType GetClientCompression(IHeaderDictionary headers);
+
+        bool IsExternalRequestPath(string path);
     }
 }

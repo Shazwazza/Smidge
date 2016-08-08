@@ -22,7 +22,8 @@ namespace Smidge.Tests
 
             var url = "~/test/hello.js";
 
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
            
             var result = urlHelper.Content(url);
 
@@ -35,7 +36,8 @@ namespace Smidge.Tests
 
             var url = "test/hello.js";
 
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
 
             var result = urlHelper.Content(url);
 
@@ -47,7 +49,9 @@ namespace Smidge.Tests
         {
 
             var url = "/test/hello.js";
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
 
             var result = urlHelper.Content(url);
 
@@ -59,7 +63,9 @@ namespace Smidge.Tests
         {
 
             var url = "//test.com/hello.js";
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
 
             var result = urlHelper.Content(url);
 
@@ -71,7 +77,9 @@ namespace Smidge.Tests
         {
 
             var url = "http://test.com/hello.js";
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
 
 
             var result = urlHelper.Content(url);

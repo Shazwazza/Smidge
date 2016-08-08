@@ -21,23 +21,27 @@ namespace Smidge
             FileSystemHelper fileSystemHelper, 
             PreProcessPipelineFactory processorFactory, 
             IOptions<SmidgeOptions> smidgeOptions,
-            FileProcessingConventions fileProcessingConventions)
+            FileProcessingConventions fileProcessingConventions,
+            IRequestHelper requestHelper)
         {
             if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
             if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
             if (smidgeOptions == null) throw new ArgumentNullException(nameof(smidgeOptions));
             if (fileProcessingConventions == null) throw new ArgumentNullException(nameof(fileProcessingConventions));
+            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
 
             _fileSystemHelper = fileSystemHelper;
             _processorFactory = processorFactory;
             _smidgeOptions = smidgeOptions;
             _fileProcessingConventions = fileProcessingConventions;
+            _requestHelper = requestHelper;
         }
 
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IOptions<SmidgeOptions> _smidgeOptions;
         private readonly FileProcessingConventions _fileProcessingConventions;
+        private readonly IRequestHelper _requestHelper;
 
         private readonly ConcurrentDictionary<string, Bundle> _bundles = new ConcurrentDictionary<string, Bundle>();
 
@@ -205,9 +209,8 @@ namespace Smidge
         /// Returns the ordered collection of files for the bundle
         /// </summary>
         /// <param name="bundleName"></param>
-        /// <param name="requestHelper"></param>
         /// <returns></returns>
-        public IEnumerable<IWebFile> GetFiles(string bundleName, IRequestHelper requestHelper)
+        public IEnumerable<IWebFile> GetFiles(string bundleName)
         {
             Bundle collection;
             if (!TryGetValue(bundleName, out collection)) return null;
@@ -216,7 +219,7 @@ namespace Smidge
             var first = collection.Files.FirstOrDefault();
             if (first == null) return Enumerable.Empty<IWebFile>();
 
-            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, requestHelper,
+            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, _requestHelper,
                 _processorFactory.GetDefault(first.DependencyType),
                 _fileProcessingConventions);
             var ordered = orderedSet.GetOrderedFileSet();

@@ -30,13 +30,16 @@ namespace Smidge.Tests
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly BundleManager _bundleManager;
         private readonly IRequestHelper _requestHelper;
-        //private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
-        //private Mock<HttpContext> _httpContext;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
+        private Mock<HttpContext> _httpContext;
 
 
         public SmidgeHelperTests()
         {
             //  var config = Mock.Of<ISmidgeConfig>();
+            _httpContext = new Mock<HttpContext>();
+            _httpContextAccessor = new Mock<IHttpContextAccessor>();
+            _httpContextAccessor.Setup(x => x.HttpContext).Returns(_httpContext.Object);
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
             _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider, _hasher);
@@ -46,11 +49,11 @@ namespace Smidge.Tests
 
             _preProcessManager = new PreProcessManager(_fileSystemHelper);
 
+            _requestHelper = Mock.Of<IRequestHelper>();
             _processorFactory = new PreProcessPipelineFactory(_preProcessors);
             _bundleManager = new BundleManager(_fileSystemHelper, _processorFactory, _smidgeOptions.Object,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
-
-            _requestHelper = Mock.Of<IRequestHelper>();
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _requestHelper);            
         }
 
 
@@ -62,7 +65,8 @@ namespace Smidge.Tests
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -80,7 +84,8 @@ namespace Smidge.Tests
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -97,7 +102,8 @@ namespace Smidge.Tests
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -119,7 +125,8 @@ namespace Smidge.Tests
             var sut = new SmidgeHelper(
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (

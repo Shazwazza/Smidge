@@ -37,7 +37,8 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Bundle_Url()
         {
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
@@ -55,7 +56,8 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Composite_Url()
         {
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
@@ -75,7 +77,8 @@ namespace Smidge.Tests
         [Fact]
         public void Make_Composite_Url_Splits()
         {
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 14 + 10 } };
@@ -97,7 +100,8 @@ namespace Smidge.Tests
         [Fact]
         public void Throws_When_Single_Dependency_Too_Long()
         {
-            var urlHelper = new RequestHelper("http", new PathString(), new HeaderDictionary());
+            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
+            var urlHelper = new RequestHelper(websiteInfo);
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 10 } };

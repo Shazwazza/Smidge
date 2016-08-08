@@ -23,23 +23,20 @@ namespace Smidge
         /// current request uri.
         /// </summary>
         /// <param name="uri"></param>
-        /// <param name="req"></param>
+        /// <param name="baseUrl">The base URL of the website</param>
         /// <returns></returns>
-        public static Uri MakeAbsoluteUri(this Uri uri, HttpRequest req)
+        public static Uri MakeAbsoluteUri(this Uri uri, Uri baseUrl)
         {
+            if (uri == null) throw new ArgumentNullException(nameof(uri));
+            if (baseUrl == null) throw new ArgumentNullException(nameof(baseUrl));
+            if (!baseUrl.IsAbsoluteUri) throw new ArgumentException(nameof(baseUrl) + " must be an absolute URI");
+
             if (!uri.IsAbsoluteUri)
             {
-                if (req.Path.HasValue)
-                {
-                    var fullUri = req.GetEncodedUrl();                        
-                    //var uriHelper = new UriHelper(req);
-                    //var fullUri = uriHelper.GetFullUri();
-                    var reqUri = new Uri(fullUri);
-                    var left = reqUri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped);
+                var left = baseUrl.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped);
 
-                    var absoluteUrl = new Uri(new Uri(left), uri);
-                    return absoluteUrl;
-                }
+                var absoluteUrl = new Uri(new Uri(left), uri);
+                return absoluteUrl;
             }
             return uri;
         }

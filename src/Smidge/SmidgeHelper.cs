@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
@@ -21,12 +22,14 @@ namespace Smidge
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly PreProcessManager _preProcessManager;
         private readonly FileSystemHelper _fileSystemHelper;
+        private readonly IHasher _hasher;
         private readonly BundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IUrlManager _urlManager;
         private readonly IRequestHelper _requestHelper;
         private readonly FileProcessingConventions _fileProcessingConventions;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
 
         /// <summary>
@@ -41,6 +44,7 @@ namespace Smidge
         /// <param name="urlManager"></param>
         /// <param name="requestHelper"></param>
         /// <param name="fileProcessingConventions"></param>
+        /// <param name="httpContextAccessor"></param>
         public SmidgeHelper(
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             PreProcessManager preProcessManager,
@@ -50,16 +54,28 @@ namespace Smidge
             PreProcessPipelineFactory processorFactory,
             IUrlManager urlManager,
             IRequestHelper requestHelper,
-            FileProcessingConventions fileProcessingConventions)
+            FileProcessingConventions fileProcessingConventions,
+            IHttpContextAccessor httpContextAccessor)
         {
+            if (dynamicallyRegisteredWebFiles == null) throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
+            if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
+            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
+            if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
+            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
+            if (urlManager == null) throw new ArgumentNullException(nameof(urlManager));
+            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
+            if (fileProcessingConventions == null) throw new ArgumentNullException(nameof(fileProcessingConventions));
+            if (httpContextAccessor == null) throw new ArgumentNullException(nameof(httpContextAccessor));
             _processorFactory = processorFactory;
             _urlManager = urlManager;
             _requestHelper = requestHelper;
             _fileProcessingConventions = fileProcessingConventions;
+            _httpContextAccessor = httpContextAccessor;
             _bundleManager = bundleManager;
             _preProcessManager = preProcessManager;
             _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
             _fileSystemHelper = fileSystemHelper;
+            _hasher = hasher;
             _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
         }
 
@@ -178,7 +194,7 @@ namespace Smidge
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
-                var files = _bundleManager.GetFiles(bundleName, _requestHelper);
+                var files = _bundleManager.GetFiles(bundleName);
                 foreach (var d in files)
                 {
                     result.Add(d.FilePath);
@@ -186,14 +202,16 @@ namespace Smidge
                 return result;
             }
 
-            var compression = bundleOptions.CompressResult ? _requestHelper.GetClientCompression() : CompressionType.none;
+            var compression = bundleOptions.CompressResult 
+                ? _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers) 
+                : CompressionType.none;
             var url = _urlManager.GetUrl(bundleName, fileExt);
 
             //now we need to determine if these files have already been minified
             var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
             if (!File.Exists(compositeFilePath))
             {
-                var files = _bundleManager.GetFiles(bundleName, _requestHelper);
+                var files = _bundleManager.GetFiles(bundleName);
                 //we need to do the minify on the original files
                 foreach (var file in files)
                 {
@@ -230,46 +248,44 @@ namespace Smidge
             {
                 return orderedFiles.Select(x => x.FilePath);
             }
-            else
-            {
-                var compression = _requestHelper.GetClientCompression();
+
+            var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
                 
-                //Get the file collection used to create the composite URLs and the external requests
-                var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
+            //Get the file collection used to create the composite URLs and the external requests
+            var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
 
-                foreach (var batch in fileBatches)
+            foreach (var batch in fileBatches)
+            {
+                //if it's external, the rule is that a WebFileBatch can only contain a single external file
+                // it's path will be normalized as an external url so we just use it
+                if (batch.IsExternal)
                 {
-                    //if it's external, the rule is that a WebFileBatch can only contain a single external file
-                    // it's path will be normalized as an external url so we just use it
-                    if (batch.IsExternal)
-                    {
-                        result.Add(batch.Single().Original.FilePath);
-                    }
-                    else
-                    {
-                        //Get the URLs for the batch, this could be more than one resulting URL depending on how many
-                        // files are in the batch and the max url length
-                        var compositeUrls = _urlManager.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
+                    result.Add(batch.Single().Original.FilePath);
+                }
+                else
+                {
+                    //Get the URLs for the batch, this could be more than one resulting URL depending on how many
+                    // files are in the batch and the max url length
+                    var compositeUrls = _urlManager.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
 
-                        foreach (var u in compositeUrls)
+                    foreach (var u in compositeUrls)
+                    {
+                        //now we need to determine if these files have already been minified
+                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, u.Key);
+                        if (!File.Exists(compositeFilePath))
                         {
-                            //now we need to determine if these files have already been minified
-                            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, u.Key);
-                            if (!File.Exists(compositeFilePath))
+                            //need to process/minify these files - need to use their original paths of course
+                            foreach (var file in batch.Select(x => x.Original))
                             {
-                                //need to process/minify these files - need to use their original paths of course
-                                foreach (var file in batch.Select(x => x.Original))
-                                {
-                                    await _preProcessManager.ProcessAndCacheFileAsync(file,
-                                        //TODO: Need to make global bundle options for dynamically registered files
-                                        new Options.FileWatchOptions
-                                        {
-                                            Enabled = false
-                                        });
-                                }
+                                await _preProcessManager.ProcessAndCacheFileAsync(file,
+                                    //TODO: Need to make global bundle options for dynamically registered files
+                                    new Options.FileWatchOptions
+                                    {
+                                        Enabled = false
+                                    });
                             }
-                            result.Add(u.Url);
                         }
+                        result.Add(u.Url);
                     }
                 }
             }
@@ -322,7 +338,7 @@ namespace Smidge
 
             if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
 
-            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js);
+            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js, _requestHelper);
         }
 
         /// <summary>
@@ -339,7 +355,7 @@ namespace Smidge
 
             if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
 
-            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Css);
+            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Css, _requestHelper);
         }
     }
 }
