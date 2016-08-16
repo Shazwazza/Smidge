@@ -7,16 +7,13 @@ namespace Smidge
 {
     public class RequestHelper : IRequestHelper
     {
+        private readonly IWebsiteInfo _siteInfo;
+
         public RequestHelper(IWebsiteInfo siteInfo)
-        {
+        {            
             if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
-
-            Scheme = siteInfo.BaseUrl.Scheme;
-            PathBase = siteInfo.BasePath;
+            _siteInfo = siteInfo;
         }
-
-        private string Scheme { get; }
-        private PathString PathBase { get; }
 
         public bool IsExternalRequestPath(string path)
         {
@@ -40,15 +37,20 @@ namespace Smidge
             // logic to work properly
             if (path.StartsWith("//"))
             {
-                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", Scheme, Constants.SchemeDelimiter));
+                var scheme = _siteInfo.GetBaseUrl().Scheme;
+                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", scheme, Constants.SchemeDelimiter));
             }
 
             //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
             // since it is not dependent on the ActionContext
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
                 return (string)null;
-            if ((int)path[0] == 126)
-                return PathBase.Add(new PathString(path.Substring(1))).Value;
+            if (path[0] == 126)
+            {
+                PathString pathBase = _siteInfo.GetBasePath();
+                return pathBase.Add(new PathString(path.Substring(1))).Value;
+            }
+                
             return path;
         }
 

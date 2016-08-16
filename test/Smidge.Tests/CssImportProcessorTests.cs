@@ -20,8 +20,11 @@ namespace Smidge.Tests
                         
             IEnumerable<string> importPaths;
             var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo, new RequestHelper(websiteInfo));
+
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo.Object, new RequestHelper(websiteInfo.Object));
             var output = cssImportProcessor.ParseImportStatements(cssWithImport, out importPaths);
 
             Assert.Equal(output, cssWithImport);
@@ -42,8 +45,10 @@ div {display: block;}";
 
             IEnumerable<string> importPaths;
             var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo, new RequestHelper(websiteInfo));
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+            var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo.Object, new RequestHelper(websiteInfo.Object));
             var output = cssImportProcessor.ParseImportStatements(css, out importPaths);
 
             Assert.Equal(@"@import url('http://mysite/css/color.css');

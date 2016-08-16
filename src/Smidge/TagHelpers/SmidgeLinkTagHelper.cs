@@ -13,10 +13,10 @@ namespace Smidge.TagHelpers
     public class SmidgeLinkTagHelper : TagHelper
     {
         private readonly SmidgeHelper _smidgeHelper;
-        private readonly BundleManager _bundleManager;
+        private readonly IBundleManager _bundleManager;
         private readonly HtmlEncoder _encoder;
 
-        public SmidgeLinkTagHelper(SmidgeHelper smidgeHelper, BundleManager bundleManager, HtmlEncoder encoder)
+        public SmidgeLinkTagHelper(SmidgeHelper smidgeHelper, IBundleManager bundleManager, HtmlEncoder encoder)
         {
             _smidgeHelper = smidgeHelper;
             _bundleManager = bundleManager;

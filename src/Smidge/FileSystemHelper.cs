@@ -193,7 +193,7 @@ namespace Smidge
         }
 
         internal async Task WriteContentsAsync(string filePath, string contents)
-        {
+        {            
             var locker = _fileLocker.GetOrAdd(filePath, x => new SemaphoreSlim(1));
 
             //TODO: Need try/catch and maybe a nice solution for locking.

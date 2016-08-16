@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
 using Smidge.Models;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Smidge.FileProcessors;
 using Smidge.Hashing;
 
 namespace Smidge.Controllers
@@ -22,7 +24,9 @@ namespace Smidge.Controllers
     {
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly IHasher _hasher;
-        private readonly BundleManager _bundleManager;     
+        private readonly IBundleManager _bundleManager;
+        private readonly IBundleFileSetGenerator _fileSetGenerator;
+        private readonly PreProcessPipelineFactory _processorFactory;
 
         /// <summary>
         /// Constructor
@@ -30,14 +34,25 @@ namespace Smidge.Controllers
         /// <param name="fileSystemHelper"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
+        /// <param name="fileSetGenerator"></param>
+        /// <param name="processorFactory"></param>
         public SmidgeController(
             FileSystemHelper fileSystemHelper, 
-            IHasher hasher, 
-            BundleManager bundleManager)
+            IHasher hasher,
+            IBundleManager bundleManager,
+            IBundleFileSetGenerator fileSetGenerator,
+            PreProcessPipelineFactory processorFactory)
         {
+            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
+            if (hasher == null) throw new ArgumentNullException(nameof(hasher));
+            if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
+            if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
+            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
             _hasher = hasher;
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
+            _fileSetGenerator = fileSetGenerator;
+            _processorFactory = processorFactory;
         }
 
         /// <summary>
@@ -47,9 +62,21 @@ namespace Smidge.Controllers
         /// <returns></returns>       
         public async Task<FileResult> Bundle(
             [FromServices]BundleRequestModel bundle)
-        {  
-            var found = _bundleManager.GetFiles(bundle.FileKey);
-            if (found == null || !found.Any())
+        {
+            Bundle b;
+            if (!_bundleManager.TryGetValue(bundle.FileKey, out b))
+            {
+                //TODO: Throw an exception, this will result in an exception anyways
+                return null;
+            }
+
+            var found = _fileSetGenerator.GetOrderedFileSet(b,
+                _processorFactory.GetDefault(
+                    //the file type in the bundle will always be the same
+                    b.Files[0].DependencyType))
+                .ToArray();
+
+            if (found == null || found.Length == 0)
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;

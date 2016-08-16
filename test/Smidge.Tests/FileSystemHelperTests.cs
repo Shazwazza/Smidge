@@ -22,8 +22,11 @@ namespace Smidge.Tests
 
             var url = "~/test/hello.js";
 
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
            
             var result = urlHelper.Content(url);
 
@@ -36,8 +39,11 @@ namespace Smidge.Tests
 
             var url = "test/hello.js";
 
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var result = urlHelper.Content(url);
 
@@ -50,8 +56,11 @@ namespace Smidge.Tests
 
             var url = "/test/hello.js";
 
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var result = urlHelper.Content(url);
 
@@ -64,8 +73,11 @@ namespace Smidge.Tests
 
             var url = "//test.com/hello.js";
 
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var result = urlHelper.Content(url);
 
@@ -78,8 +90,11 @@ namespace Smidge.Tests
 
             var url = "http://test.com/hello.js";
 
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
 
 
             var result = urlHelper.Content(url);

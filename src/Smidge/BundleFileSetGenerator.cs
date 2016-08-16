@@ -12,37 +12,58 @@ namespace Smidge
     /// <summary>
     /// Returns the ordered file set and ensures that all pre-processor pipelines are applied correctly
     /// </summary>
-    public sealed class OrderedFileSet
+    public class BundleFileSetGenerator : IBundleFileSetGenerator
     {
-        private readonly IEnumerable<IWebFile> _files;
-        private readonly PreProcessPipeline _defaultPipeline;
         private readonly FileProcessingConventions _conventions;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
-
-        public OrderedFileSet(IEnumerable<IWebFile> files,
+        
+        public BundleFileSetGenerator(
             FileSystemHelper fileSystemHelper,
             IRequestHelper requestHelper,
-            PreProcessPipeline defaultPipeline,
             FileProcessingConventions conventions)
         {
-            _files = files;
-            _defaultPipeline = defaultPipeline;
+            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
+            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
+            if (conventions == null) throw new ArgumentNullException(nameof(conventions));     
             _conventions = conventions;
             _fileSystemHelper = fileSystemHelper;
             _requestHelper = requestHelper;
         }
 
-        public IEnumerable<IWebFile> GetOrderedFileSet()
+        /// <summary>
+        /// Returns the ordered file set for a bundle and ensures that all pre-processor pipelines are applied correctly
+        /// </summary>
+        /// <param name="bundle"></param>
+        /// <param name="pipeline"></param>
+        /// <returns></returns>
+        public IEnumerable<IWebFile> GetOrderedFileSet(Bundle bundle, PreProcessPipeline pipeline)
+        {
+            if (bundle == null) throw new ArgumentNullException(nameof(bundle));
+            if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
+
+            var ordered = GetOrderedFileSet(bundle.Files, pipeline);
+
+            //call the registered callback if any is set
+            return bundle.OrderingCallback == null ? ordered : bundle.OrderingCallback(ordered);
+        }
+
+        /// <summary>
+        /// Returns the ordered file set for dynamically registered assets and ensures that all pre-processor pipelines are applied correctly
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="pipeline"></param>
+        /// <returns></returns>
+        public IEnumerable<IWebFile> GetOrderedFileSet(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
         {
             var customOrdered = new List<IWebFile>();
             var defaultOrdered = new List<IWebFile>();
-            foreach (var file in _files)
+            foreach (var file in files)
             {
                 ValidateFile(file);
                 if (file.Pipeline == null)
                 {
-                    file.Pipeline = _defaultPipeline.Copy();
+                    file.Pipeline = pipeline.Copy();
                 }
                 file.FilePath = _requestHelper.Content(file.FilePath);
 

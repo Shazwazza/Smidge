@@ -16,9 +16,9 @@ namespace Smidge
     /// </summary>
     internal class FileBatcher
     {
-        private FileSystemHelper _fileSystemHelper;
+        private readonly FileSystemHelper _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
-        private IHasher _hasher;
+        private readonly IHasher _hasher;
 
         public FileBatcher(FileSystemHelper fileSystemHelper, IRequestHelper requestHelper, IHasher hasher)
         {

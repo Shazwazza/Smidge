@@ -22,19 +22,19 @@ namespace Smidge
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly PreProcessManager _preProcessManager;
         private readonly FileSystemHelper _fileSystemHelper;
-        private readonly IHasher _hasher;
-        private readonly BundleManager _bundleManager;
+        private readonly IBundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
+        private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IUrlManager _urlManager;
         private readonly IRequestHelper _requestHelper;
-        private readonly FileProcessingConventions _fileProcessingConventions;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="fileSetGenerator"></param>
         /// <param name="dynamicallyRegisteredWebFiles"></param>
         /// <param name="preProcessManager"></param>
         /// <param name="fileSystemHelper"></param>
@@ -43,20 +43,20 @@ namespace Smidge
         /// <param name="processorFactory"></param>
         /// <param name="urlManager"></param>
         /// <param name="requestHelper"></param>
-        /// <param name="fileProcessingConventions"></param>
         /// <param name="httpContextAccessor"></param>
         public SmidgeHelper(
+            IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             PreProcessManager preProcessManager,
             FileSystemHelper fileSystemHelper,
             IHasher hasher,
-            BundleManager bundleManager,
+            IBundleManager bundleManager,
             PreProcessPipelineFactory processorFactory,
             IUrlManager urlManager,
             IRequestHelper requestHelper,
-            FileProcessingConventions fileProcessingConventions,
             IHttpContextAccessor httpContextAccessor)
         {
+            if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
             if (dynamicallyRegisteredWebFiles == null) throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
             if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
             if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
@@ -64,18 +64,16 @@ namespace Smidge
             if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
             if (urlManager == null) throw new ArgumentNullException(nameof(urlManager));
             if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-            if (fileProcessingConventions == null) throw new ArgumentNullException(nameof(fileProcessingConventions));
             if (httpContextAccessor == null) throw new ArgumentNullException(nameof(httpContextAccessor));
+            _fileSetGenerator = fileSetGenerator;
             _processorFactory = processorFactory;
             _urlManager = urlManager;
             _requestHelper = requestHelper;
-            _fileProcessingConventions = fileProcessingConventions;
             _httpContextAccessor = httpContextAccessor;
             _bundleManager = bundleManager;
             _preProcessManager = preProcessManager;
             _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
             _fileSystemHelper = fileSystemHelper;
-            _hasher = hasher;
             _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
         }
 
@@ -186,6 +184,9 @@ namespace Smidge
                 throw new BundleNotFoundException(bundleName);
             }
 
+            if (bundle.Files.Count == 0)
+                return Enumerable.Empty<string>();
+
             //get the bundle options from the bundle if they have been set otherwise with the defaults
             var bundleOptions = debug
                 ? (bundle.BundleOptions == null ? _bundleManager.DefaultBundleOptions.DebugOptions : bundle.BundleOptions.DebugOptions)
@@ -194,11 +195,11 @@ namespace Smidge
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
-                var files = _bundleManager.GetFiles(bundleName);
-                foreach (var d in files)
-                {
-                    result.Add(d.FilePath);
-                }                
+                var files = _fileSetGenerator.GetOrderedFileSet(bundle, 
+                    _processorFactory.GetDefault(
+                        //the file type in the bundle will always be the same
+                        bundle.Files[0].DependencyType));
+                result.AddRange(files.Select(d => d.FilePath));
                 return result;
             }
 
@@ -211,7 +212,10 @@ namespace Smidge
             var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
             if (!File.Exists(compositeFilePath))
             {
-                var files = _bundleManager.GetFiles(bundleName);
+                var files = _fileSetGenerator.GetOrderedFileSet(bundle,
+                    _processorFactory.GetDefault(
+                        //the file type in the bundle will always be the same
+                        bundle.Files[0].DependencyType));
                 //we need to do the minify on the original files
                 foreach (var file in files)
                 {
@@ -237,12 +241,8 @@ namespace Smidge
             bool debug = false)
         {
             var result = new List<string>();
-
-            var orderedSet = new OrderedFileSet(files,
-                _fileSystemHelper, _requestHelper,
-                pipeline ?? _processorFactory.GetDefault(fileType),
-                _fileProcessingConventions);
-            var orderedFiles = orderedSet.GetOrderedFileSet();
+            
+            var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.GetDefault(fileType));
 
             if (debug)
             {

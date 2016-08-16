@@ -11,37 +11,18 @@ using Smidge.FileProcessors;
 
 namespace Smidge
 {
-    //TODO: Make this an interface
     /// <summary>
     /// Used to read and modify bundles
     /// </summary>
-    public class BundleManager
+    public class BundleManager : IBundleManager
     {
-        public BundleManager(
-            FileSystemHelper fileSystemHelper, 
-            PreProcessPipelineFactory processorFactory, 
-            IOptions<SmidgeOptions> smidgeOptions,
-            FileProcessingConventions fileProcessingConventions,
-            IRequestHelper requestHelper)
+        public BundleManager(IOptions<SmidgeOptions> smidgeOptions)
         {
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
             if (smidgeOptions == null) throw new ArgumentNullException(nameof(smidgeOptions));
-            if (fileProcessingConventions == null) throw new ArgumentNullException(nameof(fileProcessingConventions));
-            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-
-            _fileSystemHelper = fileSystemHelper;
-            _processorFactory = processorFactory;
             _smidgeOptions = smidgeOptions;
-            _fileProcessingConventions = fileProcessingConventions;
-            _requestHelper = requestHelper;
         }
 
-        private readonly FileSystemHelper _fileSystemHelper;
-        private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IOptions<SmidgeOptions> _smidgeOptions;
-        private readonly FileProcessingConventions _fileProcessingConventions;
-        private readonly IRequestHelper _requestHelper;
 
         private readonly ConcurrentDictionary<string, Bundle> _bundles = new ConcurrentDictionary<string, Bundle>();
 
@@ -204,30 +185,5 @@ namespace Smidge
                 return null;
             return collection;
         }
-
-        /// <summary>
-        /// Returns the ordered collection of files for the bundle
-        /// </summary>
-        /// <param name="bundleName"></param>
-        /// <returns></returns>
-        public IEnumerable<IWebFile> GetFiles(string bundleName)
-        {
-            Bundle collection;
-            if (!TryGetValue(bundleName, out collection)) return null;
-
-            //the file type in the bundle will always be the same
-            var first = collection.Files.FirstOrDefault();
-            if (first == null) return Enumerable.Empty<IWebFile>();
-
-            var orderedSet = new OrderedFileSet(collection.Files, _fileSystemHelper, _requestHelper,
-                _processorFactory.GetDefault(first.DependencyType),
-                _fileProcessingConventions);
-            var ordered = orderedSet.GetOrderedFileSet();
-
-            //call the registered callback if any is set
-            return collection.OrderingCallback == null ? ordered : collection.OrderingCallback(ordered);
-        }
-
-
     }
 }

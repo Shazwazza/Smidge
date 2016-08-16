@@ -36,8 +36,7 @@ namespace Smidge.CompositeFiles
                     //NOTE: If we just try to return the ms instance, it will simply not work
                     // a new stream needs to be returned that contains the compressed bytes.
                     // I've tried every combo and this appears to be the only thing that works.
-
-                    byte[] output = ms.ToArray();
+                    //byte[] output = ms.ToArray();
                     return new MemoryStream(ms.ToArray());
                 }
 

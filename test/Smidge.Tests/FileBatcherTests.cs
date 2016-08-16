@@ -20,8 +20,11 @@ namespace Smidge.Tests
         [Fact]
         public void Get_Composite_File_Collection_For_Url_Generation()
         {
-            var websiteInfo = Mock.Of<IWebsiteInfo>(x => x.BasePath == "/" && x.BaseUrl == new Uri("http://test.com"));
-            var urlHelper = new RequestHelper(websiteInfo);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
 

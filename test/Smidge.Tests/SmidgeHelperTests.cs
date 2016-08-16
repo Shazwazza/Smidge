@@ -22,13 +22,13 @@ namespace Smidge.Tests
         private readonly IFileProvider _fileProvider = Mock.Of<IFileProvider>();
         private readonly IHasher _hasher = Mock.Of<IHasher>();
         private readonly IEnumerable<IPreProcessor> _preProcessors = Mock.Of<IEnumerable<IPreProcessor>>();
-
+        private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly FileSystemHelper _fileSystemHelper;
         private readonly PreProcessManager _preProcessManager;
         private Mock<IOptions<SmidgeOptions>> _smidgeOptions;
         private readonly PreProcessPipelineFactory _processorFactory;
-        private readonly BundleManager _bundleManager;
+        private readonly IBundleManager _bundleManager;
         private readonly IRequestHelper _requestHelper;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
         private Mock<HttpContext> _httpContext;
@@ -51,21 +51,19 @@ namespace Smidge.Tests
 
             _requestHelper = Mock.Of<IRequestHelper>();
             _processorFactory = new PreProcessPipelineFactory(_preProcessors);
-            _bundleManager = new BundleManager(_fileSystemHelper, _processorFactory, _smidgeOptions.Object,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
-                _requestHelper);            
+            _bundleManager = new BundleManager(_smidgeOptions.Object);
+            _fileSetGenerator = new BundleFileSetGenerator(_fileSystemHelper, _requestHelper, 
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
         }
 
 
         [Fact]
         public async Task Generate_Css_Urls_For_Non_Existent_Bundle_Throws_Exception()
         {
-
-
             var sut = new SmidgeHelper(
+                _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
-                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,                
                 _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
@@ -82,9 +80,9 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
                 _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
@@ -100,9 +98,9 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
                 _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
@@ -123,9 +121,9 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
                 _httpContextAccessor.Object);
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>

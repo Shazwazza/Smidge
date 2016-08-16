@@ -39,7 +39,7 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.BaseUrl);
+                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
                 var absolute = uri.ToAbsolutePath(importPath);
 
                 var path = _requestHelper.Content(absolute);

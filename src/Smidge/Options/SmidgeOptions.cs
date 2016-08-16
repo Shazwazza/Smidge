@@ -10,6 +10,11 @@ namespace Smidge.Options
     /// </summary>
     public sealed class SmidgeOptions
     {
+        public SmidgeOptions()
+        {
+
+        }
+
         /// <summary>
         /// Gets/sets the pipeline factory
         /// </summary>

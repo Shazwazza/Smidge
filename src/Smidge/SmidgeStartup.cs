@@ -19,6 +19,7 @@ using Smidge.Options;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.NodeServices;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http.Extensions;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
@@ -33,23 +34,23 @@ namespace Smidge
             IConfiguration smidgeConfiguration = null, 
             IFileProvider fileProvider = null)
         {            
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            
+            services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
+
             services.AddSingleton<IRequestHelper, RequestHelper>();
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
-
-            //services.AddNodeServices(NodeHostingModel.Http);
-
-            services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
-            services.AddSingleton<BundleManager>();
+            services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
+            services.AddSingleton<IHasher, Crc32Hasher>();
+            services.AddSingleton<IBundleManager, BundleManager>();
+            services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<FileSystemHelper>(p =>
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
                 return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
             });
-
-
             services.AddSingleton<PreProcessManager>();
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
@@ -59,11 +60,6 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
-            services.AddScoped<DynamicallyRegisteredWebFiles>();
-            services.AddScoped<SmidgeHelper>();
-            services.AddScoped<IUrlManager, DefaultUrlManager>();
-            services.AddSingleton<IHasher, Crc32Hasher>();
-
             services.AddSingleton<SmidgeNodeServices>(provider =>
             {
                 var env = provider.GetRequiredService<IHostingEnvironment>();
@@ -71,17 +67,21 @@ namespace Smidge
                     new NodeServicesOptions
                     {
                         ProjectPath = env.ContentRootPath,
-                        WatchFileExtensions = new string[] {}
+                        WatchFileExtensions = new string[] { }
                     }));
             });
-                
-            services.AddSingleton<PreProcessPipelineFactory>();
+
+            services.AddScoped<DynamicallyRegisteredWebFiles>();
+            services.AddScoped<SmidgeHelper>();
+            services.AddScoped<IUrlManager, DefaultUrlManager>();
+
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();
             services.AddSingleton<IPreProcessor, CssMinifier>();
             services.AddSingleton<IPreProcessor, UglifyNodeMinifier>();
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
+            
             //conventions
             services.AddSingleton<FileProcessingConventions>();
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
@@ -93,28 +93,8 @@ namespace Smidge
             return services;
         }
         
-        public static void UseSmidge(this IApplicationBuilder app, Action<BundleManager> configureBundles = null)
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
         {
-            //middleware to auto-configure the base path + url for use with the IWebsiteInfo
-            // if the registered typed is AutoWebsiteInfo
-            var siteInfo = app.ApplicationServices.GetRequiredService<IWebsiteInfo>() as AutoWebsiteInfo;
-            if (siteInfo != null)
-            {
-                app.Use(async (context, next) =>
-                {
-                    if (!siteInfo.IsConfigured)
-                    {
-                        //TODO: Check for nulls here
-                        siteInfo.ConfigureOnce(
-                            context.Request.PathBase, 
-                            //TODO: This could be any URI for the site, need to clean this up
-                            // probably just need the SchemaAndServer + the PathBase
-                            new Uri(context.Request.GetEncodedUrl()));
-                    }
-                    await next.Invoke();
-                });
-            }            
-
             //Create custom route
             app.UseMvc(routes =>
             {
@@ -131,10 +111,12 @@ namespace Smidge
 
             if (configureBundles != null)
             {
-                var bundleFactory = app.ApplicationServices.GetRequiredService<BundleManager>();
-                configureBundles(bundleFactory);
-            }
+                var bundleManager = app.ApplicationServices.GetRequiredService<IBundleManager>();
+                configureBundles(bundleManager);
+            }    
 
         }
+
+        private static System.Threading.ReaderWriterLockSlim _locker = new System.Threading.ReaderWriterLockSlim();
     }
 }

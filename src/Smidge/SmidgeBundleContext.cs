@@ -6,11 +6,11 @@ namespace Smidge
     internal class SmidgeBundleContext : ISmidgeRequire
     {
         private readonly string _bundleName;
-        private readonly BundleManager _bundleManager;
+        private readonly IBundleManager _bundleManager;
         private readonly WebFileType _type;
         private readonly IRequestHelper _requestHelper;
 
-        public SmidgeBundleContext(string bundleName, BundleManager bundleManager, WebFileType type, IRequestHelper requestHelper)
+        public SmidgeBundleContext(string bundleName, IBundleManager bundleManager, WebFileType type, IRequestHelper requestHelper)
         {
             if (bundleName == null) throw new ArgumentNullException(nameof(bundleName));
             if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
