@@ -32,16 +32,17 @@ namespace Smidge.CompositeFiles
                     {
                         await original.CopyToAsync(compressedStream);
                     }
-
-                    //NOTE: If we just try to return the ms instance, it will simply not work
-                    // a new stream needs to be returned that contains the compressed bytes.
-                    // I've tried every combo and this appears to be the only thing that works.
-                    //byte[] output = ms.ToArray();
-                    return new MemoryStream(ms.ToArray());
+                }
+                else
+                {
+                    await original.CopyToAsync(ms);
                 }
 
-                //not compressed
-                return original;
+                //NOTE: If we just try to return the ms instance, it will simply not work
+                // a new stream needs to be returned that contains the compressed bytes.
+                // I've tried every combo and this appears to be the only thing that works.
+                //byte[] output = ms.ToArray();
+                return new MemoryStream(ms.ToArray());
             }
         }
     }

@@ -8,13 +8,15 @@ using Smidge.Hashing;
 namespace Smidge.Controllers
 {
     /// <summary>
-    /// Adds the correct caching expiry headers
+    /// Adds the correct caching expiry headers when the request is not in debug
     /// </summary>
     public sealed class AddExpiryHeadersAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
-            return new AddExpiryHeaderFilter(serviceProvider.GetRequiredService<IHasher>());
+            return new AddExpiryHeaderFilter(
+                serviceProvider.GetRequiredService<IHasher>(),
+                serviceProvider.GetRequiredService<IBundleManager>());
         }
 
         /// <summary>
@@ -26,10 +28,12 @@ namespace Smidge.Controllers
         public sealed class AddExpiryHeaderFilter : IActionFilter
         {
             private readonly IHasher _hasher;
+            private readonly IBundleManager _bundleManager;
 
-            public AddExpiryHeaderFilter(IHasher hasher)
+            public AddExpiryHeaderFilter(IHasher hasher, IBundleManager bundleManager)
             {
                 _hasher = hasher;
+                _bundleManager = bundleManager;
             }
 
             public void OnActionExecuting(ActionExecutingContext context)
@@ -55,12 +59,34 @@ namespace Smidge.Controllers
                 var file = context.HttpContext.Items[nameof(AddExpiryHeadersAttribute)] as RequestModel;
                 if (file == null) return;
 
-                var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
+                var enableETag = true;
+                var cacheControlMaxAge = 10*24; //10 days
 
-                context.HttpContext.Response.AddETagResponseHeader(etag);
-                context.HttpContext.Response.AddCacheControlResponseHeader();
-                context.HttpContext.Response.AddLastModifiedResponseHeader(file);
-                context.HttpContext.Response.AddExpiresResponseHeader();
+                //check if it's a bundle (not composite file)
+                var bundleRequest = file as BundleRequestModel;
+                if (bundleRequest != null)
+                {
+                    Bundle b;
+                    if (_bundleManager.TryGetValue(bundleRequest.FileKey, out b))
+                    {
+                        var bundleOptions = b.GetBundleOptions(_bundleManager, bundleRequest.Debug);
+                        enableETag = bundleOptions.CacheControlOptions.EnableETag;
+                        cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
+                    }
+                }
+
+                if (enableETag)
+                {
+                    var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
+                    context.HttpContext.Response.AddETagResponseHeader(etag);
+                }
+
+                if (cacheControlMaxAge > 0)
+                {
+                    context.HttpContext.Response.AddCacheControlResponseHeader(cacheControlMaxAge);
+                    context.HttpContext.Response.AddLastModifiedResponseHeader(file);
+                    context.HttpContext.Response.AddExpiresResponseHeader(cacheControlMaxAge);
+                }
             }
         }
 

@@ -51,7 +51,7 @@ namespace Smidge.Tests
                 hasher.Object,
                 urlHelper);
 
-            var url = creator.GetUrl("my-bundle", ".js");
+            var url = creator.GetUrl("my-bundle", ".js", false);
 
             Assert.Equal("/sg/my-bundle.js.v1", url);
         }

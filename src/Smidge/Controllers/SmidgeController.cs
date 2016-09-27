@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 
@@ -23,7 +24,6 @@ namespace Smidge.Controllers
     public class SmidgeController : Controller
     {
         private readonly FileSystemHelper _fileSystemHelper;
-        private readonly IHasher _hasher;
         private readonly IBundleManager _bundleManager;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
@@ -32,23 +32,19 @@ namespace Smidge.Controllers
         /// Constructor
         /// </summary>
         /// <param name="fileSystemHelper"></param>
-        /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
         /// <param name="fileSetGenerator"></param>
         /// <param name="processorFactory"></param>
         public SmidgeController(
             FileSystemHelper fileSystemHelper, 
-            IHasher hasher,
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory)
         {
             if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (hasher == null) throw new ArgumentNullException(nameof(hasher));
             if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
             if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
             if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
-            _hasher = hasher;
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
             _fileSetGenerator = fileSetGenerator;
@@ -56,50 +52,63 @@ namespace Smidge.Controllers
         }
 
         /// <summary>
-        /// Handles requests for bundles
+        /// Handles requests for named bundles
         /// </summary>
         /// <param name="bundle">The bundle model</param>
         /// <returns></returns>       
         public async Task<FileResult> Bundle(
             [FromServices]BundleRequestModel bundle)
         {
-            Bundle b;
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out b))
+            Bundle foundBundle;
+            if (!_bundleManager.TryGetValue(bundle.FileKey, out foundBundle))
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
 
-            var found = _fileSetGenerator.GetOrderedFileSet(b,
+            //TODO: Check if the files have been processed, if not do this processing since we know the bundle name
+            // this is possible (it is not possible for composite files)
+            // see: https://github.com/Shazwazza/Smidge/issues/45
+
+            var files = _fileSetGenerator.GetOrderedFileSet(foundBundle,
                 _processorFactory.GetDefault(
                     //the file type in the bundle will always be the same
-                    b.Files[0].DependencyType))
+                    foundBundle.Files[0].DependencyType))
                 .ToArray();
 
-            if (found == null || found.Length == 0)
+            if (files == null || files.Length == 0)
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
 
-            //need to convert each file path to it's hash since that is what the minified file will be saved as                    
-            var filePaths = found.Select(file =>
-                Path.Combine(
-                    _fileSystemHelper.CurrentCacheFolder,
-                    _hasher.Hash(file.FilePath) + bundle.Extension));
+            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
 
+            //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
+            Lazy<IFileInfo> fi;
+            var filePaths = files.Select(
+                x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, out fi));
+            
             using (var resultStream = await GetCombinedStreamAsync(filePaths))
             {
-                var compressedStream = await Compressor.CompressAsync(bundle.Compression, resultStream);
+                //compress the response (if enabled)
+                var compressedStream = await Compressor.CompressAsync(
+                    //do not compress anything if it's not enabled in the bundle options
+                    bundleOptions.CompressResult ? bundle.Compression : CompressionType.none, 
+                    resultStream);
 
+                //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
+                // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
+                // the raw file if it exists for further requests to this path
                 var compositeFilePath = await CacheCompositeFileAsync(bundle.FileKey, compressedStream, bundle.Compression);
 
+                //return the stream
                 return File(compressedStream, bundle.Mime);
             }
         }
 
         /// <summary>
-        /// Handles requests for composite files
+        /// Handles requests for composite files (non-named bundles)
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>

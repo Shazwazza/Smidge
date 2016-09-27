@@ -63,16 +63,16 @@ namespace Smidge
             response.Headers[HttpConstants.LastModified] = model.LastFileWriteTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
         }
 
-        public static void AddExpiresResponseHeader(this HttpResponse response, int cacheDays = 10)
+        public static void AddExpiresResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
-            var dateTime = DateTime.Now.AddDays(cacheDays);
+            var dateTime = DateTime.Now.AddHours(cacheHours);
             response.Headers[HttpConstants.Expires] = dateTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
         }
 
-        public static void AddCacheControlResponseHeader(this HttpResponse response, int cacheDays = 10)
+        public static void AddCacheControlResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
             response.Headers[HttpConstants.CacheControl] = string.Format("public, max-age={0}, s-maxage={0}",
-                TimeSpan.FromDays(cacheDays) .TotalSeconds);
+                TimeSpan.FromHours(cacheHours) .TotalSeconds);
         }
 
         public static void AddETagResponseHeader(this HttpResponse response, string etag)

@@ -89,14 +89,36 @@ namespace Smidge.Web
                     //NOTE: This is already min'd based on it's file name, therefore
                     // by convention JsMin should be removed
                     new JavaScriptFile("~/Js/Bundle1/a3.min.js"))
-                    .WithOptions(bundles.DefaultBundleOptions)
+                    .WithEnvironmentOptions(bundles.DefaultBundleOptions)
                     .OnOrdering(collection =>
                     {
-                            //return some custom ordering
-                            return collection.OrderBy(x => x.FilePath);
+                        //return some custom ordering
+                        return collection.OrderBy(x => x.FilePath);
                     });
 
-                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2");
+                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2")
+                    .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+                            .ForDebug(builder => builder
+                                .EnableCompositeProcessing()
+                                .EnableFileWatcher()
+                                .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
+                            .Build()
+                    );
+                    //.WithEnvironmentOptions(new BundleEnvironmentOptions
+                    //{
+                    //    DebugOptions = new BundleOptions
+                    //    {
+                    //        FileWatchOptions = new FileWatchOptions
+                    //        {
+                    //            Enabled = true  
+                    //        },
+                    //        CacheControlOptions = new CacheControlOptions
+                    //        {
+                    //            CacheControlMaxAge = 0,
+                    //            EnableETag = false
+                    //        }
+                    //    }
+                    //});
 
                 bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
 

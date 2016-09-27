@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Smidge.Hashing;
 using Smidge.Models;
+using Smidge.Options;
 
 namespace Smidge
 {
@@ -217,6 +218,53 @@ namespace Smidge
         }
 
         /// <summary>
+        /// This will return the cache file path for a given IWebFile depending on if it's being watched
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="fileWatchEnabled"></param>
+        /// <param name="extension"></param>
+        /// <param name="fileInfo">
+        /// A getter to the underlying IFileInfo, this is lazy because when file watching is not enabled we do not want to resolve
+        /// this if the cache file already exists
+        /// </param>
+        /// <returns></returns>
+        public string GetCacheFilePath(IWebFile file, bool fileWatchEnabled, string extension, out Lazy<IFileInfo> fileInfo)
+        {
+            string cacheDir;
+            string cacheFile;
+            if (fileWatchEnabled)
+            {
+                //When file watching, the file path will be different since we'll hash twice:
+                // * Hash normally, since this will be a static hash of the file name
+                // * Hash with timestamp since this will be how we change it
+                // This allows us to lookup the file's folder to store it's timestamped processed files
+
+                var fi = GetFileInfo(file);                
+
+                //get the file hash without the extension
+                var fileHash = GetFileHash(file, string.Empty);
+                var timestampedHash = GetFileHash(file, fi, extension);
+
+                cacheDir = Path.Combine(CurrentCacheFolder, fileHash);
+                cacheFile = Path.Combine(cacheDir, timestampedHash);
+                fileInfo = new Lazy<IFileInfo>(() => fi, LazyThreadSafetyMode.None);
+            }
+            else
+            {
+                var fileHash = GetFileHash(file, extension);
+
+                cacheDir = CurrentCacheFolder;
+                cacheFile = Path.Combine(cacheDir, fileHash);
+                fileInfo = new Lazy<IFileInfo>(() => GetFileInfo(file), LazyThreadSafetyMode.None);
+            }
+
+            //ensure the folder exists
+            Directory.CreateDirectory(cacheDir);
+
+            return cacheFile;
+        }
+
+        /// <summary>
         /// The current cache folder for the current version
         /// </summary>
         /// <returns></returns>
@@ -258,19 +306,31 @@ namespace Smidge
         /// Registers a file to be watched with a callback for when it is modified
         /// </summary>
         /// <param name="webFile"></param>
+        /// <param name="fileInfo"></param>
+        /// <param name="bundleOptions"></param>
         /// <param name="fileModifiedCallback"></param>
-        public void Watch(WatchedFile webFile, Action<WatchedFile> fileModifiedCallback)
+        public void Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback)
         {
-            var path = webFile.WebFile.FilePath.TrimStart(new[] { '~' });
+            var path = webFile.FilePath.TrimStart(new[] { '~' }).ToLowerInvariant();
+
+            //don't double watch if there's already a watcher for this file
+            if (_fileWatchers.ContainsKey(path)) return;
+
+            var watchedFile = new WatchedFile(webFile, fileInfo, bundleOptions);
+
             var changeToken = _fileProvider.Watch(path);
-            _fileWatchers.Add(changeToken.RegisterChangeCallback(o =>
+            _fileWatchers.TryAdd(path, changeToken.RegisterChangeCallback(o =>
             {
+                //try to remove the item from the dictionary so it can be added again
+                IDisposable watcher;
+                _fileWatchers.TryRemove(path, out watcher);
+
                 //call the callback with the strongly typed object
-                fileModifiedCallback((WatchedFile) o);
-            }, webFile));
+                fileModifiedCallback((WatchedFile)o);
+            }, watchedFile));
         }
 
         //TODO: We need an unwatch
-        private readonly List<IDisposable> _fileWatchers = new List<IDisposable>();
+        private readonly ConcurrentDictionary<string, IDisposable> _fileWatchers = new ConcurrentDictionary<string, IDisposable>();
     }
 }

@@ -11,6 +11,7 @@
         public BundleOptions()
         {
             FileWatchOptions = new FileWatchOptions();
+            CacheControlOptions = new CacheControlOptions();
             ProcessAsCompositeFile = true;
             CompressResult = true;
         }
@@ -31,6 +32,14 @@
         /// </summary>
         public bool CompressResult { get; set; }
 
+        /// <summary>
+        /// Used to control the caching of the bundle
+        /// </summary>
+        public CacheControlOptions CacheControlOptions { get; set; }
+
+        /// <summary>
+        /// Options for file watching to re-process them if they are modified on disk
+        /// </summary>
         public FileWatchOptions FileWatchOptions { get; set; }
     }
 }

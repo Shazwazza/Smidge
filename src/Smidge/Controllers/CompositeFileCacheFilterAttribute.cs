@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Smidge.Controllers
 {
+    //TODO: Should this execute when debug = true?
 
     /// <summary>
     /// This checks the file system for an already persisted minified, combined, compressed file for the 

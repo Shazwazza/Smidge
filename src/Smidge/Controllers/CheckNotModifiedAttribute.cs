@@ -58,6 +58,9 @@ namespace Smidge.Controllers
                 var file = context.HttpContext.Items[nameof(CheckNotModifiedAttribute)] as RequestModel;
                 if (file == null) return;
 
+                //Don't execute when the request is in Debug
+                if (file.Debug) return;
+
                 var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
 
                 var isDifferent = context.HttpContext.Request.HasETagBeenModified(etag);

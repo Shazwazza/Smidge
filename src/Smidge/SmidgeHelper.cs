@@ -188,10 +188,8 @@ namespace Smidge
                 return Enumerable.Empty<string>();
 
             //get the bundle options from the bundle if they have been set otherwise with the defaults
-            var bundleOptions = debug
-                ? (bundle.BundleOptions == null ? _bundleManager.DefaultBundleOptions.DebugOptions : bundle.BundleOptions.DebugOptions)
-                : (bundle.BundleOptions == null ? _bundleManager.DefaultBundleOptions.ProductionOptions : bundle.BundleOptions.ProductionOptions);                
-            
+            var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
+                
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
@@ -206,11 +204,15 @@ namespace Smidge
             var compression = bundleOptions.CompressResult 
                 ? _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers) 
                 : CompressionType.none;
-            var url = _urlManager.GetUrl(bundleName, fileExt);
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug);
 
             //now we need to determine if these files have already been minified
             var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
-            if (!File.Exists(compositeFilePath))
+
+            //If the processed file does not exist OR even if it does exist but file watching is enabled then 
+            // we will still need to perform the 'processing', this won't actually run the pipelines but it will 
+            // perform the file ordering so that the watchers can bind to them.
+            if (!File.Exists(compositeFilePath) || bundleOptions.FileWatchOptions.Enabled)
             {
                 var files = _fileSetGenerator.GetOrderedFileSet(bundle,
                     _processorFactory.GetDefault(
@@ -219,9 +221,10 @@ namespace Smidge
                 //we need to do the minify on the original files
                 foreach (var file in files)
                 {
-                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions.FileWatchOptions);
+                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions);
                 }
             }
+            
             result.Add(url);
             return result;
         }
@@ -277,12 +280,7 @@ namespace Smidge
                             //need to process/minify these files - need to use their original paths of course
                             foreach (var file in batch.Select(x => x.Original))
                             {
-                                await _preProcessManager.ProcessAndCacheFileAsync(file,
-                                    //TODO: Need to make global bundle options for dynamically registered files
-                                    new Options.FileWatchOptions
-                                    {
-                                        Enabled = false
-                                    });
+                                await _preProcessManager.ProcessAndCacheFileAsync(file, null);
                             }
                         }
                         result.Add(u.Url);

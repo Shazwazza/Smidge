@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Smidge.Models;
 using Smidge.Options;
 
@@ -49,11 +50,12 @@ namespace Smidge.Models
         /// Sets the options for the bundle
         /// </summary>
         /// <param name="bundleOptions"></param>
-        public Bundle WithOptions(BundleEnvironmentOptions bundleOptions)
+        public Bundle WithEnvironmentOptions(BundleEnvironmentOptions bundleOptions)
         {
             BundleOptions = bundleOptions;
             return this;
         }
+        
 
         /// <summary>
         /// A callback that can be specified 

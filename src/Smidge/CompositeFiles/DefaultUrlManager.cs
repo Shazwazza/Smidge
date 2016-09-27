@@ -24,15 +24,16 @@ namespace Smidge.CompositeFiles
             _config = config;
         }
 
-        public string GetUrl(string bundleName, string fileExtension)
+        public string GetUrl(string bundleName, string fileExtension, bool debug)
         {
-            const string handler = "~/{0}/{1}{2}.v{3}";
+            const string handler = "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(
                 string.Format(
                     handler,
                     _options.BundleFilePath,
                     Uri.EscapeUriString(bundleName),
                     fileExtension,
+                    debug ? 'd' : 'v',
                     _config.Version));
 
         }
@@ -114,11 +115,14 @@ namespace Smidge.CompositeFiles
                 return null;
             }
 
-            if (!parts[parts.Length - 1].StartsWith("v"))
+            //can start with 'v' or 'd' (d == debug)
+            var prefix = parts[parts.Length - 1][0];
+            if (prefix != 'v' && prefix != 'd')
             {
                 //invalid
                 return null;
             }
+            result.Debug = prefix == 'd';
 
             result.Version = parts[parts.Length - 1].Substring(1);
             var ext = parts[parts.Length - 2];

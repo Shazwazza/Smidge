@@ -7,7 +7,7 @@ namespace Smidge.CompositeFiles
 {
     public interface IUrlManager
     {
-        string GetUrl(string bundleName, string fileExtension);
+        string GetUrl(string bundleName, string fileExtension, bool debug);
 
         IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension);
 

@@ -5,12 +5,30 @@
     /// </summary>
     public sealed class BundleEnvironmentOptions
     {
+        /// <summary>
+        /// Creates a new Options Builder
+        /// </summary>
+        /// <returns></returns>
+        public static BundleEnvironmentOptionsBuilder Create()
+        {
+            var options = new BundleEnvironmentOptions();
+            return new BundleEnvironmentOptionsBuilder(options);
+        }
+
+        /// <summary>
+        /// Constructor, sets default options
+        /// </summary>
         public BundleEnvironmentOptions()
         {
             DebugOptions = new BundleOptions
             {
                 ProcessAsCompositeFile = false,
-                CompressResult = false
+                CompressResult = false,
+                CacheControlOptions = new CacheControlOptions
+                {
+                    EnableETag = false,
+                    CacheControlMaxAge = 0
+                }
             };
             ProductionOptions = new BundleOptions();    
         }

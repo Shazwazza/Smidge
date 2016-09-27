@@ -21,5 +21,7 @@ namespace Smidge.Models
         public string FilePath { get; set; }
 
         public PreProcessPipeline Pipeline { get; set; }
+
+
     }
 }

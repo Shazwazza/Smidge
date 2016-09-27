@@ -18,6 +18,7 @@ namespace Smidge.Models
 
             var bundleId = (string)accessor.ActionContext.RouteData.Values[valueName];
             ParsedPath = urlManager.ParsePath(bundleId);
+            Debug = ParsedPath.Debug;
 
             switch (ParsedPath.WebType)
             {
@@ -33,10 +34,20 @@ namespace Smidge.Models
             }
         }
 
+        /// <summary>
+        /// The bundle definition name - this is either the bundle name when using named bundles or the composite file
+        /// key generated when using composite files
+        /// </summary>
         public abstract string FileKey { get; }
 
-        public ParsedUrlPath ParsedPath { get; private set; }
+        public bool Debug { get; }
+        public ParsedUrlPath ParsedPath { get; }
+
+        /// <summary>
+        /// The compression type allowed by the client/browser for this request
+        /// </summary>
         public CompressionType Compression { get; private set; }
+
         public string Extension { get; private set; }
         public string Mime { get; private set; }
 
