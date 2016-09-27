@@ -104,21 +104,6 @@ namespace Smidge.Web
                                 .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
                             .Build()
                     );
-                    //.WithEnvironmentOptions(new BundleEnvironmentOptions
-                    //{
-                    //    DebugOptions = new BundleOptions
-                    //    {
-                    //        FileWatchOptions = new FileWatchOptions
-                    //        {
-                    //            Enabled = true  
-                    //        },
-                    //        CacheControlOptions = new CacheControlOptions
-                    //        {
-                    //            CacheControlMaxAge = 0,
-                    //            EnableETag = false
-                    //        }
-                    //    }
-                    //});
 
                 bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
 

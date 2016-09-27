@@ -14,21 +14,6 @@ using Smidge.Options;
 
 namespace Smidge
 {
-
-    public sealed class FileWatcher
-    {
-
-        private readonly IFileProvider _fileProvider;
-
-        public FileWatcher(IFileProvider fileProvider)
-        {
-            _fileProvider = fileProvider;
-        }
-
-
-
-    }
-
     /// <summary>
     /// Singleton class that exposes methods for dealing with the file system
     /// </summary>

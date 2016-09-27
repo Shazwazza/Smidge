@@ -80,40 +80,8 @@ namespace Smidge.FileProcessors
         {
             await ProcessFileImpl(file.WebFile, file.BundleOptions);
 
-            //var extension = Path.GetExtension(file.WebFile.FilePath);
-
-            //Refreshing the IFileInfo object so we can get it's latest metadata
-            //TODO: Do we need this? Does the file watch get re-created?
-            //file.RefreshFileInfo(_fileSystemHelper);
-
             //Raise event
             file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file, _fileSystemHelper));
-
-            ////TODO: We need to figure out how to call another callback on the Actual Bundle that 
-            //// issued the file watching, this is so we can delete (or rename/invalidate) the persistent processed/combined/compressed
-            //// composite file when one of the bundle files changes.
-            ////var filesetPath = _fileSystemHelper.GetCurrentCompositeFilePath(CompressionType.none, file.);
-
-            //var hashName = _fileSystemHelper.GetFileHash(file.WebFile, file.FileInfo, extension);
-
-            //var cacheDir = _fileSystemHelper.CurrentCacheFolder;
-            //var cacheFile = Path.Combine(cacheDir, hashName);
-
-            //Directory.CreateDirectory(cacheDir);
-
-            //if (!File.Exists(cacheFile))
-            //{
-            //    var contents = await _fileSystemHelper.ReadContentsAsync(file.FileInfo);
-
-            //    //process the file
-            //    var processed = await file.WebFile.Pipeline.ProcessAsync(new FileProcessContext(contents, file.WebFile));
-
-            //    //save it to the cache path
-            //    await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);                
-            //}
-
-            //// keep watching this file for changes:
-            //_fileSystemHelper.Watch(file.WebFile, file.FileInfo, file.BundleOptions, FileModified);
         }
 
         /// <summary>
