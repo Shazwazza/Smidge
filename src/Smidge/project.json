@@ -22,8 +22,7 @@
     "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Microsoft.AspNetCore.Mvc": "1.0.0",
     "Microsoft.Extensions.Configuration": "1.0.0",
-    "Microsoft.Extensions.Configuration.Json": "1.0.0",
-    "Microsoft.AspNetCore.NodeServices" :  "1.0.0-beta-*" 
+    "Microsoft.Extensions.Configuration.Json": "1.0.0"    
   },
 
   "frameworks": {
@@ -31,7 +30,11 @@
       "dependencies": {
         "System.IO.Compression": "4.1.0"
       },
-      "imports": "dnxcore50"
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     },
     "net452": {
       "frameworkDependencies": {

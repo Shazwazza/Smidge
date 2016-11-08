@@ -1,5 +1,7 @@
 ﻿namespace Smidge.Options
 {
+
+
     /// <summary>
     /// Defines the different bundle options for Debug vs Production
     /// </summary>
@@ -22,6 +24,7 @@
         {
             DebugOptions = new BundleOptions
             {
+                
                 ProcessAsCompositeFile = false,
                 CompressResult = false,
                 CacheControlOptions = new CacheControlOptions

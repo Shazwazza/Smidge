@@ -1,11 +1,14 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "moq.netcore": "4.4.0-beta8",
-    "Smidge": "1.0.0",
+    "Moq": "4.6.38-alpha",
+    "Smidge": {
+      "target": "project",
+      "version": "1.0.0"
+    },
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "xunit": "2.1.0",
-    "xunit.abstractions": "2.0.1-rc2",
+    "xunit.abstractions": "2.0.1",
     "System.Diagnostics.TraceSource": "4.0.0"
   },
 

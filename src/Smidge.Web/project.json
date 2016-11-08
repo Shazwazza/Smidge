@@ -35,6 +35,14 @@
     "Smidge": {
       "target": "project",
       "version": "1.0.0"
+    },
+    "Smidge.JavaScriptServices": {
+      "target": "project",
+      "version": "1.0.0"
+    },
+    "Smidge.Nuglify": {
+      "target": "project",
+      "version": "1.0.0"
     }
   },
 

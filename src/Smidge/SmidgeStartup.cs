@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.FileProviders;
 using System.Linq;
 //using Microsoft.AspNetCore.NodeServices;
@@ -20,9 +19,9 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Smidge.Options;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
-using Smidge.NodeServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http.Extensions;
+using Smidge.Cache;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -62,16 +61,6 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
-            services.AddSingleton<SmidgeNodeServices>(provider =>
-            {
-                var env = provider.GetRequiredService<IHostingEnvironment>();
-                return new SmidgeNodeServices(Configuration.CreateNodeServices(
-                    new NodeServicesOptions
-                    {
-                        ProjectPath = env.ContentRootPath,
-                        WatchFileExtensions = new string[] { }
-                    }));
-            });
 
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
@@ -79,8 +68,7 @@ namespace Smidge
 
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();
-            services.AddSingleton<IPreProcessor, CssMinifier>();
-            services.AddSingleton<IPreProcessor, UglifyNodeMinifier>();
+            services.AddSingleton<IPreProcessor, CssMinifier>();            
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
             

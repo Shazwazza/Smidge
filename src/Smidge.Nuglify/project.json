@@ -1,0 +1,22 @@
+﻿{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0",
+    "Smidge": {
+      "target": "project",
+      "version": "1.0.0"
+    },
+    "Nuglify": "1.5.3"
+  },
+
+  "frameworks": {
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    },
+    "net452": {
+      "frameworkDependencies": {     
+      }
+    }
+  }
+}
