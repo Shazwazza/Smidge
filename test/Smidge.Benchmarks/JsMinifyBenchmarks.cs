@@ -1,12 +1,21 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Diagnostics.Windows;
 using BenchmarkDotNet.Jobs;
+using BenchmarkDotNet.Loggers;
+using BenchmarkDotNet.Reports;
+using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.NodeServices;
 using Smidge.FileProcessors;
 using Smidge.JavaScriptServices;
@@ -23,13 +32,13 @@ namespace Smidge.Benchmarks
         /// </summary>
         static JsMinifyBenchmarks()
         {            
-            _assemblyPath = Path.Combine(Path.GetDirectoryName(typeof(JsMinifyBenchmarks).Assembly.Location), "temp");
-            Directory.CreateDirectory(_assemblyPath);
+            AssemblyPath = Path.Combine(Path.GetDirectoryName(typeof(JsMinifyBenchmarks).Assembly.Location), "temp");
+            Directory.CreateDirectory(AssemblyPath);
 
-            if (!Directory.Exists(Path.Combine(_assemblyPath, "node_modules")))
+            if (!Directory.Exists(Path.Combine(AssemblyPath, "node_modules")))
             {
                 //copy over all of the node modules
-                var dirInfo = new DirectoryInfo(_assemblyPath);
+                var dirInfo = new DirectoryInfo(AssemblyPath);
                 while (dirInfo != null && !dirInfo.Name.Equals("test", StringComparison.OrdinalIgnoreCase))
                 {
                     dirInfo = dirInfo.Parent;
@@ -39,12 +48,12 @@ namespace Smidge.Benchmarks
                 dirInfo = dirInfo.GetDirectories("Smidge.Web").Single();
                 dirInfo = dirInfo.GetDirectories("node_modules").Single();
 
-                DirectoryCopy(dirInfo.FullName, Path.Combine(_assemblyPath, "node_modules"), true);
+                DirectoryCopy(dirInfo.FullName, Path.Combine(AssemblyPath, "node_modules"), true);
             }
 
             using (var reader = new StreamReader(Assembly.GetExecutingAssembly().GetManifestResourceStream("Smidge.Benchmarks.jQuery.js")))
             {
-                _jQuery = reader.ReadToEnd();
+                JQuery = reader.ReadToEnd();
             }
         }
 
@@ -53,15 +62,25 @@ namespace Smidge.Benchmarks
             public Config()
             {
                 Add(new MemoryDiagnoser());
-        
+                Add(new MinifiedPercentColumn());
+
+                //The 'quick and dirty' settings, so it runs a little quicker
+                // see benchmarkdotnet FAQ
+                Add(Job.Default
+                    .WithLaunchCount(1) // benchmark process will be launched only once
+                    .WithIterationTime(100) // 100ms per iteration
+                    .WithWarmupCount(3) // 3 warmup iteration
+                    .WithTargetCount(3)); // 3 target iteration           
+
             }
         }
 
         private JsMinifier _jsMin;
         private NuglifyJs _nuglify;
-        private UglifyNodeMinifier _jsUglify;
-        private static readonly string _jQuery;
-        private static readonly string _assemblyPath;
+        private UglifyNodeMinifier _jsUglify;        
+        private static readonly string AssemblyPath;
+
+        public static readonly string JQuery;
 
         private class NullServiceProvider : IServiceProvider
         {
@@ -80,7 +99,7 @@ namespace Smidge.Benchmarks
             var nodeServices = new SmidgeJavaScriptServices(NodeServicesFactory.CreateNodeServices(
                 new NodeServicesOptions(new NullServiceProvider())
                 {
-                    ProjectPath = _assemblyPath,
+                    ProjectPath = AssemblyPath,
                     WatchFileExtensions = new string[] {}
                 }));
             _jsUglify = new UglifyNodeMinifier(nodeServices);            
@@ -124,28 +143,37 @@ namespace Smidge.Benchmarks
             }
         }
 
+        public async Task<string> GetJsMin()
+        {
+            return await _jsMin.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
+        }
 
-        [Cleanup]
-        public void Cleanup()
-        {         
+        public async Task<string> GetNuglify()
+        {
+            return await _nuglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
+        }
+
+        public async Task<string> GetJsServicesUglify()
+        {
+            return await _jsUglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
         }
 
         [Benchmark(Baseline = true)]
         public async Task JsMin()
         {
-            var result = await _jsMin.ProcessAsync(new FileProcessContext(_jQuery, new JavaScriptFile()));
+            await GetJsMin();
         }
 
         [Benchmark]
         public async Task Nuglify()
         {
-            var result = await _nuglify.ProcessAsync(new FileProcessContext(_jQuery, new JavaScriptFile()));
+            await GetNuglify();
         }
 
         [Benchmark]
-        public async Task JsUglify()
-        {           
-            var result = await _jsUglify.ProcessAsync(new FileProcessContext(_jQuery, new JavaScriptFile()));
+        public async Task JsServicesUglify()
+        {
+            await GetJsServicesUglify();
         }
 
 

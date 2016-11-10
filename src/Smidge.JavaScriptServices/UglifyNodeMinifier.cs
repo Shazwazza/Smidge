@@ -33,16 +33,6 @@ namespace Smidge.JavaScriptServices
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
-            ////if we wanted an intermediary step or if JS lib requires a physical file, we can do this
-            //using (var nodeScript = new StringAsTempFile(fileProcessContext.FileContent))
-            //{
-            //    var result = await _nodeServices.InvokeAsync<string>(
-            //        "wwwroot/JS/nodeTest.js",
-            //        nodeScript.FileName);
-            //    return result;
-            //}
-
-            //uglify can actually just use a raw string
             var result = await _nodeServices.InvokeAsync<string>(
                 _nodeScript.Value.FileName, fileProcessContext.FileContent);
             return result;
