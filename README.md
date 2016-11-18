@@ -60,7 +60,7 @@ __[See Rendering](https://github.com/Shazwazza/Smidge/wiki/Rendering) for full r
 It's easy to customize how your files are processed including the way files are minified, how URLs are resolved, etc.... 
 This can be done at a global/default level, at the bundle level or at an individual file level.
 
-__[See Rendering](https://github.com/Shazwazza/Smidge/wiki/Custom-pre-processing) for information about customizing the pre-process pipeline__
+__[See Custom Pre-Processing Pipeline](https://github.com/Shazwazza/Smidge/wiki/Custom-pre-processing) for information about customizing the pre-process pipeline__
 
 ### URLs
 
