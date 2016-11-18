@@ -1,4 +1,7 @@
-﻿namespace Smidge.Options
+﻿using System;
+using Smidge.Cache;
+
+namespace Smidge.Options
 {
 
 
@@ -35,7 +38,7 @@
             };
             ProductionOptions = new BundleOptions();    
         }
-
+        
         /// <summary>
         /// The options for debug mode
         /// </summary>

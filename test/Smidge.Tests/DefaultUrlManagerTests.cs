@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Hashing;
 
@@ -22,8 +23,7 @@ namespace Smidge.Tests
             var path = "c61531b5.2512be3b.bb1214f7.a21bd1fd.js.v1";
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg" } };
             var manager = new DefaultUrlManager(
-                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
-                Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),                
                 Mock.Of<IHasher>(),
                 Mock.Of<IRequestHelper>());
 
@@ -47,11 +47,10 @@ namespace Smidge.Tests
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
-                Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object,
                 urlHelper);
 
-            var url = creator.GetUrl("my-bundle", ".js", false);
+            var url = creator.GetUrl("my-bundle", ".js", false, Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
 
             Assert.Equal("/sg/my-bundle.js.v1", url);
         }
@@ -69,11 +68,12 @@ namespace Smidge.Tests
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
-                Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object,
                 urlHelper);
 
-            var url = creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js");
+            var url = creator.GetUrls(
+                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
+                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
 
             Assert.Equal(1, url.Count());
             Assert.Equal("/sg/Test1.Test2.js.v1", url.First().Url);
@@ -93,11 +93,12 @@ namespace Smidge.Tests
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 14 + 10 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
-                Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object,
                 urlHelper);
 
-            var url = creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js");
+            var url = creator.GetUrls(
+                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
+                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
 
             Assert.Equal(2, url.Count());
             Assert.Equal("/sg/Test1.js.v1", url.ElementAt(0).Url);
@@ -119,11 +120,12 @@ namespace Smidge.Tests
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 10 } };
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
-                Mock.Of<ISmidgeConfig>(x => x.Version == "1"),
                 hasher.Object,
                 urlHelper);
 
-            Assert.Throws<InvalidOperationException>(() => creator.GetUrls(new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js"));
+            Assert.Throws<InvalidOperationException>(() => creator.GetUrls(
+                new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js",
+                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1")));
 
         }
     }

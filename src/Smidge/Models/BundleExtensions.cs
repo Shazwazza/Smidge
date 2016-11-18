@@ -19,5 +19,20 @@ namespace Smidge.Models
 
             return bundleOptions;
         }
+
+        /// <summary>
+        /// Gets the default bundle options based on whether we're in debug or not
+        /// </summary>
+        /// <param name="bundleMgr"></param>
+        /// <param name="debug"></param>
+        /// <returns></returns>
+        public static BundleOptions GetDefaultBundleOptions(this IBundleManager bundleMgr, bool debug)
+        {
+            var bundleOptions = debug
+                ? bundleMgr.DefaultBundleOptions.DebugOptions
+                : bundleMgr.DefaultBundleOptions.ProductionOptions;
+
+            return bundleOptions;
+        }
     }
 }

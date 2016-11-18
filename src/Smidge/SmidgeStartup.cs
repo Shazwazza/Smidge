@@ -40,7 +40,7 @@ namespace Smidge
             
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
-            services.AddSingleton<IRequestHelper, RequestHelper>();
+            services.AddSingleton<IRequestHelper, RequestHelper>();            
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
             services.AddSingleton<IHasher, Crc32Hasher>();
@@ -61,6 +61,10 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
+            
+            services.AddSingleton<ICacheBuster, ConfigCacheBuster>();
+            services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
+            services.AddSingleton<CacheBusterResolver>();
 
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();

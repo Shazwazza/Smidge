@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
@@ -29,6 +30,7 @@ namespace Smidge
         private readonly IUrlManager _urlManager;
         private readonly IRequestHelper _requestHelper;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly CacheBusterResolver _cacheBusterResolver;
 
 
         /// <summary>
@@ -44,6 +46,7 @@ namespace Smidge
         /// <param name="urlManager"></param>
         /// <param name="requestHelper"></param>
         /// <param name="httpContextAccessor"></param>
+        /// <param name="cacheBusterResolver"></param>
         public SmidgeHelper(
             IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
@@ -54,7 +57,8 @@ namespace Smidge
             PreProcessPipelineFactory processorFactory,
             IUrlManager urlManager,
             IRequestHelper requestHelper,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            CacheBusterResolver cacheBusterResolver)
         {
             if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
             if (dynamicallyRegisteredWebFiles == null) throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
@@ -65,11 +69,13 @@ namespace Smidge
             if (urlManager == null) throw new ArgumentNullException(nameof(urlManager));
             if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
             if (httpContextAccessor == null) throw new ArgumentNullException(nameof(httpContextAccessor));
+            if (cacheBusterResolver == null) throw new ArgumentNullException(nameof(cacheBusterResolver));
             _fileSetGenerator = fileSetGenerator;
             _processorFactory = processorFactory;
             _urlManager = urlManager;
             _requestHelper = requestHelper;
             _httpContextAccessor = httpContextAccessor;
+            _cacheBusterResolver = cacheBusterResolver;
             _bundleManager = bundleManager;
             _preProcessManager = preProcessManager;
             _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
@@ -204,7 +210,7 @@ namespace Smidge
             var compression = bundleOptions.CompressResult 
                 ? _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers) 
                 : CompressionType.none;
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug);
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug, _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType()));
 
             //now we need to determine if these files have already been minified
             var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
@@ -269,7 +275,10 @@ namespace Smidge
                 {
                     //Get the URLs for the batch, this could be more than one resulting URL depending on how many
                     // files are in the batch and the max url length
-                    var compositeUrls = _urlManager.GetUrls(batch.Select(x => x.Hashed), fileType == WebFileType.Css ? ".css" : ".js");
+                    var compositeUrls = _urlManager.GetUrls(
+                        batch.Select(x => x.Hashed), 
+                        fileType == WebFileType.Css ? ".css" : ".js",
+                        _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType()));
 
                     foreach (var u in compositeUrls)
                     {

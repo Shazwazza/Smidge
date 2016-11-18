@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using Smidge.CompositeFiles;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Smidge;
+using Smidge.Cache;
 using Smidge.Hashing;
 using Smidge.FileProcessors;
 using Smidge.Options;
@@ -21,7 +23,7 @@ namespace Smidge.Tests
         private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>();
         private readonly IFileProvider _fileProvider = Mock.Of<IFileProvider>();
         private readonly IHasher _hasher = Mock.Of<IHasher>();
-        private readonly IEnumerable<IPreProcessor> _preProcessors = Mock.Of<IEnumerable<IPreProcessor>>();
+        private readonly IEnumerable<IPreProcessor> _preProcessors = new List<IPreProcessor>();
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly FileSystemHelper _fileSystemHelper;
@@ -64,7 +66,8 @@ namespace Smidge.Tests
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,                
-                _httpContextAccessor.Object);
+                _httpContextAccessor.Object, 
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -83,7 +86,8 @@ namespace Smidge.Tests
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                _httpContextAccessor.Object);
+                _httpContextAccessor.Object,
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -101,7 +105,8 @@ namespace Smidge.Tests
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                _httpContextAccessor.Object);
+                _httpContextAccessor.Object,
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
@@ -124,7 +129,8 @@ namespace Smidge.Tests
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
-                _httpContextAccessor.Object);
+                _httpContextAccessor.Object,
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (

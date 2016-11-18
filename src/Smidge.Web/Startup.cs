@@ -1,13 +1,18 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;
+using Smidge.JavaScriptServices;
+using Smidge.Nuglify;
 
 namespace Smidge.Web
 {
@@ -47,15 +52,39 @@ namespace Smidge.Web
         {
             services.AddSingleton<ApplicationEnvironment>();
 
-            services.AddMvc();            
+            services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.
             services.AddSmidge(_config)
-                //Set the global Smidge options
                 .Configure<SmidgeOptions>(options =>
                 {
                     //options.FileWatchOptions.Enabled = true;
+                    options.PipelineFactory.OnGetDefault = GetDefaultPipelineFactory;
+                    options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
                 });
+
+            services.AddSmidgeJavaScriptServices();
+            services.AddSmidgeNuglifyServices();
+        }
+
+        /// <summary>
+        /// A callback used to modify the default pipeline to use Nuglify for JS processing
+        /// </summary>
+        /// <param name="fileType"></param>
+        /// <param name="processors"></param>
+        /// <returns></returns>
+        private static PreProcessPipeline GetDefaultPipelineFactory(WebFileType fileType, IReadOnlyCollection<IPreProcessor> processors)
+        {
+            switch (fileType)
+            {
+                case WebFileType.Js:
+                    return new PreProcessPipeline(new IPreProcessor[]
+                    {
+                        processors.OfType<NuglifyJs>().Single()
+                    });
+            }
+            //returning null will fallback to the logic defined in the registered PreProcessPipelineFactory
+            return null;
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -95,12 +124,13 @@ namespace Smidge.Web
                         //return some custom ordering
                         return collection.OrderBy(x => x.FilePath);
                     });
-
+                
                 bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2")
                     .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
                             .ForDebug(builder => builder
                                 .EnableCompositeProcessing()
                                 .EnableFileWatcher()
+                                .SetCacheBusterType<AppDomainLifetimeCacheBuster>()
                                 .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
                             .Build()
                     );

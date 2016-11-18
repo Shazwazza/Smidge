@@ -2,6 +2,7 @@
 using Smidge.FileProcessors;
 using System;
 using System.Collections.Generic;
+using Smidge.Cache;
 
 namespace Smidge.Options
 {
@@ -14,7 +15,7 @@ namespace Smidge.Options
         {
 
         }
-
+        
         /// <summary>
         /// Gets/sets the pipeline factory
         /// </summary>

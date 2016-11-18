@@ -1,4 +1,6 @@
-﻿namespace Smidge.Options
+﻿using Smidge.Cache;
+
+namespace Smidge.Options
 {
     /// <summary>
     /// Used to build up bundle options in fluent syntax
@@ -10,6 +12,13 @@
         public BundleOptionsBuilder(BundleOptions options)
         {
             _options = options;
+        }
+
+        public BundleOptionsBuilder SetCacheBusterType<T>()
+            where T: ICacheBuster
+        {
+            _options.SetCacheBusterType<T>();
+            return this;
         }
 
         public BundleOptionsBuilder EnableCompositeProcessing()

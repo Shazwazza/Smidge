@@ -1,5 +1,10 @@
-﻿namespace Smidge.Options
+﻿using System;
+using Smidge.Cache;
+
+namespace Smidge.Options
 {
+    
+
     /// <summary>
     /// Defines options for a particular bundle
     /// </summary>
@@ -14,7 +19,40 @@
             CacheControlOptions = new CacheControlOptions();
             ProcessAsCompositeFile = true;
             CompressResult = true;
+            
         }
+
+        private Type _defaultCacheBuster;
+
+        /// <summary>
+        /// Sets the default cache buster type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <remarks>
+        /// This instance will be resolved from IoC at runtime
+        /// </remarks>
+        public void SetCacheBusterType<T>()
+            where T: ICacheBuster
+        {
+            _defaultCacheBuster = typeof(T);
+        }
+
+        /// <summary>
+        /// Returns the default cache buster type
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>
+        /// By default this is the ConfigCacheBuster
+        /// </remarks>
+        public Type GetCacheBusterType()
+        {
+            return _defaultCacheBuster ?? typeof(ConfigCacheBuster);
+        }
+
+        ///// <summary>
+        ///// Gets/sets the cache buster
+        ///// </summary>
+        //public ICacheBuster CacheBuster { get; set; }
 
         /// <summary>
         /// If set to true, will process the bundle as composite files and combine them into a single file
