@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Smidge.Cache;
 using Smidge.Hashing;
 using Smidge.Models;
 using Smidge.Options;
@@ -131,14 +132,14 @@ namespace Smidge
         /// Returns the cache folder for composite files for the current compression supported
         /// </summary>
         /// <returns></returns>
-        public string GetCurrentCompositeFolder(CompressionType type)
+        public string GetCurrentCompositeFolder(ICacheBuster cacheBuster, CompressionType type)
         {
-            return Path.Combine(CurrentCacheFolder, type.ToString());
+            return Path.Combine(CurrentCacheFolder, cacheBuster.GetValue(), type.ToString());
         }
 
-        public string GetCurrentCompositeFilePath(CompressionType type, string filesetKey)
+        public string GetCurrentCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
         {
-            return Path.Combine(GetCurrentCompositeFolder(type), filesetKey + ".s");
+            return Path.Combine(GetCurrentCompositeFolder(cacheBuster, type), filesetKey + ".s");
         }
 
         /// <summary>
@@ -250,15 +251,20 @@ namespace Smidge
         }
 
         /// <summary>
-        /// The current cache folder for the current version
+        /// The current cache folder (based on the current machine name)
         /// </summary>
         /// <returns></returns>
         public string CurrentCacheFolder
         {
             get
             {
-                return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", _config.ServerName, _config.Version);
+                return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", GetFileSafeMachineName(Environment.MachineName));
             }
+        }
+
+        private string GetFileSafeMachineName(string name)
+        {
+            return name.ReplaceNonAlphanumericChars('-');
         }
 
         /// <summary>

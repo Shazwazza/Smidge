@@ -30,16 +30,10 @@ namespace Smidge
         }
 
         private readonly IConfiguration _config;
-
-        public string ServerName => GetFileSafeMachineName(_config["COMPUTERNAME"] ?? "Default");
-
+        
         public string Version => _config["version"] ?? "1";
 
         public string DataFolder => (_config["dataFolder"] ?? "App_Data/Smidge").Replace("/", "\\");
-
-        private string GetFileSafeMachineName(string name)
-        {
-            return name.ReplaceNonAlphanumericChars('-');
-        }
+        
     }
 }

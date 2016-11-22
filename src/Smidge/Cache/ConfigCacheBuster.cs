@@ -19,5 +19,10 @@ namespace Smidge.Cache
         {
             return _config.Version;
         }
+
+        /// <summary>
+        /// The config cache buster persists the processed files on the server by default;
+        /// </summary>
+        public virtual bool PersistProcessedFiles => true;
     }
 }

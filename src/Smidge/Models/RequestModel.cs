@@ -1,6 +1,7 @@
 ﻿using Smidge.CompositeFiles;
 using System;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Smidge.Cache;
 
 namespace Smidge.Models
 {
@@ -33,6 +34,11 @@ namespace Smidge.Models
                     break;
             }
         }
+
+        /// <summary>
+        /// The cache buster for the current file request
+        /// </summary>
+        public abstract ICacheBuster CacheBuster { get; }
 
         /// <summary>
         /// The bundle definition name - this is either the bundle name when using named bundles or the composite file

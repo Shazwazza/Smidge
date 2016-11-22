@@ -207,13 +207,15 @@ namespace Smidge
                 return result;
             }
 
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
+
             var compression = bundleOptions.CompressResult 
                 ? _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers) 
                 : CompressionType.none;
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug, _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType()));
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBuster);
 
             //now we need to determine if these files have already been minified
-            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, bundleName);
+            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, bundleName);
 
             //If the processed file does not exist OR even if it does exist but file watching is enabled then 
             // we will still need to perform the 'processing', this won't actually run the pipelines but it will 
@@ -263,6 +265,8 @@ namespace Smidge
             //Get the file collection used to create the composite URLs and the external requests
             var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
 
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+
             foreach (var batch in fileBatches)
             {
                 //if it's external, the rule is that a WebFileBatch can only contain a single external file
@@ -278,12 +282,12 @@ namespace Smidge
                     var compositeUrls = _urlManager.GetUrls(
                         batch.Select(x => x.Hashed), 
                         fileType == WebFileType.Css ? ".css" : ".js",
-                        _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType()));
+                        cacheBuster);
 
                     foreach (var u in compositeUrls)
                     {
                         //now we need to determine if these files have already been minified
-                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(compression, u.Key);
+                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
                         if (!File.Exists(compositeFilePath))
                         {
                             //need to process/minify these files - need to use their original paths of course

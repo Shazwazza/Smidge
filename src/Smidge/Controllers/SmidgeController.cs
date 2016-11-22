@@ -6,8 +6,10 @@ using Smidge.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
+using Smidge.Cache;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 
@@ -100,7 +102,7 @@ namespace Smidge.Controllers
                 //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
                 // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                 // the raw file if it exists for further requests to this path
-                var compositeFilePath = await CacheCompositeFileAsync(bundle.FileKey, compressedStream, bundle.Compression);
+                var compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
 
                 //return the stream
                 return File(compressedStream, bundle.Mime);
@@ -130,16 +132,16 @@ namespace Smidge.Controllers
             {
                 var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
-                var compositeFilePath = await CacheCompositeFileAsync(file.FileKey, compressedStream, file.Compression);
+                var compositeFilePath = await CacheCompositeFileAsync(file.CacheBuster, file.FileKey, compressedStream, file.Compression);
                 
                 return File(compressedStream, file.Mime);
             }
 
         }
 
-        private async Task<string> CacheCompositeFileAsync(string filesetKey, Stream compositeStream, CompressionType type)
+        private async Task<string> CacheCompositeFileAsync(ICacheBuster cacheBuster, string filesetKey, Stream compositeStream, CompressionType type)
         {
-            var folder = _fileSystemHelper.GetCurrentCompositeFolder(type);
+            var folder = _fileSystemHelper.GetCurrentCompositeFolder(cacheBuster, type);
             Directory.CreateDirectory(folder);
             compositeStream.Position = 0;
             //TODO: Shouldn't this use: GetCurrentCompositeFilePath?
@@ -159,6 +161,9 @@ namespace Smidge.Controllers
         /// <returns></returns>
         private async Task<MemoryStream> GetCombinedStreamAsync(IEnumerable<string> filePaths)
         {
+            //TODO: Should we use a buffer pool here?
+
+            var semicolon = Encoding.UTF8.GetBytes(";");
             var ms = new MemoryStream();
             foreach (var filePath in filePaths)
             {
@@ -166,8 +171,9 @@ namespace Smidge.Controllers
                 {
                     using (var fileStream = System.IO.File.OpenRead(filePath))
                     {
-                        await fileStream.CopyToAsync(ms);
+                        await fileStream.CopyToAsync(ms);                        
                     }
+                    await ms.WriteAsync(semicolon, 0, semicolon.Length);
                 }
             }
             //ensure it's reset

@@ -22,5 +22,10 @@ namespace Smidge.Cache
         {
             return _value.Value;
         }
+
+        /// <summary>
+        /// Since the cache will be busted on every restart we don't want to persist the files to the server, they will just be stored in memory
+        /// </summary>
+        public bool PersistProcessedFiles => false;
     }
 }

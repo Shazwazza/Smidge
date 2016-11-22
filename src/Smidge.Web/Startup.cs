@@ -61,6 +61,7 @@ namespace Smidge.Web
                     //options.FileWatchOptions.Enabled = true;
                     options.PipelineFactory.OnGetDefault = GetDefaultPipelineFactory;
                     options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
+                    options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
                 });
 
             services.AddSmidgeJavaScriptServices();
@@ -75,14 +76,14 @@ namespace Smidge.Web
         /// <returns></returns>
         private static PreProcessPipeline GetDefaultPipelineFactory(WebFileType fileType, IReadOnlyCollection<IPreProcessor> processors)
         {
-            switch (fileType)
-            {
-                case WebFileType.Js:
-                    return new PreProcessPipeline(new IPreProcessor[]
-                    {
-                        processors.OfType<NuglifyJs>().Single()
-                    });
-            }
+            //switch (fileType)
+            //{
+            //    case WebFileType.Js:
+            //        return new PreProcessPipeline(new IPreProcessor[]
+            //        {
+            //            processors.OfType<NuglifyJs>().Single()
+            //        });
+            //}
             //returning null will fallback to the logic defined in the registered PreProcessPipelineFactory
             return null;
         }

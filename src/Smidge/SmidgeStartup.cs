@@ -108,6 +108,8 @@ namespace Smidge
                 var bundleManager = app.ApplicationServices.GetRequiredService<IBundleManager>();
                 configureBundles(bundleManager);
 
+                var cacheBusterResolver = app.ApplicationServices.GetRequiredService<CacheBusterResolver>();
+
                 //TODO: Now that they are configured we need to wire up the file watching event handlers
                 // to the bundle manager, currently these are on the Bundle, but that is not good enough
                 // since we need the bundle name
@@ -117,42 +119,44 @@ namespace Smidge
                     foreach (var cssName in names)
                     {
                         var bundle = bundleManager.GetBundle(cssName);
-                        WireUpFileWatchEventHandlers(cssName, bundle);
+                        WireUpFileWatchEventHandlers(bundleManager, cacheBusterResolver, cssName, bundle);
                     }
                 }
             }    
 
         }
 
-        private static void WireUpFileWatchEventHandlers(string bundleName, Bundle bundle)
+        private static void WireUpFileWatchEventHandlers(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle)
         {
             if (bundle.BundleOptions == null) return;
 
             if (bundle.BundleOptions.DebugOptions.FileWatchOptions.Enabled)
             {
-                bundle.BundleOptions.DebugOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleName, bundle);
+                bundle.BundleOptions.DebugOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, true);
             }
             if (bundle.BundleOptions.ProductionOptions.FileWatchOptions.Enabled)
             {
-                bundle.BundleOptions.ProductionOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleName, bundle);
+                bundle.BundleOptions.ProductionOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, false);
             }
         }
 
-        private static EventHandler<FileWatchEventArgs> FileWatchOptions_FileModified(string bundleName, Bundle bundle)
+        private static EventHandler<FileWatchEventArgs> FileWatchOptions_FileModified(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle, bool debug)
         {
             return (sender, args) =>
             {
-                FileWatchOptions_FileModified(bundleName, bundle, args);
+                FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, debug, args);
             };
         }
 
-        private static void FileWatchOptions_FileModified(string bundleName, Bundle bundle, FileWatchEventArgs e)
+        private static void FileWatchOptions_FileModified(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle, bool debug, FileWatchEventArgs e)
         {
+            var cacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, debug).GetCacheBusterType());                
+
             //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
-                var compFilePath = e.FileSystemHelper.GetCurrentCompositeFilePath(compressionType, bundleName);
+                var compFilePath = e.FileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compressionType, bundleName);
                 if (File.Exists(compFilePath))
                 {
                     File.Delete(compFilePath);

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Core;
+using Smidge.Cache;
 
 namespace Smidge.Controllers
 {
@@ -20,7 +21,10 @@ namespace Smidge.Controllers
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
-            return new CacheFilter(serviceProvider.GetRequiredService<FileSystemHelper>());
+            return new CacheFilter(
+                serviceProvider.GetRequiredService<FileSystemHelper>(),
+                serviceProvider.GetRequiredService<CacheBusterResolver>(),
+                serviceProvider.GetRequiredService<IBundleManager>());
         }
 
         /// <summary>
@@ -29,13 +33,13 @@ namespace Smidge.Controllers
         /// </summary>
         public bool IsReusable => true;
 
-        internal static bool TryGetCachedCompositeFileResult(FileSystemHelper fileSystemHelper, string filesetKey, CompressionType type, string mime, 
+        internal static bool TryGetCachedCompositeFileResult(FileSystemHelper fileSystemHelper, ICacheBuster cacheBuster, string filesetKey, CompressionType type, string mime, 
             out FileResult result, out DateTime lastWriteTime)
         {
             result = null;
             lastWriteTime = DateTime.Now;
 
-            var filesetPath = fileSystemHelper.GetCurrentCompositeFilePath(type, filesetKey);
+            var filesetPath = fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, type, filesetKey);
             if (System.IO.File.Exists(filesetPath))
             {
                 lastWriteTime = System.IO.File.GetLastWriteTime(filesetPath);
@@ -53,21 +57,38 @@ namespace Smidge.Controllers
         private class CacheFilter : IActionFilter
         {
             private readonly FileSystemHelper _fileSystemHelper;
+            private readonly CacheBusterResolver _cacheBusterResolver;
+            private readonly IBundleManager _bundleManager;
 
-            public CacheFilter(FileSystemHelper fileSystemHelper)
+            public CacheFilter(FileSystemHelper fileSystemHelper, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager)
             {
                 _fileSystemHelper = fileSystemHelper;
+                _cacheBusterResolver = cacheBusterResolver;
+                _bundleManager = bundleManager;
             }
 
             public void OnActionExecuting(ActionExecutingContext context)
             {
                 if (!context.ActionArguments.Any()) return;
-                var file = context.ActionArguments.First().Value as RequestModel;
+                var bundleFile = context.ActionArguments.First().Value as BundleRequestModel;
+                ICacheBuster cacheBuster;
+                RequestModel file = null;
+                if (bundleFile != null)
+                {
+                    cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleFile.Bundle.GetBundleOptions(_bundleManager, bundleFile.Debug).GetCacheBusterType());                        
+                }
+                else
+                {
+                    //the default for any dynamically (non bundle) file is the default bundle options in production
+                    cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(false).GetCacheBusterType());
+                    file = context.ActionArguments.First().Value as RequestModel;
+                }
+
                 if (file != null)
                 {
                     FileResult result;
                     DateTime lastWrite;
-                    if (TryGetCachedCompositeFileResult(_fileSystemHelper, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
+                    if (TryGetCachedCompositeFileResult(_fileSystemHelper, cacheBuster, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
                     {
                         file.LastFileWriteTime = lastWrite;
                         context.Result = result;
