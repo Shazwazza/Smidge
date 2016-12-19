@@ -18,12 +18,12 @@ namespace Smidge.FileProcessors
             _siteInfo = siteInfo;
         }
 
-        public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
         {
             //ensure the Urls in the css are changed to absolute
             var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath);
 
-            return Task.FromResult(parsedUrls);
+            return next(parsedUrls);
         }
 
         /// <summary>

@@ -48,10 +48,10 @@ namespace Smidge.FileProcessors
 
     public class JsMinifier : IPreProcessor
     {
-        public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
         {
             var jsMin = new JsMin();
-            return jsMin.ProcessAsync(fileProcessContext);
+            return next(jsMin.ProcessAsync(fileProcessContext));
         }
 
         private class JsMin
@@ -67,7 +67,7 @@ namespace Smidge.FileProcessors
             private int _retStatement = -1;
             private bool _start = false;
 
-            public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
+            public string ProcessAsync(FileProcessContext fileProcessContext)
             {
                 var sb = new StringBuilder();
                 using (_sr = new StringReader(fileProcessContext.FileContent))
@@ -77,7 +77,7 @@ namespace Smidge.FileProcessors
                 }
                 //ensure there's a semicolon
                 sb.Append(";");
-                return Task.FromResult(sb.ToString());
+                return sb.ToString();
             }
 
             /// <summary>

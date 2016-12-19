@@ -145,17 +145,35 @@ namespace Smidge.Benchmarks
 
         public async Task<string> GetJsMin()
         {
-            return await _jsMin.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
+            var output = string.Empty;
+            await _jsMin.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
+            {
+                output = s;
+                return Task.FromResult(0);
+            });
+            return output;
         }
 
         public async Task<string> GetNuglify()
         {
-            return await _nuglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
+            var output = string.Empty;
+            await _nuglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
+            {
+                output = s;
+                return Task.FromResult(0);
+            });
+            return output;
         }
 
         public async Task<string> GetJsServicesUglify()
         {
-            return await _jsUglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()));
+            var output = string.Empty;
+            await _jsUglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
+            {
+                output = s;
+                return Task.FromResult(0);
+            });
+            return output;
         }
 
         [Benchmark(Baseline = true)]

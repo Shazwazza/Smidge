@@ -29,7 +29,7 @@ namespace Smidge.FileProcessors
         private readonly IWebsiteInfo _siteInfo;
         private readonly IRequestHelper _requestHelper;
 
-        public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
+        public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
         {
             var sb = new StringBuilder();
 
@@ -78,7 +78,7 @@ namespace Smidge.FileProcessors
 
             sb.Append(removedImports);
 
-            return sb.ToString();
+            await next(sb.ToString());
         }
 
         /// <summary>

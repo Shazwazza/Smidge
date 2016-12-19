@@ -23,13 +23,14 @@ namespace Smidge.FileProcessors
         /// Minifies Css
         /// </summary>
         /// <param name="fileProcessContext"></param>
+        /// <param name="next"></param>
         /// <returns></returns>
-        public Task<string> ProcessAsync(FileProcessContext fileProcessContext)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
         {
             using (var reader = new StringReader(fileProcessContext.FileContent))
             {
                 var cssMin = new CssMin();
-                return Task.FromResult(cssMin.Minify(reader));
+                return next(cssMin.Minify(reader));
             }
         }
 
