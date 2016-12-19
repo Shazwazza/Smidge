@@ -89,7 +89,7 @@ namespace Smidge.Controllers
             //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
             Lazy<IFileInfo> fi;
             var filePaths = files.Select(
-                x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, out fi));
+                x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
             
             using (var resultStream = await GetCombinedStreamAsync(filePaths))
             {

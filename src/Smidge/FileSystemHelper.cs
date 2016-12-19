@@ -209,12 +209,13 @@ namespace Smidge
         /// <param name="file"></param>
         /// <param name="fileWatchEnabled"></param>
         /// <param name="extension"></param>
+        /// <param name="cacheBuster"></param>
         /// <param name="fileInfo">
         /// A getter to the underlying IFileInfo, this is lazy because when file watching is not enabled we do not want to resolve
         /// this if the cache file already exists
         /// </param>
         /// <returns></returns>
-        public string GetCacheFilePath(IWebFile file, bool fileWatchEnabled, string extension, out Lazy<IFileInfo> fileInfo)
+        public string GetCacheFilePath(IWebFile file, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out Lazy<IFileInfo> fileInfo)
         {
             string cacheDir;
             string cacheFile;
@@ -230,8 +231,8 @@ namespace Smidge
                 //get the file hash without the extension
                 var fileHash = GetFileHash(file, string.Empty);
                 var timestampedHash = GetFileHash(file, fi, extension);
-
-                cacheDir = Path.Combine(CurrentCacheFolder, fileHash);
+                
+                cacheDir = Path.Combine(CurrentCacheFolder, cacheBuster.GetValue(), fileHash);
                 cacheFile = Path.Combine(cacheDir, timestampedHash);
                 fileInfo = new Lazy<IFileInfo>(() => fi, LazyThreadSafetyMode.None);
             }
@@ -239,7 +240,7 @@ namespace Smidge
             {
                 var fileHash = GetFileHash(file, extension);
 
-                cacheDir = CurrentCacheFolder;
+                cacheDir = Path.Combine(CurrentCacheFolder, cacheBuster.GetValue());
                 cacheFile = Path.Combine(cacheDir, fileHash);
                 fileInfo = new Lazy<IFileInfo>(() => GetFileInfo(file), LazyThreadSafetyMode.None);
             }

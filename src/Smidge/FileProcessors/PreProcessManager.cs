@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Smidge.Cache;
 using Smidge.Models;
 using Smidge.Options;
 
@@ -14,10 +15,14 @@ namespace Smidge.FileProcessors
     public sealed class PreProcessManager
     {
         private readonly FileSystemHelper _fileSystemHelper;
-        
-        public PreProcessManager(FileSystemHelper fileSystemHelper)
+        private readonly CacheBusterResolver _cacheBusterResolver;
+        private readonly IBundleManager _bundleManager;
+
+        public PreProcessManager(FileSystemHelper fileSystemHelper, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager)
         {
             _fileSystemHelper = fileSystemHelper;
+            _cacheBusterResolver = cacheBusterResolver;
+            _bundleManager = bundleManager;
         }
 
         /// <summary>
@@ -48,12 +53,18 @@ namespace Smidge.FileProcessors
 
         private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions)
         {
+            if (file == null) throw new ArgumentNullException(nameof(file));
+            
             var extension = Path.GetExtension(file.FilePath);
 
             var fileWatchEnabled = bundleOptions?.FileWatchOptions.Enabled ?? false;
 
             Lazy<IFileInfo> fileInfo;
-            var cacheFile = _fileSystemHelper.GetCacheFilePath(file, fileWatchEnabled, extension, out fileInfo);
+            var cacheBuster = bundleOptions != null
+                ? _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType())
+                : _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(false).GetCacheBusterType()); //the default for any dynamically (non bundle) file is the default bundle options in production
+            
+            var cacheFile = _fileSystemHelper.GetCacheFilePath(file, fileWatchEnabled, extension, cacheBuster, out fileInfo);
 
             //check if it's in cache
             if (!File.Exists(cacheFile))
