@@ -3,15 +3,20 @@
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
-A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+Smidge 2.0 - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
 
-## Install
+## Install/Configuration
 
 _Currently supporting ASP.NET Core 1.0, built against **NETStandard.1.6** & **.Net Framework 4.5.2**_
 
 Nuget:
 
     Install-Package Smidge
+
+```csharp
+//Then register/configure smidge services
+services.AddSmidge(/* optional IConfiguration parameter */);
+```
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
@@ -22,8 +27,7 @@ __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for 
 Define your bundles during startup:
 
 ```csharp
-services.AddSmidge()
-    .Configure<Bundles>(bundles =>
+services.UseSmidge(bundles =>
     {
         //Defining using JavaScriptFile's or CssFile's:
 
@@ -35,6 +39,24 @@ services.AddSmidge()
 
         bundles.Create("test-bundle-2", WebFileType.Js, 
             "~/Js/Bundle2", "~/Js/OtherFolder*js");
+
+		//Then there's all sorts of options for configuring 
+		//bundles with regards to customizing their pipelines,
+		//customizing how rendering is done based on 
+		//Debug or Production environments, if you want to 
+		//enable file watchers, configure custom cache busters
+		//or the cache control options, etc...
+		//There's even a fluent API to do this! Example: 
+
+		bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle3")
+			.WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+					.ForDebug(builder => builder
+						.EnableCompositeProcessing()
+						.EnableFileWatcher()
+						.SetCacheBusterType<AppDomainLifetimeCacheBuster>()
+						.CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
+					.Build()
+			);
     });
 ```
 
