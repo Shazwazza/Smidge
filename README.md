@@ -40,12 +40,9 @@ services.UseSmidge(bundles =>
         bundles.Create("test-bundle-2", WebFileType.Js, 
             "~/Js/Bundle2", "~/Js/OtherFolder*js");
 
-		//Then there's all sorts of options for configuring 
-		//bundles with regards to customizing their pipelines,
-		//customizing how rendering is done based on 
-		//Debug or Production environments, if you want to 
-		//enable file watchers, configure custom cache busters
-		//or the cache control options, etc...
+		//Then there's all sorts of options for configuring bundles with regards to customizing their pipelines,
+		//customizing how rendering is done based on Debug or Production environments, if you want to 
+		//enable file watchers, configure custom cache busters or the cache control options, etc...
 		//There's even a fluent API to do this! Example: 
 
 		bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle3")
