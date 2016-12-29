@@ -60,8 +60,18 @@ if (-not $?)
 	throw "The dotnet build process returned an error code."
 }
 
-& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder"
-if (-not $?)
+if([string]::IsNullOrEmpty($PreReleaseName))
 {
-	throw "The dotnet pack process returned an error code."
+	& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder"
+	if (-not $?)
+	{
+		throw "The dotnet pack process returned an error code."
+	}
+}
+else {
+	& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder" --version-suffix $PreReleaseName.TrimStart("-")
+	if (-not $?)
+	{
+		throw "The dotnet pack process returned an error code."
+	}
 }
