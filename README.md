@@ -3,7 +3,7 @@
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
-Smidge 2.0 - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+**Smidge 2.0.0-alpha** - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
 
 ## Install/Configuration
 
@@ -11,7 +11,7 @@ _Currently supporting ASP.NET Core 1.0, built against **NETStandard.1.6** & **.N
 
 Nuget:
 
-    Install-Package Smidge
+    Install-Package Smidge -Pre
 
 ```csharp
 //Then register/configure smidge services
