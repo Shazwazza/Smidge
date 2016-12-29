@@ -48,12 +48,14 @@ namespace Smidge.Tests
                         
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
-
-            _preProcessManager = new PreProcessManager(_fileSystemHelper, new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
-
+            
             _requestHelper = Mock.Of<IRequestHelper>();
             _processorFactory = new PreProcessPipelineFactory(_preProcessors);
             _bundleManager = new BundleManager(_smidgeOptions.Object);
+            _preProcessManager = new PreProcessManager(
+                _fileSystemHelper,                
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()),
+                _bundleManager);
             _fileSetGenerator = new BundleFileSetGenerator(_fileSystemHelper, _requestHelper, 
                 new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
         }
