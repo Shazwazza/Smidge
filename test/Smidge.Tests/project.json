@@ -4,7 +4,7 @@
     "Moq": "4.6.38-alpha",
     "Smidge": {
       "target": "project",
-      "version": "1.0.0"
+      "version": "2.0.0-*"
     },
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "xunit": "2.1.0",

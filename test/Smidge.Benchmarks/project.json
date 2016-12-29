@@ -10,7 +10,10 @@
   "dependencies": {
     "BenchmarkDotNet": "0.9.9",
     "BenchmarkDotNet.Diagnostics.Windows": "0.9.9",
-    "Smidge": "1.0.0",
+    "Smidge": {
+      "target": "project",
+      "version": "2.0.0-*"
+    },
     "Smidge.JavaScriptServices": "1.0.0-*",
     "Smidge.Nuglify": "1.0.0-*"
   },

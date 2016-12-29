@@ -10,7 +10,7 @@
     "NETStandard.Library": "1.6.0",
     "Smidge": {
       "target": "project",
-      "version": "1.0.0"
+      "version": "2.0.0-*"
     },
     "Microsoft.AspNetCore.NodeServices": "1.0.0-beta-*"
   },
