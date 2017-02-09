@@ -3,7 +3,7 @@
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
-**Smidge 2.0.0-alpha** - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+[**Smidge 2.0.0-alpha**](http://shazwazza.com/post/smidge-20-alpha-is-out/) - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
 
 ## Install/Configuration
 
