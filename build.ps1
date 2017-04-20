@@ -10,10 +10,11 @@ param (
 )
 
 if([string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains("-"))
-{
+{	
 	$parts = $ReleaseVersionNumber.Split("-")
 	$ReleaseVersionNumber = $parts[0]
 	$PreReleaseName = "-" + $parts[1]
+	Write-Host "Version parts split: ($ReleaseVersionNumber) and ($PreReleaseName)"
 }
 
 $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
@@ -49,24 +50,29 @@ foreach($project in $root.ChildNodes) {
 	$csproj = Join-Path -Path $projectPath -ChildPath ($project.id + ".csproj")
 	$projectVersion = $project.version;
 	$prerelease = $project.prerelease;
+	# Override with passed in params
+	if(-not [string]::IsNullOrEmpty($PreReleaseName)){
+		$prerelease = [string]$PreReleaseName
+	}
 
-	Write-Host "Updating verion for $projectPath to $($project.version) ($projectVersion)($prerelease)"
+	Write-Host "Updating verion for $projectPath to ($projectVersion$prerelease)"
 
 	#Update the csproj with the correct info
-	$xmlCsproj = [xml](Get-Content $csproj)
+	[xml]$xmlCsproj = Get-Content $csproj
 	$xmlCsproj.Project.PropertyGroup.VersionPrefix = "$projectVersion"
-	if([string]::IsNullOrEmpty($prerelease)){
-		# Remove this node if it exists otherwise everything will break	
-		$xmlVersionSuffix = $xmlCsproj.Project.PropertyGroup.SelectSingleNode("VersionSuffix")	
-		if($xmlVersionSuffix -ne $null){
-			$xmlCsproj.Project.PropertyGroup.RemoveChild($xmlVersionSuffix)
-		}
-	}
-	else {
+	#Remove all VersionSuffix elements to start
+	$xmlCsproj.Project.PropertyGroup.SelectNodes("VersionSuffix") | % {   
+		Write-Host "DELETING!"
+        $xmlCsproj.Project.PropertyGroup.RemoveChild($_) | Out-Null
+    }
+
+	#Set the pre release if t here is one
+	if(-not [string]::IsNullOrEmpty($prerelease)){
 		$xmlVersionSuffix = $xmlCsproj.CreateElement("VersionSuffix")
-		$xmlCsproj.Project.PropertyGroup.AppendChild($xmlVersionSuffix)
+		[void]$xmlCsproj.Project.PropertyGroup.AppendChild($xmlVersionSuffix)
 		$xmlCsproj.Project.PropertyGroup.VersionSuffix = "$prerelease"	
 	}
+	
 	# Set the copyright
 	$DateYear = (Get-Date).year
 	$xmlCsproj.Project.PropertyGroup.Copyright = "Copyright © Shannon Deminick $DateYear"
@@ -98,6 +104,10 @@ foreach($project in $root.ChildNodes) {
 	$csproj = Join-Path -Path $projectPath -ChildPath ($project.id + ".csproj")
 	$projectVersion = $project.version;
 	$prerelease = $project.prerelease;
+	# Override with passed in params
+	if(-not [string]::IsNullOrEmpty($PreReleaseName)){
+		$prerelease = [string]$PreReleaseName
+	}
 
 	if([string]::IsNullOrEmpty($prerelease))
 	{
