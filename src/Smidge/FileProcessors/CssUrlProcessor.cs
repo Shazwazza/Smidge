@@ -18,7 +18,7 @@ namespace Smidge.FileProcessors
             _siteInfo = siteInfo;
         }
 
-        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
         {
             //ensure the Urls in the css are changed to absolute
             var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath);

@@ -9,7 +9,7 @@ namespace Smidge.Nuglify
 {
     public class NuglifyJs : IPreProcessor
     {
-        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
         {
             var result = Uglify.Js(fileProcessContext.FileContent);
 

@@ -149,7 +149,7 @@ namespace Smidge.Benchmarks
             await _jsMin.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
             {
                 output = s;
-                return Task.FromResult(0);
+                return Task.FromResult(output);
             });
             return output;
         }
@@ -160,7 +160,7 @@ namespace Smidge.Benchmarks
             await _nuglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
             {
                 output = s;
-                return Task.FromResult(0);
+                return Task.FromResult(output);
             });
             return output;
         }
@@ -171,7 +171,7 @@ namespace Smidge.Benchmarks
             await _jsUglify.ProcessAsync(new FileProcessContext(JQuery, new JavaScriptFile()), s =>
             {
                 output = s;
-                return Task.FromResult(0);
+                return Task.FromResult(output);
             });
             return output;
         }

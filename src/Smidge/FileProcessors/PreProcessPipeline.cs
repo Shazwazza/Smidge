@@ -51,12 +51,18 @@ namespace Smidge.FileProcessors
 
             var p = queue.Dequeue();
             var executed = false;
-            await p.ProcessAsync(fileProcessContext, async (preProcessorResult) =>
+            
+            await p.ProcessAsync(fileProcessContext, async preProcessorResult =>
             {
-                executed = true;
                 output.Result = preProcessorResult;
-                await ProcessNext(output, queue, new FileProcessContext(preProcessorResult, fileProcessContext.WebFile));
+
+                var nextFileContext = new FileProcessContext(preProcessorResult, fileProcessContext.WebFile);
+
+                executed = await ProcessNext(output, queue, nextFileContext);
+
+                return output.Result;
             });
+
             //The next item wasn't executed which means the processor terminated the pipeline.
             return executed;
         }

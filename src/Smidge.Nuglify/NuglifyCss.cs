@@ -9,7 +9,7 @@ namespace Smidge.Nuglify
 {
     public class NuglifyCss : IPreProcessor
     {
-        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
         {
             var result = Uglify.Css(fileProcessContext.FileContent);
 

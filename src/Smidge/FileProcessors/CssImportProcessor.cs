@@ -29,7 +29,7 @@ namespace Smidge.FileProcessors
         private readonly IWebsiteInfo _siteInfo;
         private readonly IRequestHelper _requestHelper;
 
-        public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task> next)
+        public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
         {
             var sb = new StringBuilder();
 
