@@ -3,7 +3,7 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 " PSScriptFilePath = $PSScriptFilePath"
 
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
-$ProjectJsonPath = Join-Path -Path $SolutionRoot -ChildPath "test\Smidge.Tests\project.json"
+$Csproj = Join-Path -Path $SolutionRoot -ChildPath "test\Smidge.Tests\Smidge.Tests.csproj"
 
 $DOTNET = "dotnet"
 
@@ -24,7 +24,7 @@ $DOTNET = "dotnet"
 #}
 
 # run them
-& $DOTNET test "$ProjectJsonPath"
+& $DOTNET test "$Csproj"
 if (-not $?)
 {
 	throw "The dotnet test process returned an error code."
