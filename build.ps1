@@ -26,52 +26,92 @@ $DOTNET = "dotnet"
 
 # Make sure we don't have a release folder for this version already
 $BuildFolder = Join-Path -Path $SolutionRoot -ChildPath "build";
-$ReleaseFolder = Join-Path -Path $BuildFolder -ChildPath "Releases\v$ReleaseVersionNumber$PreReleaseName";
+$ReleaseFolder = Join-Path -Path $BuildFolder -ChildPath "Release";
 if ((Get-Item $ReleaseFolder -ErrorAction SilentlyContinue) -ne $null)
 {
 	Write-Warning "$ReleaseFolder already exists on your local machine. It will now be deleted."
 	Remove-Item $ReleaseFolder -Recurse
 }
 
-# Set the version number in package.json
-$ProjectJsonPath = Join-Path -Path $SolutionRoot -ChildPath "src\Smidge\project.json"
-(gc -Path $ProjectJsonPath) `
-	-replace "(?<=`"version`":\s`")[.\w-]*(?=`",)", "$ReleaseVersionNumber$PreReleaseName" |
-	sc -Path $ProjectJsonPath -Encoding UTF8
-# Set the copyright
-$DateYear = (Get-Date).year
-(gc -Path $ProjectJsonPath) `
-	-replace "(?<=`"copyright`":\s`")[\w\s©]*(?=`",)", "Copyright © Shannon Deminick $DateYear" |
-	sc -Path $ProjectJsonPath -Encoding UTF8
+$SmidgeSln = Join-Path -Path $SolutionRoot -ChildPath "Smidge.sln"
+$NugetConfig = Join-Path -Path $SolutionRoot -ChildPath "Nuget.config"
+
+# Read XML
+$buildXmlFile = (Join-Path $SolutionRoot "build.xml")
+[xml]$buildXml = Get-Content $buildXmlFile
+
+# Iterate projects and update their versions
+[System.Xml.XmlElement] $root = $buildXml.get_DocumentElement()
+[System.Xml.XmlElement] $project = $null
+foreach($project in $root.ChildNodes) {
+
+	$projectPath = Join-Path -Path $SolutionRoot -ChildPath ("src\" + $project.id)
+	$csproj = Join-Path -Path $projectPath -ChildPath ($project.id + ".csproj")
+	$projectVersion = $project.version;
+	$prerelease = $project.prerelease;
+
+	Write-Host "Updating verion for $projectPath to $($project.version) ($projectVersion)($prerelease)"
+
+	#Update the csproj with the correct info
+	$xmlCsproj = [xml](Get-Content $csproj)
+	$xmlCsproj.Project.PropertyGroup.VersionPrefix = "$projectVersion"
+	if([string]::IsNullOrEmpty($prerelease)){
+		# Remove this node if it exists otherwise everything will break	
+		$xmlVersionSuffix = $xmlCsproj.Project.PropertyGroup.SelectSingleNode("VersionSuffix")	
+		if($xmlVersionSuffix -ne $null){
+			$xmlCsproj.Project.PropertyGroup.RemoveChild($xmlVersionSuffix)
+		}
+	}
+	else {
+		$xmlVersionSuffix = $xmlCsproj.CreateElement("VersionSuffix")
+		$xmlCsproj.Project.PropertyGroup.AppendChild($xmlVersionSuffix)
+		$xmlCsproj.Project.PropertyGroup.VersionSuffix = "$prerelease"	
+	}
+	# Set the copyright
+	$DateYear = (Get-Date).year
+	$xmlCsproj.Project.PropertyGroup.Copyright = "Copyright © Shannon Deminick $DateYear"
+	$xmlCsproj.Save($csproj)
+
+}
 
 # Build the proj in release mode
 
 & $DOTNET --info
 
-& $DOTNET restore
+& $DOTNET restore --configfile "$NugetConfig"
 if (-not $?)
 {
 	throw "The dotnet restore process returned an error code."
 }
 
-& $DOTNET build "$ProjectJsonPath"
+& $DOTNET build "$SmidgeSln" --configuration "Release"
 if (-not $?)
 {
 	throw "The dotnet build process returned an error code."
 }
 
-if([string]::IsNullOrEmpty($PreReleaseName))
-{
-	& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder"
-	if (-not $?)
+# Build the nugets for each proj
+
+foreach($project in $root.ChildNodes) {
+
+	$projectPath = Join-Path -Path $SolutionRoot -ChildPath ("src\" + $project.id)
+	$csproj = Join-Path -Path $projectPath -ChildPath ($project.id + ".csproj")
+	$projectVersion = $project.version;
+	$prerelease = $project.prerelease;
+
+	if([string]::IsNullOrEmpty($prerelease))
 	{
-		throw "The dotnet pack process returned an error code."
+		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder"
+		if (-not $?)
+		{
+			throw "The dotnet pack process returned an error code."
+		}
 	}
-}
-else {
-	& $DOTNET pack "$ProjectJsonPath" --configuration Release --output "$ReleaseFolder" --version-suffix $PreReleaseName.TrimStart("-")
-	if (-not $?)
-	{
-		throw "The dotnet pack process returned an error code."
+	else {
+		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder" --version-suffix $prerelease.TrimStart("-")
+		if (-not $?)
+		{
+			throw "The dotnet pack process returned an error code."
+		}
 	}
 }
