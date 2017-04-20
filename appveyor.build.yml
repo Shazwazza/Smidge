@@ -1,4 +1,4 @@
-version: 2.0.0-build-{build}
+version: 2.0.0-build_{build}
 skip_tags: true
 image: Visual Studio 2015
 build_script:
