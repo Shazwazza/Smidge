@@ -1,0 +1,10 @@
+version: 1.0.{build}
+skip_non_tags: true
+image: Visual Studio 2015
+build_script:
+- ps: .\build.ps1
+test_script:
+- ps: .\tests.ps1
+artifacts:
+- path: build\release\*.nupkg
+  name: Nuget Releases
