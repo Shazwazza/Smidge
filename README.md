@@ -20,7 +20,7 @@ services.AddSmidge(/* optional IConfiguration parameter */);
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
-##Usage
+## Usage
 
 ### Pre-defined bundles
 
@@ -92,7 +92,7 @@ Task<IEnumerable<string>> SmidgeHelper.GenerateCssUrlsAsync()
 
 __[See Asset URLs](https://github.com/Shazwazza/Smidge/wiki/Asset-Urls) for information about retrieving the debug and non-debug asset urls for your bundles__    
 
-##Documentation
+## Documentation
 
 __[All of the documentation lives here](https://github.com/Shazwazza/Smidge/wiki)__
 
