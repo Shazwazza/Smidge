@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
+using NUglify.JavaScript;
 using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Models;
@@ -113,7 +114,7 @@ namespace Smidge.Web
             {
                 //Create pre-defined bundles
 
-                bundles.Create("test-bundle-1",
+                bundles.Create("test-bundle-1",                    
                     new JavaScriptFile("~/Js/Bundle1/a1.js"),
                     new JavaScriptFile("~/Js/Bundle1/a2.js"),
                     //NOTE: This is already min'd based on it's file name, therefore
@@ -142,7 +143,11 @@ namespace Smidge.Web
                     new CssFile("~/Css/Bundle1/a1.css"),
                     new CssFile("~/Css/Bundle1/a2.css"));
 
-                bundles.Create("libs-js", WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
+                bundles.Create("libs-js",
+                    //Here we can change the default pipeline to use Nuglify for this single bundle
+                    bundles.PipelineFactory.GetPipeline(typeof(NuglifyJs)),
+                    WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
+
                 bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
             });
         }

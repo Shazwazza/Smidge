@@ -94,7 +94,7 @@ namespace Smidge.Benchmarks
         public void Setup()
         {
             _jsMin = new JsMinifier();
-            _nuglify = new NuglifyJs();
+            _nuglify = new NuglifyJs(new NuglifySettings(new NuglifyCodeSettings(null), new NuglifyCodeSettings(null)));
             
             var nodeServices = new SmidgeJavaScriptServices(NodeServicesFactory.CreateNodeServices(
                 new NodeServicesOptions(new NullServiceProvider())

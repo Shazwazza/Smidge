@@ -9,9 +9,7 @@ namespace Smidge.JavaScriptServices
 {
     public static class SmidgeJavaScriptServicesStartup
     {
-        public static IServiceCollection AddSmidgeJavaScriptServices(this IServiceCollection services,
-            IConfiguration smidgeConfiguration = null,
-            IFileProvider fileProvider = null)
+        public static IServiceCollection AddSmidgeJavaScriptServices(this IServiceCollection services)
         {
             services.AddSingleton<SmidgeJavaScriptServices>(provider =>
             {
