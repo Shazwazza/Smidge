@@ -154,9 +154,9 @@ namespace Smidge
             return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.JavaScriptFiles, WebFileType.Js, pipeline, debug);
         }
 
-        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
+        public Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateBundleUrlsAsync(bundleName, ".js", debug);
+            return Task.FromResult(GenerateBundleUrlsAsync(bundleName, ".js", debug));
         }
 
         /// <summary>
@@ -168,9 +168,9 @@ namespace Smidge
             return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.CssFiles, WebFileType.Css, pipeline, debug);
         }
 
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
+        public Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
         {
-            return await GenerateBundleUrlsAsync(bundleName, ".css", debug);
+            return Task.FromResult(GenerateBundleUrlsAsync(bundleName, ".css", debug));
         }
 
         /// <summary>
@@ -180,8 +180,11 @@ namespace Smidge
         /// <param name="fileExt"></param>
         /// <param name="debug"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<string>> GenerateBundleUrlsAsync(string bundleName, string fileExt, bool debug)
+        private IEnumerable<string> GenerateBundleUrlsAsync(string bundleName, string fileExt, bool debug)
         {
+            //TODO: We should cache this, but problem is how do we do that with file watchers enabled? We'd still have to lookup the bundleOptions
+            // or maybe we just cache when file watchers are not enabled - probably the way to do it
+
             var result = new List<string>();
 
             var bundle = _bundleManager.GetBundle(bundleName);
@@ -208,30 +211,8 @@ namespace Smidge
             }
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
-
-            var compression = bundleOptions.CompressResult 
-                ? _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers) 
-                : CompressionType.none;
+            
             var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBuster);
-
-            //now we need to determine if these files have already been minified
-            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, bundleName);
-
-            //If the processed file does not exist OR even if it does exist but file watching is enabled then 
-            // we will still need to perform the 'processing', this won't actually run the pipelines but it will 
-            // perform the file ordering so that the watchers can bind to them.
-            if (!File.Exists(compositeFilePath) || bundleOptions.FileWatchOptions.Enabled)
-            {
-                var files = _fileSetGenerator.GetOrderedFileSet(bundle,
-                    _processorFactory.GetDefault(
-                        //the file type in the bundle will always be the same
-                        bundle.Files[0].DependencyType));
-                //we need to do the minify on the original files
-                foreach (var file in files)
-                {
-                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions);
-                }
-            }
             
             result.Add(url);
             return result;

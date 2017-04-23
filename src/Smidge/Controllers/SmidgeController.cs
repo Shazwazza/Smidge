@@ -29,6 +29,7 @@ namespace Smidge.Controllers
         private readonly IBundleManager _bundleManager;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
+        private readonly PreProcessManager _preProcessManager;
 
         /// <summary>
         /// Constructor
@@ -37,20 +38,24 @@ namespace Smidge.Controllers
         /// <param name="bundleManager"></param>
         /// <param name="fileSetGenerator"></param>
         /// <param name="processorFactory"></param>
+        /// <param name="preProcessManager"></param>
         public SmidgeController(
             FileSystemHelper fileSystemHelper, 
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
-            PreProcessPipelineFactory processorFactory)
+            PreProcessPipelineFactory processorFactory,
+            PreProcessManager preProcessManager)
         {
             if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
             if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
             if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
             if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
+            if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
             _fileSystemHelper = fileSystemHelper;
             _bundleManager = bundleManager;
             _fileSetGenerator = fileSetGenerator;
             _processorFactory = processorFactory;
+            _preProcessManager = preProcessManager;
         }
 
         /// <summary>
@@ -68,14 +73,25 @@ namespace Smidge.Controllers
                 return null;
             }
 
-            //TODO: Check if the files have been processed, if not do this processing since we know the bundle name
-            // this is possible (it is not possible for composite files)
-            // see: https://github.com/Shazwazza/Smidge/issues/45
+            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
+            
+            //now we need to determine if this bundle has already been created
+            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
+            var compositeFileExists = System.IO.File.Exists(compositeFilePath);
+            if (compositeFileExists)
+            {
+                //this is already processed, return it
+                return File(System.IO.File.OpenRead(compositeFilePath), bundle.Mime);
+            }
 
+            //the bundle doesn't exist so we'll go get the files, process them and create the bundle
+            //TODO: We should probably lock here right?! we don't want multiple threads trying to do this at the same time
+
+            //get the files for the bundle
             var files = _fileSetGenerator.GetOrderedFileSet(foundBundle,
-                _processorFactory.GetDefault(
-                    //the file type in the bundle will always be the same
-                    foundBundle.Files[0].DependencyType))
+                    _processorFactory.GetDefault(
+                        //the file type in the bundle will always be the same
+                        foundBundle.Files[0].DependencyType))
                 .ToArray();
 
             if (files == null || files.Length == 0)
@@ -84,7 +100,11 @@ namespace Smidge.Controllers
                 return null;
             }
 
-            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
+            //we need to do the minify on the original files
+            foreach (var file in files)
+            {
+                await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions);
+            }
 
             //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
             Lazy<IFileInfo> fi;
@@ -102,7 +122,7 @@ namespace Smidge.Controllers
                 //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
                 // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                 // the raw file if it exists for further requests to this path
-                var compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
+                compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
 
                 //return the stream
                 return File(compressedStream, bundle.Mime);
