@@ -48,10 +48,12 @@ namespace Smidge.FileProcessors
 
     public class JsMinifier : IPreProcessor
     {
-        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
             var jsMin = new JsMin();
-            return next(jsMin.ProcessAsync(fileProcessContext));
+            var result = jsMin.ProcessAsync(fileProcessContext);
+            fileProcessContext.Update(result);
+            return next(fileProcessContext);
         }
 
         private class JsMin

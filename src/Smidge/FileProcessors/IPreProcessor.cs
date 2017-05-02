@@ -5,6 +5,6 @@ namespace Smidge.FileProcessors
 {
     public interface IPreProcessor
     {
-        Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next);
+        Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next);
     }
 }

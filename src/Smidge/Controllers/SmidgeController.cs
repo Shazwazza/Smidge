@@ -94,16 +94,18 @@ namespace Smidge.Controllers
                         foundBundle.Files[0].DependencyType))
                 .ToArray();
 
-            if (files == null || files.Length == 0)
+            if (files.Length == 0)
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
+            
+            var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension);
 
             //we need to do the minify on the original files
             foreach (var file in files)
             {
-                await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions);
+                await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions, bundleContext);
             }
 
             //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
@@ -111,7 +113,7 @@ namespace Smidge.Controllers
             var filePaths = files.Select(
                 x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
             
-            using (var resultStream = await GetCombinedStreamAsync(filePaths))
+            using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
             {
                 //compress the response (if enabled)
                 var compressedStream = await Compressor.CompressAsync(
@@ -143,12 +145,14 @@ namespace Smidge.Controllers
                 return null;
             }
 
+            var bundleContext = new BundleContext(file.FileKey + file.Extension);
+
             var filePaths = file.ParsedPath.Names.Select(filePath =>
                 Path.Combine(
                     _fileSystemHelper.CurrentCacheFolder,
                     filePath + file.Extension));
 
-            using (var resultStream = await GetCombinedStreamAsync(filePaths))
+            using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
             {
                 var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
@@ -172,33 +176,39 @@ namespace Smidge.Controllers
             }
             compositeStream.Position = 0;
             return fileName;
-        }      
+        }
 
         /// <summary>
         /// Combines files into a single stream
         /// </summary>
         /// <param name="filePaths"></param>
+        /// <param name="bundleContext"></param>
         /// <returns></returns>
-        private async Task<MemoryStream> GetCombinedStreamAsync(IEnumerable<string> filePaths)
+        private async Task<Stream> GetCombinedStreamAsync(IEnumerable<string> filePaths, BundleContext bundleContext)
         {
-            //TODO: Should we use a buffer pool here?
+            //TODO: Here we need to be able to prepend/append based on a "BundleContext" (or similar)
 
-            var semicolon = Encoding.UTF8.GetBytes(";");
-            var ms = new MemoryStream();
-            foreach (var filePath in filePaths)
+            List<Stream> inputs = null;
+            try
             {
-                if (System.IO.File.Exists(filePath))
+                inputs = filePaths.Where(System.IO.File.Exists)
+                    .Select(System.IO.File.OpenRead)
+                    .Cast<Stream>()
+                    .ToList();
+
+                var combined = await bundleContext.GetCombinedStreamAsync(inputs);
+                return combined;
+            }
+            finally
+            {
+                if (inputs != null)
                 {
-                    using (var fileStream = System.IO.File.OpenRead(filePath))
+                    foreach (var input in inputs)
                     {
-                        await fileStream.CopyToAsync(ms);                        
+                        input.Dispose();
                     }
-                    await ms.WriteAsync(semicolon, 0, semicolon.Length);
                 }
             }
-            //ensure it's reset
-            ms.Position = 0;
-            return ms;
         }
 
         

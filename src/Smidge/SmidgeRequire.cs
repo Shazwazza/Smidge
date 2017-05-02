@@ -3,14 +3,14 @@ using Smidge.Models;
 
 namespace Smidge
 {
-    internal class SmidgeBundleContext : ISmidgeRequire
+    internal class SmidgeRequire : ISmidgeRequire
     {
         private readonly string _bundleName;
         private readonly IBundleManager _bundleManager;
         private readonly WebFileType _type;
         private readonly IRequestHelper _requestHelper;
 
-        public SmidgeBundleContext(string bundleName, IBundleManager bundleManager, WebFileType type, IRequestHelper requestHelper)
+        public SmidgeRequire(string bundleName, IBundleManager bundleManager, WebFileType type, IRequestHelper requestHelper)
         {
             if (bundleName == null) throw new ArgumentNullException(nameof(bundleName));
             if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));

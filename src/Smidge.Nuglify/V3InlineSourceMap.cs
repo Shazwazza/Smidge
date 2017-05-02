@@ -6,22 +6,34 @@ using NUglify.JavaScript.Syntax;
 
 namespace Smidge.Nuglify
 {
+    /// <summary>
+    /// Used to create inline source maps
+    /// </summary>
     public class V3InlineSourceMap : ISourceMap
     {
-
         public const string ImplementationName = "V3Inline";
 
         private readonly V3SourceMap _wrapped;
         private readonly StringBuilder _mapBuilder;
+        private readonly bool _appendSourceMap;
         private string _mapPath;
 
-        public V3InlineSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder)
+        /// <summary>
+        /// Creates a new inline source map
+        /// </summary>
+        /// <param name="wrapped"></param>
+        /// <param name="mapBuilder"></param>
+        /// <param name="appendSourceMap">
+        /// true to append the source map to the output of the minified file, false to extract the built source map manually
+        /// </param>
+        public V3InlineSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder, bool appendSourceMap)
         {
             if (wrapped == null) throw new ArgumentNullException(nameof(wrapped));
             if (mapBuilder == null) throw new ArgumentNullException(nameof(mapBuilder));
 
             _wrapped = wrapped;
             _mapBuilder = mapBuilder;
+            _appendSourceMap = appendSourceMap;
         }
 
         public void Dispose()
@@ -36,11 +48,20 @@ namespace Smidge.Nuglify
         }
 
         /// <summary>
-        /// Override to 
+        /// Override to end the output of all files processed, this is required if not appending source maps to each file
         /// </summary>
         public void EndPackage()
         {
             _wrapped.EndPackage();
+
+            if (!_appendSourceMap)
+            {
+                //need to dispose the wrapped source map which is what is used to generate the whole thing
+                _wrapped.Dispose();
+
+                //get the created map and base64 it
+                SourceMapOutput = _mapBuilder.ToString();
+            }
         }
 
         public object StartSymbol(AstNode node, int startLine, int startColumn)
@@ -70,22 +91,24 @@ namespace Smidge.Nuglify
         /// <param name="newLine"></param>
         public void EndFile(TextWriter writer, string newLine)
         {
-            if (writer == null || string.IsNullOrWhiteSpace(_mapPath))
-                return;
-            writer.Write(newLine);
+            if (_appendSourceMap)
+            {
+                if (writer == null || string.IsNullOrWhiteSpace(_mapPath))
+                    return;
 
-            //need to dispose the wrapped source map which is what is used to generate the whole thing
-            _wrapped.Dispose();
+                writer.Write(newLine);
 
-            //get the created map and base64 it
-            var mapOutput = _mapBuilder.ToString();
-            var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(mapOutput));
-            
-            //write the inline map
-            writer.Write("//# sourceMappingURL=data:application/json;charset=utf-8;base64,{0}", base64);
+                //need to dispose the wrapped source map which is what is used to generate the whole thing
+                _wrapped.Dispose();
 
-            writer.Write(newLine);
-            
+                //get the created map and base64 it
+                SourceMapOutput = _mapBuilder.ToString();
+                
+                //write the inline map
+                writer.Write(GetSourceMapMarkup());
+
+                writer.Write(newLine);
+            }
         }
 
         public void NewLineInsertedInOutput()
@@ -106,5 +129,16 @@ namespace Smidge.Nuglify
             get => _wrapped.SafeHeader;
             set => _wrapped.SafeHeader = value;
         }
+
+        public string GetSourceMapMarkup()
+        {
+            var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(SourceMapOutput));
+            return string.Format("//# sourceMappingURL=data:application/json;charset=utf-8;base64,{0}", base64);
+        }
+
+        /// <summary>
+        /// Reutrns the Source map output once processing is complete
+        /// </summary>
+        public string SourceMapOutput { get; private set; }
     }
 }

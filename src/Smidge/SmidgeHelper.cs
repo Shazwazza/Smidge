@@ -271,10 +271,11 @@ namespace Smidge
                         var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
                         if (!File.Exists(compositeFilePath))
                         {
+                            var bundleContext = new BundleContext();
                             //need to process/minify these files - need to use their original paths of course
                             foreach (var file in batch.Select(x => x.Original))
                             {
-                                await _preProcessManager.ProcessAndCacheFileAsync(file, null);
+                                await _preProcessManager.ProcessAndCacheFileAsync(file, null, bundleContext);
                             }
                         }
                         result.Add(u.Url);
@@ -328,9 +329,9 @@ namespace Smidge
         {
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentNullException(nameof(bundleName));
 
-            if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
+            if (_bundleManager.Exists(bundleName)) return new NoopSmidgeRequire();
 
-            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Js, _requestHelper);
+            return new SmidgeRequire(bundleName, _bundleManager, WebFileType.Js, _requestHelper);
         }
 
         /// <summary>
@@ -345,9 +346,9 @@ namespace Smidge
         {
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentNullException(nameof(bundleName));
 
-            if (_bundleManager.Exists(bundleName)) return new NoopBundleContext();
+            if (_bundleManager.Exists(bundleName)) return new NoopSmidgeRequire();
 
-            return new SmidgeBundleContext(bundleName, _bundleManager, WebFileType.Css, _requestHelper);
+            return new SmidgeRequire(bundleName, _bundleManager, WebFileType.Css, _requestHelper);
         }
     }
 }

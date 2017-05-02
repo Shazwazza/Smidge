@@ -17,33 +17,30 @@ namespace Smidge.FileProcessors
             Processors.AddRange(processors);
         }
         
-        public List<IPreProcessor> Processors { get; private set; }
+        public List<IPreProcessor> Processors { get; }
 
         public async Task<string> ProcessAsync(FileProcessContext fileProcessContext)
         {
             var queue = new Queue<IPreProcessor>(Processors);
-            var output = new PreProcessorOutput(fileProcessContext.FileContent);
             while (queue.Count > 0)
             {
-                var executed = await ProcessNext(output, queue, fileProcessContext);
+                var executed = await ProcessNext(queue, fileProcessContext);
                 //The next item wasn't executed which means the processor terminated
                 // the pipeline.
                 if (!executed) break;
             }
 
-            return output.Result;
+            //return output.Result;
+            return fileProcessContext.FileContent;
         }
 
         /// <summary>
         /// Recursively process the next pre-processor until the queue is completed or until the pipeline is terminated
-        /// </summary>
-        /// <param name="output">
-        /// Tracks the output of a all pre-processors
-        /// </param>
+        /// </summary>        
         /// <param name="queue"></param>
         /// <param name="fileProcessContext"></param>
         /// <returns></returns>
-        private static async Task<bool> ProcessNext(PreProcessorOutput output, Queue<IPreProcessor> queue, FileProcessContext fileProcessContext)
+        private static async Task<bool> ProcessNext(Queue<IPreProcessor> queue, FileProcessContext fileProcessContext)
         {
             //Check if there are no more, if not then we're all done
             if (queue.Count == 0)
@@ -51,18 +48,12 @@ namespace Smidge.FileProcessors
 
             var p = queue.Dequeue();
             var executed = false;
-            
-            await p.ProcessAsync(fileProcessContext, async preProcessorResult =>
+
+            await p.ProcessAsync(fileProcessContext, async ctx =>
             {
-                output.Result = preProcessorResult;
-
-                var nextFileContext = new FileProcessContext(preProcessorResult, fileProcessContext.WebFile);
-
-                executed = await ProcessNext(output, queue, nextFileContext);
-
-                return output.Result;
+                executed = await ProcessNext(queue, ctx);                
             });
-
+            
             //The next item wasn't executed which means the processor terminated the pipeline.
             return executed;
         }
@@ -75,17 +66,6 @@ namespace Smidge.FileProcessors
         {
             return new PreProcessPipeline(new List<IPreProcessor>(Processors));
         }
-
-        private class PreProcessorOutput
-        {
-            public PreProcessorOutput(string result)
-            {
-                Result = result;
-            }
-
-            public string Result { get; set; }
-        }
-        
     }
 
     

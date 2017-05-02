@@ -9,7 +9,7 @@ namespace Smidge.Nuglify
 {
     public class NuglifyCss : IPreProcessor
     {
-        public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
+        public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
             var result = Uglify.Css(fileProcessContext.FileContent);
 
@@ -20,7 +20,9 @@ namespace Smidge.Nuglify
                     string.Join(",", result.Errors.Select(x => x.Message)));
             }
 
-            return next(result.Code);
+            fileProcessContext.Update(result.Code);
+
+            return next(fileProcessContext);
         }
     }
 }

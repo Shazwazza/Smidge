@@ -26,13 +26,14 @@ namespace Smidge.FileProcessors
         /// <param name="next"></param>
         /// <returns></returns>
 
-        public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
+        public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
             using (var reader = new StringReader(fileProcessContext.FileContent))
             {
                 var cssMin = new CssMin();
                 var minResult = cssMin.Minify(reader);
-                await next(minResult);
+                fileProcessContext.Update(minResult);
+                await next(fileProcessContext);
             }
         }
 

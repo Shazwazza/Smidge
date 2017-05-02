@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Moq;
+using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Models;
 using Xunit;
@@ -17,34 +18,44 @@ namespace Smidge.Tests
         {
             var pipeline = new PreProcessPipeline(new IPreProcessor[]
             {
+                new ProcessorHeaderAndFooter(), 
                 new ProcessorHeader(), 
                 new ProcessorFooter()
             });
 
-            var result = await pipeline.ProcessAsync(new FileProcessContext("This is some content", Mock.Of<IWebFile>()));
+            var result = await pipeline.ProcessAsync(new FileProcessContext("This is some content", Mock.Of<IWebFile>(), new BundleContext()));
 
-            Assert.Equal("Header\nThis is some content\nFooter", result);
+            Assert.Equal("WrappedHeader\nHeader\nThis is some content\nFooter\nWrappedFooter", result);
+        }
+
+        private class ProcessorHeaderAndFooter : IPreProcessor
+        {
+            public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
+            {   
+                await next(fileProcessContext);
+
+                fileProcessContext.Update("WrappedHeader\n" + fileProcessContext.FileContent + "\nWrappedFooter");
+            }
         }
 
         private class ProcessorHeader : IPreProcessor
         {
-            public Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
-            {         
-                var result = "Header\n" + fileProcessContext.FileContent;
-                return next(result);
+            public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
+            {                
+                await next(fileProcessContext);
+                fileProcessContext.Update("Header\n" + fileProcessContext.FileContent);
             }
         }
 
         private class ProcessorFooter : IPreProcessor
         {
-            public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
+            public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
             {
-                var processed = await next(fileProcessContext.FileContent);
-
-                var result = processed + "\nFooter";
-                
-                await next(result);
+                await next(fileProcessContext);
+                fileProcessContext.Update(fileProcessContext.FileContent + "\nFooter");                
             }
         }
+
+        
     }
 }

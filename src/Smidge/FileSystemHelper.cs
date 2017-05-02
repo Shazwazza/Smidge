@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Smidge.Cache;
+using Smidge.CompositeFiles;
 using Smidge.Hashing;
 using Smidge.Models;
 using Smidge.Options;

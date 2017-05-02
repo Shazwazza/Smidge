@@ -31,11 +31,14 @@ namespace Smidge.JavaScriptServices
             });
         }
 
-        public async Task ProcessAsync(FileProcessContext fileProcessContext, Func<string, Task<string>> next)
+        public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
             var result = await _nodeServices.InvokeAsync<string>(
                 _nodeScript.Value.FileName, fileProcessContext.FileContent);
-            await next(result);
+
+            fileProcessContext.Update(result);
+
+            await next(fileProcessContext);
         }
     }
 }

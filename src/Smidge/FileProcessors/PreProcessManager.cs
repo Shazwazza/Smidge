@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Smidge.Cache;
+using Smidge.CompositeFiles;
 using Smidge.Models;
 using Smidge.Options;
 
 namespace Smidge.FileProcessors
 {
     /// <summary>
-    /// This performs the pre-processing on an IWebFile based on it's pipeline and writes the processed output to file cache
+    /// This performs the pre-processing on an <see cref="IWebFile"/> based on it's pipeline and writes the processed output to file cache
     /// </summary>
     public sealed class PreProcessManager
     {
@@ -31,16 +32,17 @@ namespace Smidge.FileProcessors
         /// </summary>
         /// <param name="file"></param>
         /// <param name="bundleOptions"></param>
+        /// <param name="bundleContext"></param>
         /// <returns></returns>
-        public async Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions)
+        public async Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
             if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
 
-            await ProcessFile(file, bundleOptions);
+            await ProcessFile(file, bundleOptions, bundleContext);
         }
 
-        private async Task ProcessFile(IWebFile file, BundleOptions bundleOptions)
+        private async Task ProcessFile(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             //If Its external throw an exception this is not allowed. 
             if (file.FilePath.Contains(Constants.SchemeDelimiter))
@@ -48,10 +50,10 @@ namespace Smidge.FileProcessors
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
             };
 
-            await ProcessFileImpl(file, bundleOptions);
+            await ProcessFileImpl(file, bundleOptions, bundleContext);
         }
 
-        private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions)
+        private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
             
@@ -72,7 +74,7 @@ namespace Smidge.FileProcessors
                 var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo.Value);
 
                 //process the file
-                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file));
+                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file, bundleContext));
 
                 //save it to the cache path
                 await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
@@ -89,7 +91,7 @@ namespace Smidge.FileProcessors
 
         private async Task ReProcessFile(WatchedFile file)
         {
-            await ProcessFileImpl(file.WebFile, file.BundleOptions);
+            await ProcessFileImpl(file.WebFile, file.BundleOptions, new BundleContext());
 
             //Raise event
             file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file, _fileSystemHelper));

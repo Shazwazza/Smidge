@@ -2,7 +2,7 @@ using Smidge.Models;
 
 namespace Smidge
 {
-    internal class NoopBundleContext : ISmidgeRequire
+    internal class NoopSmidgeRequire : ISmidgeRequire
     {
         public ISmidgeRequire RequiresJs(JavaScriptFile file)
         {

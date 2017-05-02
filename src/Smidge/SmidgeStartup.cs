@@ -40,7 +40,8 @@ namespace Smidge
             
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
-            services.AddSingleton<IRequestHelper, RequestHelper>();            
+            services.AddSingleton<PreProcessManager>();
+            services.AddSingleton<IRequestHelper, RequestHelper>();
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
             services.AddSingleton<IHasher, Crc32Hasher>();
@@ -51,8 +52,7 @@ namespace Smidge
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
                 return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
-            });
-            services.AddSingleton<PreProcessManager>();
+            });            
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
@@ -66,9 +66,10 @@ namespace Smidge
             services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
             services.AddSingleton<CacheBusterResolver>();
 
+            //These all execute as part of the request/scope            
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
-            services.AddScoped<IUrlManager, DefaultUrlManager>();
+            services.AddScoped<IUrlManager, DefaultUrlManager>();            
 
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();

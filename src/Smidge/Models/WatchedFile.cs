@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.FileProviders;
+using Smidge.CompositeFiles;
 using Smidge.Options;
 
 namespace Smidge.Models
@@ -14,12 +15,8 @@ namespace Smidge.Models
         }
 
         public IWebFile WebFile { get; }
-        public IFileInfo FileInfo { get; private set; }
+        public IFileInfo FileInfo { get; }
         public BundleOptions BundleOptions { get; }
-
-        //public void RefreshFileInfo(FileSystemHelper fileSystemHelper)
-        //{
-        //    FileInfo = fileSystemHelper.GetFileInfo(WebFile);
-        //}
+        
     }
 }
