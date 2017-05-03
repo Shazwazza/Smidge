@@ -10,10 +10,14 @@ namespace Smidge.Nuglify
         public CodeSettings CodeSettings { get; }
 
         /// <summary>
-        /// Whether or not to generate inline source maps
+        /// The type of source map to create (if any)
         /// </summary>
-        public bool EnableSourceMaps { get; set; } = true;
+        public SourceMapType SourceMapType { get; set; } = SourceMapType.Default;
 
+        public NuglifyCodeSettings()
+        {
+            CodeSettings = new CodeSettings();
+        }
         public NuglifyCodeSettings(CodeSettings codeSettings)
         {
             CodeSettings = codeSettings ?? new CodeSettings();

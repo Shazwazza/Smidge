@@ -7,33 +7,40 @@ using NUglify.JavaScript.Syntax;
 namespace Smidge.Nuglify
 {
     /// <summary>
-    /// Used to create inline source maps
+    /// Used to create source maps over multiple files during a single bundle context
     /// </summary>
-    public class V3InlineSourceMap : ISourceMap
+    /// <remarks>
+    /// Typically the standard V3SourceMap requires that you provide it a list of files to proces up-front and it will return a single source map
+    /// for them all, however we don't have the ability to tell a single instance up-front which files to process we just know the files when we 
+    /// start processing them. Luckily the underlying V3SourceMap can work with this since anytime Nuglify processes a JS file it will update the 
+    /// underlying V3SourceMap document with a new source and append to it's sources list. 
+    /// 
+    /// So this is deferred because it does not write to the processed JS file, it defers the output and writes to a string builder which can be retrieved later.
+    /// </remarks>
+    public class V3DeferredSourceMap : ISourceMap
     {
         public const string ImplementationName = "V3Inline";
 
+        public SourceMapType SourceMapType { get; }
+
         private readonly V3SourceMap _wrapped;
-        private readonly StringBuilder _mapBuilder;
-        private readonly bool _appendSourceMap;
+        private readonly StringBuilder _mapBuilder;        
         private string _mapPath;
 
         /// <summary>
         /// Creates a new inline source map
         /// </summary>
         /// <param name="wrapped"></param>
-        /// <param name="mapBuilder"></param>
-        /// <param name="appendSourceMap">
-        /// true to append the source map to the output of the minified file, false to extract the built source map manually
-        /// </param>
-        public V3InlineSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder, bool appendSourceMap)
+        /// <param name="mapBuilder"></param>        
+        /// <param name="sourceSourceMapType"></param>
+        public V3DeferredSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder, SourceMapType sourceSourceMapType)
         {
             if (wrapped == null) throw new ArgumentNullException(nameof(wrapped));
             if (mapBuilder == null) throw new ArgumentNullException(nameof(mapBuilder));
 
             _wrapped = wrapped;
             _mapBuilder = mapBuilder;
-            _appendSourceMap = appendSourceMap;
+            SourceMapType = sourceSourceMapType;
         }
 
         public void Dispose()
@@ -54,14 +61,11 @@ namespace Smidge.Nuglify
         {
             _wrapped.EndPackage();
 
-            if (!_appendSourceMap)
-            {
-                //need to dispose the wrapped source map which is what is used to generate the whole thing
-                _wrapped.Dispose();
+            //need to dispose the wrapped source map which is what is used to generate the whole thing
+            _wrapped.Dispose();
 
-                //get the created map and base64 it
-                SourceMapOutput = _mapBuilder.ToString();
-            }
+            //get the created map and base64 it
+            SourceMapOutput = _mapBuilder.ToString();
         }
 
         public object StartSymbol(AstNode node, int startLine, int startColumn)
@@ -85,30 +89,13 @@ namespace Smidge.Nuglify
         }
 
         /// <summary>
-        /// Override EndFile to create an inline source map
+        /// Override EndFile to ensure nothing is written to the source file
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="newLine"></param>
         public void EndFile(TextWriter writer, string newLine)
         {
-            if (_appendSourceMap)
-            {
-                if (writer == null || string.IsNullOrWhiteSpace(_mapPath))
-                    return;
-
-                writer.Write(newLine);
-
-                //need to dispose the wrapped source map which is what is used to generate the whole thing
-                _wrapped.Dispose();
-
-                //get the created map and base64 it
-                SourceMapOutput = _mapBuilder.ToString();
-                
-                //write the inline map
-                writer.Write(GetSourceMapMarkup());
-
-                writer.Write(newLine);
-            }
+            //Do nothing here, this is different than the normal implementation which would write to the source file, we want to defer this operation
         }
 
         public void NewLineInsertedInOutput()
@@ -130,10 +117,15 @@ namespace Smidge.Nuglify
             set => _wrapped.SafeHeader = value;
         }
 
-        public string GetSourceMapMarkup()
+        public string GetInlineSourceMapMarkup()
         {
             var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(SourceMapOutput));
             return string.Format("//# sourceMappingURL=data:application/json;charset=utf-8;base64,{0}", base64);
+        }
+
+        public string GetExternalFileSourceMapMarkup(string mapPath)
+        {
+            return string.Format("//# sourceMappingURL={0}", mapPath);
         }
 
         /// <summary>

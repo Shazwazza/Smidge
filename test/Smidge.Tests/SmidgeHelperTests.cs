@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using System;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Smidge.CompositeFiles;
@@ -50,7 +51,7 @@ namespace Smidge.Tests
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
             
             _requestHelper = Mock.Of<IRequestHelper>();
-            _processorFactory = new PreProcessPipelineFactory(_preProcessors);
+            _processorFactory = new PreProcessPipelineFactory(new Lazy<IEnumerable<IPreProcessor>>(() => _preProcessors));
             _bundleManager = new BundleManager(_smidgeOptions.Object);
             _preProcessManager = new PreProcessManager(
                 _fileSystemHelper,                

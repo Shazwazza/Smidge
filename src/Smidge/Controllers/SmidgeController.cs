@@ -99,7 +99,7 @@ namespace Smidge.Controllers
                 return null;
             }
             
-            using (var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension, compositeFilePath))
+            using (var bundleContext = new BundleContext(bundle, compositeFilePath))
             {
                 //we need to do the minify on the original files
                 foreach (var file in files)

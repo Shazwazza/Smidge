@@ -17,11 +17,14 @@ using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.NodeServices;
+using Microsoft.Extensions.Options;
+using Moq;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.JavaScriptServices;
 using Smidge.Models;
 using Smidge.Nuglify;
+using Smidge.Options;
 
 namespace Smidge.Benchmarks
 {
@@ -94,8 +97,14 @@ namespace Smidge.Benchmarks
         [Setup]
         public void Setup()
         {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
             _jsMin = new JsMinifier();
-            _nuglify = new NuglifyJs(new NuglifySettings(new NuglifyCodeSettings(null), new NuglifyCodeSettings(null)));
+            _nuglify = new NuglifyJs(
+                new NuglifySettings(new NuglifyCodeSettings(null), new NuglifyCodeSettings(null)),
+                Mock.Of<ISourceMapDeclaration>());
             
             var nodeServices = new SmidgeJavaScriptServices(NodeServicesFactory.CreateNodeServices(
                 new NodeServicesOptions(new NullServiceProvider())

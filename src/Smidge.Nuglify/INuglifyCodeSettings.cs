@@ -5,6 +5,6 @@ namespace Smidge.Nuglify
     public interface INuglifyCodeSettings
     {
         CodeSettings CodeSettings { get; }
-        bool EnableSourceMaps { get; }
+        SourceMapType SourceMapType { get; }
     }
 }

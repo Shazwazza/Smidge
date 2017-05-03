@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Smidge.Cache;
 using Smidge.FileProcessors;
+using Smidge.Models;
 
 namespace Smidge.CompositeFiles
 {
@@ -12,6 +14,8 @@ namespace Smidge.CompositeFiles
     /// </summary>
     public class BundleContext : IDisposable
     {
+        
+
         /// <summary>
         /// Creates an empty <see cref="BundleContext"/> which does not track prependers or appenders
         /// </summary>
@@ -25,17 +29,17 @@ namespace Smidge.CompositeFiles
         {
         }
 
-        public BundleContext(string bundleFileName, FileInfo bundleCompositeFile)
+        public BundleContext(IRequestModel bundleRequest, FileInfo bundleCompositeFile)
         {
+            BundleRequest = bundleRequest;
             _bundleCompositeFile = bundleCompositeFile;
-            _bundleFileName = bundleFileName;
         }
 
         private readonly List<Func<string>> _appenders = new List<Func<string>>();
-        private readonly List<Func<string>> _prependers = new List<Func<string>>();
-        private readonly string _bundleFileName;
+        private readonly List<Func<string>> _prependers = new List<Func<string>>();        
         private readonly FileInfo _bundleCompositeFile;
 
+        public IRequestModel BundleRequest { get; }
         /// <summary>
         /// Allows for any <see cref="IPreProcessor"/> to track state among the collection of files
         /// </summary>
@@ -53,13 +57,16 @@ namespace Smidge.CompositeFiles
             }
         }
 
+
         /// <summary>
         /// Returns the bundle file name
         /// </summary>
         /// <remarks>
         /// If it's an empty bundle context (i.e. it's not processing a real bundle but only a composite file) then this will be generated
         /// </remarks>
-        public string BundleFileName => _bundleFileName ?? "generated_" + Guid.NewGuid();
+        public string BundleName => BundleRequest?.FileKey ?? "generated_" + Guid.NewGuid();
+
+        public string FileExtension => BundleRequest?.Extension ?? string.Empty;
 
         public void AddAppender(Func<string> appender)
         {

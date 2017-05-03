@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -76,7 +77,8 @@ namespace Smidge
             services.AddSingleton<IPreProcessor, CssMinifier>();            
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
-            
+            services.AddSingleton<Lazy<IEnumerable<IPreProcessor>>>(provider => new Lazy<IEnumerable<IPreProcessor>>(provider.GetRequiredService<IEnumerable<IPreProcessor>>));
+
             //conventions
             services.AddSingleton<FileProcessingConventions>();
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
@@ -93,14 +95,16 @@ namespace Smidge
             //Create custom route
             app.UseMvc(routes =>
             {
+                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
+
                 routes.MapRoute(
                     "SmidgeComposite",
-                    "sc/{file}",
+                    options.Value.UrlOptions.CompositeFilePath + "/{file}",                    
                     new { controller = "Smidge", action = "Composite" });
 
                 routes.MapRoute(
                     "SmidgeBundle",
-                    "sb/{bundle}",
+                    options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                     new { controller = "Smidge", action = "Bundle" });
             });
 

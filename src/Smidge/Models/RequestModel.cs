@@ -8,7 +8,7 @@ namespace Smidge.Models
     /// <summary>
     /// Base class model for an inbound request
     /// </summary>
-    public abstract class RequestModel
+    public abstract class RequestModel : IRequestModel
     {
         protected RequestModel(string valueName, IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
         {

@@ -66,7 +66,7 @@ namespace Smidge.Web
                 });
 
             services.AddSmidgeJavaScriptServices();
-            services.AddSmidgeNuglifyServices();
+            services.AddSmidgeNuglify();
         }
 
         /// <summary>
@@ -150,6 +150,8 @@ namespace Smidge.Web
 
                 bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
             });
+
+            app.UseSmidgeNuglify();
         }
     }
 }
