@@ -271,7 +271,7 @@ namespace Smidge
                         var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
                         if (!File.Exists(compositeFilePath))
                         {
-                            using (var bundleContext = new BundleContext())
+                            using (var bundleContext = BundleContext.CreateEmpty())
                             {
                                 //need to process/minify these files - need to use their original paths of course
                                 foreach (var file in batch.Select(x => x.Original))

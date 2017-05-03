@@ -24,19 +24,8 @@ namespace Smidge.Nuglify
         
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
-            //TODO: So this is almost working, the problem is that for each minified file currently, the inline source map will be appended to the end of the single file
-            // but the spec doesn't support multiple source map declarations, just one source map declaration at the very end of the combined output.
-            // So there's a bit of trickery needed here, we'll probably have to update the FileProcessContext to have a reference to some sort of "BundleContext"
-            // which we could then add some information to and perhaps callbacks to to prepend or append data to the finalized bundle.
-            // ... hrm, interesting ....
-            // Some references for this
-            // * https://github.com/mishoo/UglifyJS2/issues/849
-            // * https://github.com/mishoo/UglifyJS2/issues/145
-            // This is a utility that can combine source maps, which is what we'll ultimately need to do as well
-            // * https://github.com/edc/mapcat
-
-
-            //For source mapping, see http://ajaxmin.codeplex.com/wikipage?title=SourceMaps
+            
+            //Info for source mapping, see http://ajaxmin.codeplex.com/wikipage?title=SourceMaps
             // as an example, see http://ajaxmin.codeplex.com/SourceControl/latest#AjaxMinTask/AjaxMinManifestTask.cs under ProcessJavaScript
             // When a source map provider is specified, the process is:
             // * Create a string builder/writer to capture the output of the source map
@@ -79,7 +68,7 @@ namespace Smidge.Nuglify
                 //                  0,
                 //                  fileProcessContext.WebFile.FilePath.LastIndexOf('.')) + ".min" + extension;
 
-                //we then need to 'StartPackage'
+                //we then need to 'StartPackage', this will be called once per file for the same source map instance but that is ok it doesn't cause any harm
                 sourceMap.StartPackage(fileProcessContext.BundleContext.BundleFileName, fileProcessContext.BundleContext.BundleFileName + ".map");
             }
 

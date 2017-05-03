@@ -11,37 +11,65 @@ namespace Smidge.CompositeFiles
     /// Tracks state for a bundle of files and is used to combine files into one
     /// </summary>
     public class BundleContext : IDisposable
-    {        
-        public BundleContext()
+    {
+        /// <summary>
+        /// Creates an empty <see cref="BundleContext"/> which does not track prependers or appenders
+        /// </summary>
+        /// <returns></returns>
+        public static BundleContext CreateEmpty()
+        {
+            return new BundleContext();
+        }
+
+        private BundleContext()
         {
         }
 
-        public BundleContext(string bundleFileName)
+        public BundleContext(string bundleFileName, FileInfo bundleCompositeFile)
         {
+            _bundleCompositeFile = bundleCompositeFile;
             _bundleFileName = bundleFileName;
         }
 
         private readonly List<Func<string>> _appenders = new List<Func<string>>();
         private readonly List<Func<string>> _prependers = new List<Func<string>>();
         private readonly string _bundleFileName;
+        private readonly FileInfo _bundleCompositeFile;
 
         /// <summary>
         /// Allows for any <see cref="IPreProcessor"/> to track state among the collection of files
         /// </summary>
         public IDictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
 
-        public string BundleFileName
+        /// <summary>
+        /// Returns the FileInfo instance of the composite bundle file
+        /// </summary>
+        public FileInfo BundleCompositeFile
         {
-            get { return _bundleFileName ?? "generated_" + Guid.NewGuid(); }
+            get
+            {
+                if (_bundleCompositeFile == null) throw new NotSupportedException("No file available in an empty " + nameof(BundleContext));
+                return _bundleCompositeFile;
+            }
         }
+
+        /// <summary>
+        /// Returns the bundle file name
+        /// </summary>
+        /// <remarks>
+        /// If it's an empty bundle context (i.e. it's not processing a real bundle but only a composite file) then this will be generated
+        /// </remarks>
+        public string BundleFileName => _bundleFileName ?? "generated_" + Guid.NewGuid();
 
         public void AddAppender(Func<string> appender)
         {
+            if (_bundleCompositeFile == null) return;
             _appenders.Add(appender);
         }
 
         public void AddPrepender(Func<string> prepender)
         {
+            if (_bundleCompositeFile == null) return;
             _prependers.Add(prepender);
         }
 

@@ -146,7 +146,7 @@ namespace Smidge.Benchmarks
 
         public async Task<string> GetJsMin()
         {
-            using (var bc = new BundleContext())
+            using (var bc = BundleContext.CreateEmpty())
             {
                 var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
                 await _jsMin.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
@@ -156,7 +156,7 @@ namespace Smidge.Benchmarks
 
         public async Task<string> GetNuglify()
         {
-            using (var bc = new BundleContext())
+            using (var bc = BundleContext.CreateEmpty())
             {
                 var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
                 await _nuglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
@@ -167,7 +167,7 @@ namespace Smidge.Benchmarks
 
         public async Task<string> GetJsServicesUglify()
         {
-            using (var bc = new BundleContext())
+            using (var bc = BundleContext.CreateEmpty())
             {
                 var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
                 await _jsUglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));

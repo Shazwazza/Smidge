@@ -256,13 +256,7 @@ namespace Smidge
         /// The current cache folder (based on the current machine name)
         /// </summary>
         /// <returns></returns>
-        public string CurrentCacheFolder
-        {
-            get
-            {
-                return Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", GetFileSafeMachineName(Environment.MachineName));
-            }
-        }
+        public string CurrentCacheFolder => Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", GetFileSafeMachineName(Environment.MachineName));
 
         private string GetFileSafeMachineName(string name)
         {

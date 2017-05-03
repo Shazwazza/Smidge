@@ -22,7 +22,7 @@ namespace Smidge.Tests
                 new ProcessorHeader(), 
                 new ProcessorFooter()
             });
-            using (var bc = new BundleContext())
+            using (var bc = BundleContext.CreateEmpty())
             {
                 var result = await pipeline.ProcessAsync(new FileProcessContext("This is some content", Mock.Of<IWebFile>(), bc));
 

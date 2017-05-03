@@ -76,12 +76,11 @@ namespace Smidge.Controllers
             var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
             
             //now we need to determine if this bundle has already been created
-            var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
-            var compositeFileExists = System.IO.File.Exists(compositeFilePath);
-            if (compositeFileExists)
+            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
+            if (compositeFilePath.Exists)
             {
                 //this is already processed, return it
-                return File(System.IO.File.OpenRead(compositeFilePath), bundle.Mime);
+                return File(compositeFilePath.OpenRead(), bundle.Mime);
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -99,8 +98,8 @@ namespace Smidge.Controllers
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
-
-            using (var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension))
+            
+            using (var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension, compositeFilePath))
             {
                 //we need to do the minify on the original files
                 foreach (var file in files)
@@ -124,7 +123,7 @@ namespace Smidge.Controllers
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
                     // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                     // the raw file if it exists for further requests to this path
-                    compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
+                    await CacheCompositeFileAsync(compositeFilePath, compressedStream);
 
                     //return the stream
                     return File(compressedStream, bundle.Mime);
@@ -146,8 +145,16 @@ namespace Smidge.Controllers
                 return null;
             }
 
+            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(file.CacheBuster, file.Compression, file.FileKey));
+
+            if (compositeFilePath.Exists)
+            {
+                //this is already processed, return it
+                return File(compositeFilePath.OpenRead(), file.Mime);
+            }
+
             //this bundle context isn't really used since this is not a bundle but just a composite file which doesn't support all of the features of a real bundle
-            using (var bundleContext = new BundleContext(file.FileKey + file.Extension))
+            using (var bundleContext = BundleContext.CreateEmpty())
             {
                 var filePaths = file.ParsedPath.Names.Select(filePath =>
                     Path.Combine(
@@ -158,26 +165,23 @@ namespace Smidge.Controllers
                 {
                     var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
-                    var compositeFilePath = await CacheCompositeFileAsync(file.CacheBuster, file.FileKey, compressedStream, file.Compression);
+                    await CacheCompositeFileAsync(compositeFilePath, compressedStream);
 
                     return File(compressedStream, file.Mime);
                 }
             }
         }
 
-        private async Task<string> CacheCompositeFileAsync(ICacheBuster cacheBuster, string filesetKey, Stream compositeStream, CompressionType type)
+        private static async Task CacheCompositeFileAsync(FileInfo compositeFilePath, Stream compositeStream)
         {
-            var folder = _fileSystemHelper.GetCurrentCompositeFolder(cacheBuster, type);
-            Directory.CreateDirectory(folder);
-            compositeStream.Position = 0;
-            //TODO: Shouldn't this use: GetCurrentCompositeFilePath?
-            var fileName = Path.Combine(folder, filesetKey + ".s");
-            using (var fs = System.IO.File.Create(fileName))
+            //ensure it exists
+            compositeFilePath.Directory.Create();            
+            compositeStream.Position = 0;            
+            using (var fs = compositeFilePath.Create())
             {
                 await compositeStream.CopyToAsync(fs);
             }
             compositeStream.Position = 0;
-            return fileName;
         }
 
         /// <summary>
