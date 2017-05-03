@@ -84,28 +84,19 @@ namespace Smidge.FileProcessors
             // since after app restart if there's already a cache file, we still want to watch the file set
             if (fileWatchEnabled)
             {
-                // watch this file for changes:
+                // watch this file for changes, if the file is already watched this will do nothing
                 _fileSystemHelper.Watch(file, fileInfo.Value, bundleOptions, FileModified);
             }
         }
-
-        private async Task ReProcessFile(WatchedFile file)
-        {
-            await ProcessFileImpl(file.WebFile, file.BundleOptions, new BundleContext());
-
-            //Raise event
-            file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file, _fileSystemHelper));
-        }
-
+        
         /// <summary>
         /// Executed when a processed file is modified
         /// </summary>
         /// <param name="file"></param>
         private void FileModified(WatchedFile file)
         {
-            //TODO: Surely we need to unwatch this now?
-
-            ReProcessFile(file).Wait();
+            //Raise the event on the file watch options
+            file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file, _fileSystemHelper));            
         }
     }
 }

@@ -164,7 +164,5 @@ namespace Smidge
                 }
             }
         }
-
-        //private static System.Threading.ReaderWriterLockSlim _locker = new System.Threading.ReaderWriterLockSlim();
     }
 }

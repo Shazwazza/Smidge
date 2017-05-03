@@ -22,10 +22,13 @@ namespace Smidge.Tests
                 new ProcessorHeader(), 
                 new ProcessorFooter()
             });
+            using (var bc = new BundleContext())
+            {
+                var result = await pipeline.ProcessAsync(new FileProcessContext("This is some content", Mock.Of<IWebFile>(), bc));
 
-            var result = await pipeline.ProcessAsync(new FileProcessContext("This is some content", Mock.Of<IWebFile>(), new BundleContext()));
-
-            Assert.Equal("WrappedHeader\nHeader\nThis is some content\nFooter\nWrappedFooter", result);
+                Assert.Equal("WrappedHeader\nHeader\nThis is some content\nFooter\nWrappedFooter", result);
+            }
+            
         }
 
         private class ProcessorHeaderAndFooter : IPreProcessor

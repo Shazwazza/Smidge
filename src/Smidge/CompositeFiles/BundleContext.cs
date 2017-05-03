@@ -10,22 +10,30 @@ namespace Smidge.CompositeFiles
     /// <summary>
     /// Tracks state for a bundle of files and is used to combine files into one
     /// </summary>
-    public class BundleContext
+    public class BundleContext : IDisposable
     {        
+        public BundleContext()
+        {
+        }
+
         public BundleContext(string bundleFileName)
         {
-            BundleFileName = bundleFileName;
+            _bundleFileName = bundleFileName;
         }
 
         private readonly List<Func<string>> _appenders = new List<Func<string>>();
         private readonly List<Func<string>> _prependers = new List<Func<string>>();
+        private readonly string _bundleFileName;
 
         /// <summary>
         /// Allows for any <see cref="IPreProcessor"/> to track state among the collection of files
         /// </summary>
-        public IDictionary<string, object> Items { get; } = new Dictionary<string, object>();
+        public IDictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
 
-        public string BundleFileName { get; }
+        public string BundleFileName
+        {
+            get { return _bundleFileName ?? "generated_" + Guid.NewGuid(); }
+        }
 
         public void AddAppender(Func<string> appender)
         {
@@ -75,6 +83,14 @@ namespace Smidge.CompositeFiles
             //ensure it's reset
             ms.Position = 0;
             return ms;
+        }
+
+        public void Dispose()
+        {
+            Items?.Clear();
+            _appenders?.Clear();
+            _prependers?.Clear();
+            Items = null;
         }
     }
 }

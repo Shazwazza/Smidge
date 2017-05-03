@@ -99,35 +99,36 @@ namespace Smidge.Controllers
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
-            
-            var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension);
 
-            //we need to do the minify on the original files
-            foreach (var file in files)
+            using (var bundleContext = new BundleContext(bundle.FileKey + bundle.Extension))
             {
-                await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions, bundleContext);
-            }
+                //we need to do the minify on the original files
+                foreach (var file in files)
+                {
+                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions, bundleContext);
+                }
 
-            //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
-            Lazy<IFileInfo> fi;
-            var filePaths = files.Select(
-                x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
-            
-            using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
-            {
-                //compress the response (if enabled)
-                var compressedStream = await Compressor.CompressAsync(
-                    //do not compress anything if it's not enabled in the bundle options
-                    bundleOptions.CompressResult ? bundle.Compression : CompressionType.none, 
-                    resultStream);
+                //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
+                Lazy<IFileInfo> fi;
+                var filePaths = files.Select(
+                    x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
 
-                //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
-                // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
-                // the raw file if it exists for further requests to this path
-                compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
+                using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
+                {
+                    //compress the response (if enabled)
+                    var compressedStream = await Compressor.CompressAsync(
+                        //do not compress anything if it's not enabled in the bundle options
+                        bundleOptions.CompressResult ? bundle.Compression : CompressionType.none,
+                        resultStream);
 
-                //return the stream
-                return File(compressedStream, bundle.Mime);
+                    //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
+                    // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
+                    // the raw file if it exists for further requests to this path
+                    compositeFilePath = await CacheCompositeFileAsync(bundle.CacheBuster, bundle.FileKey, compressedStream, bundle.Compression);
+
+                    //return the stream
+                    return File(compressedStream, bundle.Mime);
+                }
             }
         }
 
@@ -145,22 +146,23 @@ namespace Smidge.Controllers
                 return null;
             }
 
-            var bundleContext = new BundleContext(file.FileKey + file.Extension);
-
-            var filePaths = file.ParsedPath.Names.Select(filePath =>
-                Path.Combine(
-                    _fileSystemHelper.CurrentCacheFolder,
-                    filePath + file.Extension));
-
-            using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
+            //this bundle context isn't really used since this is not a bundle but just a composite file which doesn't support all of the features of a real bundle
+            using (var bundleContext = new BundleContext(file.FileKey + file.Extension))
             {
-                var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
+                var filePaths = file.ParsedPath.Names.Select(filePath =>
+                    Path.Combine(
+                        _fileSystemHelper.CurrentCacheFolder,
+                        filePath + file.Extension));
 
-                var compositeFilePath = await CacheCompositeFileAsync(file.CacheBuster, file.FileKey, compressedStream, file.Compression);
-                
-                return File(compressedStream, file.Mime);
+                using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
+                {
+                    var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
+
+                    var compositeFilePath = await CacheCompositeFileAsync(file.CacheBuster, file.FileKey, compressedStream, file.Compression);
+
+                    return File(compressedStream, file.Mime);
+                }
             }
-
         }
 
         private async Task<string> CacheCompositeFileAsync(ICacheBuster cacheBuster, string filesetKey, Stream compositeStream, CompressionType type)

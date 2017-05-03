@@ -302,12 +302,15 @@ namespace Smidge
         /// <param name="fileInfo"></param>
         /// <param name="bundleOptions"></param>
         /// <param name="fileModifiedCallback"></param>
-        public void Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback)
+        /// <returns>
+        /// Returns true if a watcher was added, false if the file is already being watched
+        /// </returns>
+        public bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback)
         {
             var path = webFile.FilePath.TrimStart(new[] { '~' }).ToLowerInvariant();
 
             //don't double watch if there's already a watcher for this file
-            if (_fileWatchers.ContainsKey(path)) return;
+            if (_fileWatchers.ContainsKey(path)) return false;
 
             var watchedFile = new WatchedFile(webFile, fileInfo, bundleOptions);
 
@@ -321,6 +324,8 @@ namespace Smidge
                 //call the callback with the strongly typed object
                 fileModifiedCallback((WatchedFile)o);
             }, watchedFile));
+
+            return true;
         }
 
         //TODO: We need an unwatch

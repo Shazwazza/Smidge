@@ -146,23 +146,33 @@ namespace Smidge.Benchmarks
 
         public async Task<string> GetJsMin()
         {
-            var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), new BundleContext());
-            await _jsMin.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
-            return fileProcessContext.FileContent;
+            using (var bc = new BundleContext())
+            {
+                var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
+                await _jsMin.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
+                return fileProcessContext.FileContent;
+            }
         }
 
         public async Task<string> GetNuglify()
         {
-            var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), new BundleContext());
-            await _nuglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
-            return fileProcessContext.FileContent;
+            using (var bc = new BundleContext())
+            {
+                var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
+                await _nuglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
+                return fileProcessContext.FileContent;
+            }
+            
         }
 
         public async Task<string> GetJsServicesUglify()
         {
-            var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), new BundleContext());
-            await _jsUglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
-            return fileProcessContext.FileContent;
+            using (var bc = new BundleContext())
+            {
+                var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
+                await _jsUglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
+                return fileProcessContext.FileContent;
+            }
         }
 
         [Benchmark(Baseline = true)]

@@ -271,11 +271,13 @@ namespace Smidge
                         var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
                         if (!File.Exists(compositeFilePath))
                         {
-                            var bundleContext = new BundleContext();
-                            //need to process/minify these files - need to use their original paths of course
-                            foreach (var file in batch.Select(x => x.Original))
+                            using (var bundleContext = new BundleContext())
                             {
-                                await _preProcessManager.ProcessAndCacheFileAsync(file, null, bundleContext);
+                                //need to process/minify these files - need to use their original paths of course
+                                foreach (var file in batch.Select(x => x.Original))
+                                {
+                                    await _preProcessManager.ProcessAndCacheFileAsync(file, null, bundleContext);
+                                }
                             }
                         }
                         result.Add(u.Url);
