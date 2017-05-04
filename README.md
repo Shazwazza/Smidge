@@ -13,7 +13,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 ## Features
 
 * _Compatible with **NETStandard.1.6** & **.Net Framework 4.5.2**_
-* OOTB comes with minification, combination, compression for JS/CSS files
+* Minification, combination, compression for JS/CSS files
 * Properly configurd client side caching, persistent server side caching (no rebunding unecessarily)
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
