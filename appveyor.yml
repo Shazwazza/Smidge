@@ -8,9 +8,3 @@ test_script:
 artifacts:
 - path: build\release\*.nupkg
   name: Nuget Releases
-deploy:
-- provider: NuGet
-  api_key:
-    secure: TGpT22WUw2TfAVU5l03mIVKIlwpD7UauiWCE2oPh/ENM65h1u58k04YUAgIfCWWj
-  on:
-    branch: master
