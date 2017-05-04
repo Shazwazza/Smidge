@@ -44,6 +44,10 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 	   bundles.Create("my-application", WebFileType.Js, "~/js/site.js", "~/js/app");
 	});
 	```
+1. Add the tag helpers to your _ViewImports.cshtml file:
+	```csharp
+	@addTagHelper *, Smidge
+	```
 1. Render your bundle:
 	```html
 	<script src="my-application" type="text/javascript"></script>
