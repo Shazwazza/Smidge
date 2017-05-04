@@ -5,6 +5,12 @@ param (
 	$PreReleaseName
 )
 
+if(-not $PreReleaseName.StartsWith("-"))
+{	
+	$PreReleaseName = "-$PreReleaseName"
+	Write-Host "pre release name: $PreReleaseName"
+}
+
 $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 
 " PSScriptFilePath = $PSScriptFilePath"
