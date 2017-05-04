@@ -18,6 +18,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
 * JS source maps
+* File watchers to auto invalidate/refresh a processed bundle
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 
 ## Quick Start
