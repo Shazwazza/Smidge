@@ -88,7 +88,7 @@ namespace Smidge.Controllers
 
             //get the files for the bundle
             var files = _fileSetGenerator.GetOrderedFileSet(foundBundle,
-                    _processorFactory.GetDefault(
+                    _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         foundBundle.Files[0].DependencyType))
                 .ToArray();

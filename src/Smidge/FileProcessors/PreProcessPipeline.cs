@@ -13,8 +13,7 @@ namespace Smidge.FileProcessors
     {
         public PreProcessPipeline(IEnumerable<IPreProcessor> processors)
         {
-            Processors = new List<IPreProcessor>();
-            Processors.AddRange(processors);
+            Processors = new List<IPreProcessor>(processors);
         }
         
         public List<IPreProcessor> Processors { get; }

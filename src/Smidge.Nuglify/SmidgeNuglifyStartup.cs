@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using NUglify.Css;
 using NUglify.JavaScript;
 using Smidge.FileProcessors;
 using Smidge.Options;
@@ -26,7 +27,7 @@ namespace Smidge.Nuglify
             services.AddSingleton<IPreProcessor, NuglifyJs>();
             services.AddSingleton<ISourceMapDeclaration, SourceMapDeclaration>();
 
-            services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings(new NuglifyCodeSettings(null), new NuglifyCodeSettings(null)));
+            services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()));
             
             return services;
         }

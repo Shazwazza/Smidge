@@ -32,7 +32,7 @@ namespace Smidge.Web
             host.Run();
         }
 
-        private readonly IConfiguration _config;
+        public IConfigurationRoot Configuration { get; }
 
         /// <summary>
         /// Constructor sets up the configuration - for our example we'll load in the config from appsettings.json with
@@ -45,8 +45,7 @@ namespace Smidge.Web
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-            var config = builder.Build();
-            _config = config.GetSection("smidge");
+            Configuration = builder.Build();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -56,11 +55,11 @@ namespace Smidge.Web
             services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.
-            services.AddSmidge(_config)
+            services.AddSmidge(Configuration.GetSection("smidge"))
                 .Configure<SmidgeOptions>(options =>
                 {
                     //options.FileWatchOptions.Enabled = true;
-                    options.PipelineFactory.OnGetDefault = GetDefaultPipelineFactory;
+                    options.PipelineFactory.OnCreateDefault = GetDefaultPipelineFactory;
                     options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
                     options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
                 });
@@ -137,7 +136,7 @@ namespace Smidge.Web
                             .Build()
                     );
 
-                bundles.Create("test-bundle-3", bundles.PipelineFactory.GetPipeline(typeof(JsMinifier)), WebFileType.Js, "~/Js/Bundle2");
+                bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle2");
 
                 bundles.Create("test-bundle-4",
                     new CssFile("~/Css/Bundle1/a1.css"),
@@ -145,10 +144,13 @@ namespace Smidge.Web
 
                 bundles.Create("libs-js",
                     //Here we can change the default pipeline to use Nuglify for this single bundle
-                    bundles.PipelineFactory.GetPipeline(typeof(NuglifyJs)),
+                    bundles.PipelineFactory.Create<NuglifyJs>(),
                     WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
 
-                bundles.Create("libs-css", WebFileType.Css, "~/Css/Libs/font-awesome.css");
+                bundles.Create("libs-css",
+                    //Here we can change the default pipeline to use Nuglify for this single bundle (we'll replace the default)
+                    bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
+                    WebFileType.Css, "~/Css/Libs/font-awesome.css");
             });
 
             app.UseSmidgeNuglify();

@@ -14,7 +14,7 @@
             .RequiresJs("~/Js/test1.js", "~/Js/test2.js")
             .RequiresJs(new JavaScriptFile("~/Js/test2.js")
             {
-                Pipeline = PipelineFactory.GetPipeline(typeof(JsMinifier))
+                Pipeline = PipelineFactory.Create(typeof(JsMinifier))
             });
         SmidgeHelper
             .CreateCssBundle("inline-css-bundle")

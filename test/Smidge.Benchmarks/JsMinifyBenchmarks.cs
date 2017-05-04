@@ -19,6 +19,7 @@ using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.Options;
 using Moq;
+using NUglify.Css;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.JavaScriptServices;
@@ -103,7 +104,7 @@ namespace Smidge.Benchmarks
 
             _jsMin = new JsMinifier();
             _nuglify = new NuglifyJs(
-                new NuglifySettings(new NuglifyCodeSettings(null), new NuglifyCodeSettings(null)),
+                new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()),
                 Mock.Of<ISourceMapDeclaration>());
             
             var nodeServices = new SmidgeJavaScriptServices(NodeServicesFactory.CreateNodeServices(

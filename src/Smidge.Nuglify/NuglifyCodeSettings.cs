@@ -1,3 +1,4 @@
+using NUglify.Css;
 using NUglify.JavaScript;
 
 namespace Smidge.Nuglify
@@ -8,6 +9,8 @@ namespace Smidge.Nuglify
     public class NuglifyCodeSettings : INuglifyCodeSettings
     {
         public CodeSettings CodeSettings { get; }
+
+        public CssSettings CssSettings { get; }
 
         /// <summary>
         /// The type of source map to create (if any)

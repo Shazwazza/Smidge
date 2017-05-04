@@ -1,14 +1,16 @@
-﻿namespace Smidge.Nuglify
+﻿using NUglify.Css;
+
+namespace Smidge.Nuglify
 {
     public sealed class NuglifySettings
     {
-        public NuglifySettings(INuglifyCodeSettings jsCodeSettings, INuglifyCodeSettings cssCodeSettings)
+        public NuglifySettings(INuglifyCodeSettings jsCodeSettings, CssSettings cssSettings)
         {
             JsCodeSettings = jsCodeSettings;
-            CssCodeSettings = cssCodeSettings;
+            CssCodeSettings = cssSettings;
         }
 
         public INuglifyCodeSettings JsCodeSettings { get; }
-        public INuglifyCodeSettings CssCodeSettings { get; }
+        public CssSettings CssCodeSettings { get; }
     }
 }

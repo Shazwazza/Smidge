@@ -37,16 +37,17 @@ namespace Smidge.Nuglify
             // * Call EndPackage, and close/dispose of writers
             // * Get the source map result from the string builder
 
-            var nuglifyCodeSettings = fileProcessContext.WebFile.DependencyType == WebFileType.Css
-                ? _settings.CssCodeSettings
-                : _settings.JsCodeSettings;
+            if (fileProcessContext.WebFile.DependencyType == WebFileType.Css)
+                throw new InvalidOperationException("Cannot use " + nameof(NuglifyJs) + " with a css file source");
+
+            var nuglifyJsCodeSettings = _settings.JsCodeSettings;
 
             //Its very important that we clone here because the code settings is a singleton and we are changing it (i.e. the CodeSettings class is mutable)
-            var codeSettings = nuglifyCodeSettings.CodeSettings.Clone();
+            var codeSettings = nuglifyJsCodeSettings.CodeSettings.Clone();
 
-            if (nuglifyCodeSettings.SourceMapType != SourceMapType.None)
+            if (nuglifyJsCodeSettings.SourceMapType != SourceMapType.None)
             {
-                var sourceMap = fileProcessContext.BundleContext.GetSourceMapFromContext(nuglifyCodeSettings.SourceMapType);
+                var sourceMap = fileProcessContext.BundleContext.GetSourceMapFromContext(nuglifyJsCodeSettings.SourceMapType);
 
                 codeSettings.SymbolsMap = sourceMap;
 
@@ -86,9 +87,9 @@ namespace Smidge.Nuglify
 
             fileProcessContext.Update(result.Code);
 
-            if (nuglifyCodeSettings.SourceMapType != SourceMapType.None)
+            if (nuglifyJsCodeSettings.SourceMapType != SourceMapType.None)
             {
-                AddSourceMapAppenderToContext(fileProcessContext.BundleContext, nuglifyCodeSettings.SourceMapType);
+                AddSourceMapAppenderToContext(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
             }
 
             return next(fileProcessContext);

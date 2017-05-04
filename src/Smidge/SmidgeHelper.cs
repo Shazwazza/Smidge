@@ -203,7 +203,7 @@ namespace Smidge
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
                 var files = _fileSetGenerator.GetOrderedFileSet(bundle, 
-                    _processorFactory.GetDefault(
+                    _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
                 result.AddRange(files.Select(d => d.FilePath));
@@ -234,7 +234,7 @@ namespace Smidge
         {
             var result = new List<string>();
             
-            var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.GetDefault(fileType));
+            var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
             if (debug)
             {
