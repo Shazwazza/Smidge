@@ -39,7 +39,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 	```
 1. Create a bundle in your configure method:
 	```csharp	
-	services.UseSmidge(bundles =>
+	app.UseSmidge(bundles =>
 	{
 	   bundles.Create("my-application", WebFileType.Js, "~/js/site.js", "~/js/app");
 	});
