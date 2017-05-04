@@ -1,5 +1,5 @@
 param (
-	[Parameter(Mandatory=$true)]
+	[Parameter(Mandatory=$false)]
 	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)|^\d+\.\d+\.\d+-(\w|-|\.)+$")]
 	[string]
 	$ReleaseVersionNumber,
@@ -10,7 +10,7 @@ param (
 )
 
 # NOTE, the $ReleaseVersionNumber really doesn't do anything anymore
-if([string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains("-"))
+if(( -not [string]::IsNullOrEmpty($ReleaseVersionNumber)) -And [string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains("-"))
 {	
 	$parts = $ReleaseVersionNumber.Split("-")
 	$ReleaseVersionNumber = $parts[0]
