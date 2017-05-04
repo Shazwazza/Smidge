@@ -1,14 +1,21 @@
-param (	
+param (
+	[Parameter(Mandatory=$true)]
+	[ValidatePattern("^\d+\.\d+\.(?:\d+\.\d+$|\d+$)|^\d+\.\d+\.\d+-(\w|-|\.)+$")]
+	[string]
+	$ReleaseVersionNumber,
 	[Parameter(Mandatory=$false)]
 	[string]
 	[AllowEmptyString()]
 	$PreReleaseName
 )
 
-if(-not $PreReleaseName.StartsWith("-"))
+# NOTE, the $ReleaseVersionNumber really doesn't do anything anymore
+if([string]::IsNullOrEmpty($PreReleaseName) -And $ReleaseVersionNumber.Contains("-"))
 {	
-	$PreReleaseName = "-$PreReleaseName"
-	Write-Host "pre release name: $PreReleaseName"
+	$parts = $ReleaseVersionNumber.Split("-")
+	$ReleaseVersionNumber = $parts[0]
+	$PreReleaseName = "-" + $parts[1]
+	Write-Host "Version parts split: ($ReleaseVersionNumber) and ($PreReleaseName)"
 }
 
 $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName

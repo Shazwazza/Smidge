@@ -2,7 +2,7 @@ version: 2.0.0-build.{build}
 skip_tags: true
 image: Visual Studio 2017
 build_script:
-- ps: .\build.ps1 -PreReleaseName build.{build}
+- ps: .\build.ps1 $env:APPVEYOR_BUILD_VERSION
 test_script:
 - ps: .\tests.ps1
 artifacts:
