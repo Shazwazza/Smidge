@@ -13,21 +13,41 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 
 * _Compatible with **NETStandard.1.6** & **.Net Framework 4.5.2**_
 * OOTB comes with minification, combination, compression for JS/CSS files
+* Properly configurd client side caching, persistent server side caching (no rebunding unecessarily)
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
+* Cache busting - and you can customize/replace how it works
 * JS source maps
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 
-## Install/Configuration
+## Quick Start
 
-Nuget:
-
-    Install-Package Smidge -Pre
-
-```csharp
-//Then register/configure smidge services
-services.AddSmidge(/* optional IConfiguration parameter */);
-```
+1. Install from Nuget: 
+	```
+	Install-Package Smidge -Pre
+	```
+1. Add Smidge config to appsettings.json:
+	```json
+	"smidge": {
+	    "dataFolder" : "App_Data/Smidge",
+	    "version" : "1"
+	  }  
+	```
+1. Add smidge to your services:
+	```csharp	
+	services.AddSmidge(Configuration.GetSection("smidge"));
+	```
+1. Create a bundle in your configure method:
+	```csharp	
+	services.UseSmidge(bundles =>
+	{
+	   bundles.Create("my-application", WebFileType.Js, "~/js/site.js", "~/js/app");
+	});
+	```
+1. Render your bundle:
+	```html
+	<script src="my-application" type="text/javascript"></script>
+	```
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
@@ -111,7 +131,7 @@ I haven't had time to document all of the features and extensibility points just
 
 ## Copyright & Licence
 
-&copy; 2016 by Shannon Deminick
+&copy; 2017 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
 
