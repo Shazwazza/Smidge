@@ -3,11 +3,22 @@
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
 
-[**Smidge 2.0.0-alpha**](http://shazwazza.com/post/smidge-20-alpha-is-out/) - A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+[![NuGet Pre Release](https://img.shields.io/nuget/vpre/Smidge.svg)](https://www.nuget.org/packages/Smidge)
+
+A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+
+* [Alpha 2.0 is out!](http://shazwazza.com/post/smidge-20-alpha-is-out/)
+
+## Features
+
+* _Compatible with **NETStandard.1.6** & **.Net Framework 4.5.2**_
+* OOTB comes with minification, combination, compression for JS/CSS files
+* Fluent syntax for creating and configuring bundles
+* Debug/Production configurations for each bundle
+* JS source maps
+* Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 
 ## Install/Configuration
-
-_Currently supporting ASP.NET Core 1.0, built against **NETStandard.1.6** & **.Net Framework 4.5.2**_
 
 Nuget:
 
@@ -29,31 +40,31 @@ Define your bundles during startup:
 ```csharp
 services.UseSmidge(bundles =>
     {
-        //Defining using JavaScriptFile's or CssFile's:
+        //Defining using file/folder paths:
+	
+	bundles.Create("test-bundle-2", WebFileType.Js, 
+            "~/Js/Bundle2", "~/Js/OtherFolder*js");
 
+	//Or defining using JavaScriptFile's or CssFile's:
+	
         bundles.Create("test-bundle-1", //bundle name
             new JavaScriptFile("~/Js/Bundle1/a1.js"),
             new JavaScriptFile("~/Js/Bundle1/a2.js"));
+        
+	//Then there's all sorts of options for configuring bundles with regards to customizing their pipelines,
+	//customizing how rendering is done based on Debug or Production environments, if you want to 
+	//enable file watchers, configure custom cache busters or the cache control options, etc...
+	//There's even a fluent API to do this! Example: 
 
-        //Or defining using file/folder paths:
-
-        bundles.Create("test-bundle-2", WebFileType.Js, 
-            "~/Js/Bundle2", "~/Js/OtherFolder*js");
-
-		//Then there's all sorts of options for configuring bundles with regards to customizing their pipelines,
-		//customizing how rendering is done based on Debug or Production environments, if you want to 
-		//enable file watchers, configure custom cache busters or the cache control options, etc...
-		//There's even a fluent API to do this! Example: 
-
-		bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle3")
-			.WithEnvironmentOptions(BundleEnvironmentOptions.Create()
-					.ForDebug(builder => builder
-						.EnableCompositeProcessing()
-						.EnableFileWatcher()
-						.SetCacheBusterType<AppDomainLifetimeCacheBuster>()
-						.CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
-					.Build()
-			);
+	bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle3")
+	  .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+	     .ForDebug(builder => builder
+	        .EnableCompositeProcessing()
+	        .EnableFileWatcher()
+	        .SetCacheBusterType<AppDomainLifetimeCacheBuster>()
+	        .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
+	     .Build()
+	);
     });
 ```
 
