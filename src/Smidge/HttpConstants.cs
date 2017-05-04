@@ -13,6 +13,7 @@ namespace Smidge
         internal const string ContentEncoding = "Content-encoding";
         internal const string UserAgent = "User-Agent";
         internal const string AcceptEncoding = "Accept-Encoding";
+        internal const string Vary = "Vary";
         internal const string HttpDateFormat = "r";
         internal const int NotModified304 = 304;
     }
