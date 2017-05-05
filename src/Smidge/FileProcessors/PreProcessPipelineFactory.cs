@@ -13,7 +13,8 @@ namespace Smidge.FileProcessors
     public class PreProcessPipelineFactory
     {
         private readonly Lazy<IReadOnlyCollection<IPreProcessor>> _allProcessors;
-        private Func<WebFileType, IReadOnlyCollection<IPreProcessor>, PreProcessPipeline> _setGetDefaultCallback;
+        private Func<WebFileType, PreProcessPipeline, PreProcessPipeline> _setGetDefaultCallback;
+        private readonly Dictionary<WebFileType, PreProcessPipeline> _default = new Dictionary<WebFileType, PreProcessPipeline>();
 
         public PreProcessPipelineFactory(Lazy<IEnumerable<IPreProcessor>> allProcessors)
         {
@@ -52,36 +53,46 @@ namespace Smidge.FileProcessors
         /// <returns></returns>
         public virtual PreProcessPipeline CreateDefault(WebFileType fileType)
         {
-            //try to use the callback first and if something is returned use it, otherwise 
-            // defer to the defaults
-            var result = _setGetDefaultCallback?.Invoke(fileType, _allProcessors.Value);
-            if (result != null)
-                return result;
+            var d = GetDefault(fileType).Copy();
 
+            //try to use the callback first and if something is returned use it, otherwise use the defaults
+            var result = _setGetDefaultCallback?.Invoke(fileType, d);
+
+            return result ?? d;
+        }
+
+        private PreProcessPipeline GetDefault(WebFileType fileType)
+        {
+            if (_default.TryGetValue(fileType, out PreProcessPipeline pipeline))
+                return pipeline;
 
             switch (fileType)
             {
                 case WebFileType.Js:
-                    return new PreProcessPipeline(new IPreProcessor[]
+                    _default[fileType] = new PreProcessPipeline(new IPreProcessor[]
                     {
                         _allProcessors.Value.OfType<JsMinifier>().First()
                     });
+                    break;
                 case WebFileType.Css:
                 default:
-                    return new PreProcessPipeline(new IPreProcessor[]
+                    _default[fileType] = new PreProcessPipeline(new IPreProcessor[]
                     {
                         _allProcessors.Value.OfType<CssImportProcessor>().First(),
                         _allProcessors.Value.OfType<CssUrlProcessor>().First(),
                         _allProcessors.Value.OfType<CssMinifier>().First()
                     });
+                    break;
             }
+
+            return _default[fileType];
         }
 
         /// <summary>
         /// Allows setting the callback used to get the default PreProcessPipeline, if the callback returns null
         /// then the logic defers to the CreateDefault default result
         /// </summary>
-        public Func<WebFileType, IReadOnlyCollection<IPreProcessor>, PreProcessPipeline> OnCreateDefault
+        public Func<WebFileType, PreProcessPipeline, PreProcessPipeline> OnCreateDefault
         {
             set { _setGetDefaultCallback = value; }
         }

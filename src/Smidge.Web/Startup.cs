@@ -56,14 +56,23 @@ namespace Smidge.Web
             services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.
-            services.AddSmidge(Configuration.GetSection("smidge"))
-                .Configure<SmidgeOptions>(options =>
-                {
-                    //options.FileWatchOptions.Enabled = true;
-                    options.PipelineFactory.OnCreateDefault = GetDefaultPipelineFactory;
-                    options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
-                    options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
-                });
+            services.AddSmidge(Configuration.GetSection("smidge"));
+
+            // We could replace a processor in the default pipeline like this
+            //services.Configure<SmidgeOptions>(opt =>
+            //{
+            //    opt.PipelineFactory.OnCreateDefault = (type, pipeline) => pipeline.Replace<JsMinifier, NuglifyJs>(opt.PipelineFactory);                
+            //});
+
+            // We could change a lot of defaults like this
+            //services.Configure<SmidgeOptions>(options =>
+            //{
+            //    options.PipelineFactory.OnCreateDefault = (type, processors) => 
+            //    //options.FileWatchOptions.Enabled = true;
+            //    options.PipelineFactory.OnCreateDefault = GetDefaultPipelineFactory;
+            //    options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
+            //    options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
+            //});
 
             services.AddSmidgeJavaScriptServices();
             services.AddSmidgeNuglify();
