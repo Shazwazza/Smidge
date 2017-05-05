@@ -7,6 +7,7 @@ using Smidge.Options;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Smidge.FileProcessors;
 
 namespace Smidge
@@ -16,13 +17,15 @@ namespace Smidge
     /// </summary>
     public class BundleManager : IBundleManager
     {
-        public BundleManager(IOptions<SmidgeOptions> smidgeOptions)
+        public BundleManager(IOptions<SmidgeOptions> smidgeOptions, ILogger<BundleManager> logger)
         {
             if (smidgeOptions == null) throw new ArgumentNullException(nameof(smidgeOptions));
             _smidgeOptions = smidgeOptions;
+            _logger = logger;
         }
 
         private readonly IOptions<SmidgeOptions> _smidgeOptions;
+        private readonly ILogger _logger;
 
         private readonly ConcurrentDictionary<string, Bundle> _bundles = new ConcurrentDictionary<string, Bundle>();
 
@@ -35,6 +38,8 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
+            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files");
+
             var collection = new Bundle(new List<IWebFile>(jsFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
@@ -45,6 +50,8 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
+            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files");
+
             var collection = new Bundle(new List<IWebFile>(cssFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
@@ -54,6 +61,8 @@ namespace Smidge
         {
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
+
+            _logger.LogDebug($"Creating {type} bundle '{bundleName}' with {paths.Length} files");
 
             var collection = type == WebFileType.Css
                 ? new Bundle(paths.Select(x => (IWebFile)new CssFile(x)).ToList())
@@ -66,6 +75,8 @@ namespace Smidge
         {
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
+
+            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files and a custom pipeline");
 
             foreach (var file in jsFiles)
             {
@@ -84,6 +95,8 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
+            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files and a custom pipeline");
+
             foreach (var file in cssFiles)
             {
                 if (file.Pipeline == null)
@@ -100,6 +113,8 @@ namespace Smidge
         {
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
+
+            _logger.LogDebug($"Creating {type} bundle '{bundleName}' with {paths.Length} files and a custom pipeline");
 
             var collection = type == WebFileType.Css
                 ? new Bundle(paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList())
@@ -147,6 +162,7 @@ namespace Smidge
             Bundle collection;
             if (TryGetValue(bundleName, out collection))
             {
+                _logger.LogDebug($"Adding {WebFileType.Css} file '{file.FilePath}' to bundle '{bundleName}'");
                 collection.Files.Add(file);
             }
             else
@@ -165,6 +181,7 @@ namespace Smidge
             Bundle collection;
             if (TryGetValue(bundleName, out collection))
             {
+                _logger.LogDebug($"Adding {WebFileType.Js} file '{file.FilePath}' to bundle '{bundleName}'");
                 collection.Files.Add(file);
             }
             else

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Smidge;
 using Smidge.Cache;
@@ -52,11 +53,11 @@ namespace Smidge.Tests
             
             _requestHelper = Mock.Of<IRequestHelper>();
             _processorFactory = new PreProcessPipelineFactory(new Lazy<IEnumerable<IPreProcessor>>(() => _preProcessors));
-            _bundleManager = new BundleManager(_smidgeOptions.Object);
+            _bundleManager = new BundleManager(_smidgeOptions.Object, Mock.Of<ILogger<BundleManager>>());
             _preProcessManager = new PreProcessManager(
                 _fileSystemHelper,                
                 new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()),
-                _bundleManager);
+                _bundleManager, Mock.Of<ILogger<PreProcessManager>>());
             _fileSetGenerator = new BundleFileSetGenerator(_fileSystemHelper, _requestHelper, 
                 new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
         }

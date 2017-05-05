@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
 using Smidge.Models;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Smidge.Cache;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
@@ -30,6 +32,7 @@ namespace Smidge.Controllers
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly PreProcessManager _preProcessManager;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Constructor
@@ -39,12 +42,14 @@ namespace Smidge.Controllers
         /// <param name="fileSetGenerator"></param>
         /// <param name="processorFactory"></param>
         /// <param name="preProcessManager"></param>
+        /// <param name="logger"></param>
         public SmidgeController(
             FileSystemHelper fileSystemHelper, 
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory,
-            PreProcessManager preProcessManager)
+            PreProcessManager preProcessManager,
+            ILogger<SmidgeController> logger)
         {
             if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
             if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
@@ -56,6 +61,7 @@ namespace Smidge.Controllers
             _fileSetGenerator = fileSetGenerator;
             _processorFactory = processorFactory;
             _preProcessManager = preProcessManager;
+            _logger = logger;
         }
 
         /// <summary>
@@ -66,8 +72,7 @@ namespace Smidge.Controllers
         public async Task<FileResult> Bundle(
             [FromServices]BundleRequestModel bundle)
         {
-            Bundle foundBundle;
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out foundBundle))
+            if (!_bundleManager.TryGetValue(bundle.FileKey, out Bundle foundBundle))
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
@@ -79,6 +84,8 @@ namespace Smidge.Controllers
             var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
             if (compositeFilePath.Exists)
             {
+                _logger.LogDebug($"Returning bundle '{bundle.FileKey}' from cache");
+
                 //this is already processed, return it
                 return File(compositeFilePath.OpenRead(), bundle.Mime);
             }
@@ -101,6 +108,10 @@ namespace Smidge.Controllers
             
             using (var bundleContext = new BundleContext(bundle, compositeFilePath))
             {
+                var watch = new Stopwatch();
+                watch.Start();
+                _logger.LogDebug($"Processing bundle '{bundle.FileKey}', debug? {bundle.Debug} ...");
+
                 //we need to do the minify on the original files
                 foreach (var file in files)
                 {
@@ -124,6 +135,8 @@ namespace Smidge.Controllers
                     // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                     // the raw file if it exists for further requests to this path
                     await CacheCompositeFileAsync(compositeFilePath, compressedStream);
+
+                    _logger.LogDebug($"Processed bundle '{bundle.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
                     //return the stream
                     return File(compressedStream, bundle.Mime);

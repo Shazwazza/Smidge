@@ -43,7 +43,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 	```csharp	
 	app.UseSmidge(bundles =>
 	{
-	   bundles.Create("my-application", WebFileType.Js, "~/js/site.js", "~/js/app");
+	   bundles.CreateJs("my-application", "~/js/site.js", "~/js/app");
 	});
 	```
 1. Add the tag helpers to your _ViewImports.cshtml file:
@@ -65,33 +65,33 @@ Define your bundles during startup:
 
 ```csharp
 services.UseSmidge(bundles =>
-    {
-        //Defining using file/folder paths:
-	
-	bundles.Create("test-bundle-2", WebFileType.Js, 
-            "~/Js/Bundle2", "~/Js/OtherFolder*js");
-
-	//Or defining using JavaScriptFile's or CssFile's:
-	
-        bundles.Create("test-bundle-1", //bundle name
-            new JavaScriptFile("~/Js/Bundle1/a1.js"),
-            new JavaScriptFile("~/Js/Bundle1/a2.js"));
-        
-	//Then there's all sorts of options for configuring bundles with regards to customizing their pipelines,
-	//customizing how rendering is done based on Debug or Production environments, if you want to 
-	//enable file watchers, configure custom cache busters or the cache control options, etc...
-	//There's even a fluent API to do this! Example: 
-
-	bundles.Create("test-bundle-3", WebFileType.Js, "~/Js/Bundle3")
-	  .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
-	     .ForDebug(builder => builder
-	        .EnableCompositeProcessing()
-	        .EnableFileWatcher()
-	        .SetCacheBusterType<AppDomainLifetimeCacheBuster>()
-	        .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
-	     .Build()
-	);
-    });
+{
+   //Defining using file/folder paths:
+   
+   bundles.CreateJs("test-bundle-2", "~/Js/Bundle2", "~/Js/OtherFolder*js");
+   
+   //Or defining using JavaScriptFile's or CssFile's
+   //this allows you to custom the pipeline per file
+   
+   bundles.Create("test-bundle-1", //bundle name
+      new JavaScriptFile("~/Js/Bundle1/a1.js"),
+      new JavaScriptFile("~/Js/Bundle1/a2.js"));
+       
+   //Then there's all sorts of options for configuring bundles with regards to customizing their pipelines,
+   //customizing how rendering is done based on Debug or Production environments, if you want to 
+   //enable file watchers, configure custom cache busters or the cache control options, etc...
+   //There's even a fluent API to do this! Example: 
+   
+   bundles.CreateJs("test-bundle-3", "~/Js/Bundle3")
+      .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+         .ForDebug(builder => builder
+            .EnableCompositeProcessing()
+            .EnableFileWatcher()
+            .SetCacheBusterType<AppDomainLifetimeCacheBuster>()
+            .CacheControlOptions(enableEtag: false, cacheControlMaxAge: 0))
+         .Build()
+   );
+});
 ```
 
 If you don't want to create named bundles and just want to declare dependencies individually inside your Views, you can do that too! You can create bundles (named or unnamed) during runtime ... no problem.

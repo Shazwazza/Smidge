@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using NUglify.JavaScript;
 using Smidge.Cache;
@@ -81,15 +82,17 @@ namespace Smidge.Web
             //    case WebFileType.Js:
             //        return new PreProcessPipeline(new IPreProcessor[]
             //        {
-            //            processors.OfType<NuglifyJs>().Single()
+            //            processors.OfType<NuglifyJs>().First()
             //        });
             //}
             //returning null will fallback to the logic defined in the registered PreProcessPipelineFactory
             return null;
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddDebug(LogLevel.Debug);
+
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
@@ -126,7 +129,7 @@ namespace Smidge.Web
                         return collection.OrderBy(x => x.FilePath);
                     });
                 
-                bundles.Create("test-bundle-2", WebFileType.Js, "~/Js/Bundle2")
+                bundles.CreateJs("test-bundle-2", "~/Js/Bundle2")
                     .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
                             .ForDebug(builder => builder
                                 .EnableCompositeProcessing()
@@ -142,15 +145,15 @@ namespace Smidge.Web
                     new CssFile("~/Css/Bundle1/a1.css"),
                     new CssFile("~/Css/Bundle1/a2.css"));
 
-                bundles.Create("libs-js",
+                bundles.CreateJs("libs-js",
                     //Here we can change the default pipeline to use Nuglify for this single bundle
                     bundles.PipelineFactory.Create<NuglifyJs>(),
-                    WebFileType.Js, "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
+                    "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
 
-                bundles.Create("libs-css",
+                bundles.CreateCss("libs-css",
                     //Here we can change the default pipeline to use Nuglify for this single bundle (we'll replace the default)
                     bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
-                    WebFileType.Css, "~/Css/Libs/font-awesome.css");
+                    "~/Css/Libs/font-awesome.css");
             });
 
             app.UseSmidgeNuglify();
