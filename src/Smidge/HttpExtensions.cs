@@ -19,7 +19,7 @@ namespace Smidge
         {
             var ifNoneMatch = request.Headers.GetCommaSeparatedValues(HttpConstants.IfNoneMatch);
             if (ifNoneMatch != null)
-            {                
+            {
                 foreach (var segment in ifNoneMatch)
                 {
                     if (segment.Equals("*", StringComparison.Ordinal)
@@ -85,12 +85,14 @@ namespace Smidge
             if (cType == CompressionType.deflate)
             {
                 response.Headers[HttpConstants.ContentEncoding] = "deflate";
+                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
             }
             else if (cType == CompressionType.gzip)
             {
                 response.Headers[HttpConstants.ContentEncoding] = "gzip";
+                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
             }
-        }        
+        }
     }
-    
+
 }
