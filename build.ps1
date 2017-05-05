@@ -14,7 +14,7 @@ if(( -not [string]::IsNullOrEmpty($ReleaseVersionNumber)) -And [string]::IsNullO
 {	
 	$parts = $ReleaseVersionNumber.Split("-")
 	$ReleaseVersionNumber = $parts[0]
-	$PreReleaseName = "-" + $parts[1]
+	$PreReleaseName = $parts[1]
 	Write-Host "Version parts split: ($ReleaseVersionNumber) and ($PreReleaseName)"
 }
 
@@ -56,7 +56,7 @@ foreach($project in $root.ChildNodes) {
 		$prerelease = [string]$PreReleaseName
 	}
 
-	Write-Host "Updating verion for $projectPath to ($projectVersion$prerelease)"
+	Write-Host "Updating verion for $projectPath to ($projectVersion-$prerelease)"
 
 	#Update the csproj with the correct info
 	[xml]$xmlCsproj = Get-Content $csproj
@@ -119,7 +119,7 @@ foreach($project in $root.ChildNodes) {
 		}
 	}
 	else {
-		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder" --version-suffix $prerelease.TrimStart("-")
+		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder" --version-suffix $prerelease
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."

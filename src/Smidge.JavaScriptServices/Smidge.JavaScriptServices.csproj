@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>A NodeJs runtime to perform minification and pre-processing of files for Smidge</Description>
+    <AssemblyTitle>Smidge.JavaScriptServices</AssemblyTitle>
+    <Description>A NodeJs runtime engine for Smidge</Description>
     <VersionPrefix>1.0.0</VersionPrefix>
     <Copyright>Copyright © Shannon Deminick 2017</Copyright>
     <Authors>Shannon Deminick</Authors>
@@ -10,11 +11,12 @@
     <PackageTags>css;javascript;minify;compression;combination;nodejs;uglify;aspnetcore</PackageTags>
     <PackageProjectUrl>https://github.com/Shazwazza/Smidge/</PackageProjectUrl>
     <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Shazwazza/Smidge/master/assets/logo-nuget.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <VersionSuffix>-beta01</VersionSuffix>
+    <VersionSuffix>beta01</VersionSuffix>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="UglifyMinifier.js" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />

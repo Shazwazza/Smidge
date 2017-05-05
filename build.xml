@@ -1,5 +1,5 @@
 <build>
-  <project id="Smidge" version="2.0.0" prerelease="-beta"/>
-  <project id="Smidge.Nuglify" version="1.0.0" prerelease="-beta"/>
-  <project id="Smidge.JavaScriptServices" version="1.0.0" prerelease="-beta01"/>
+  <project id="Smidge" version="2.0.0" prerelease="beta"/>
+  <project id="Smidge.Nuglify" version="1.0.0" prerelease="beta"/>
+  <project id="Smidge.JavaScriptServices" version="1.0.0" prerelease="alpha01"/>
 </build>
