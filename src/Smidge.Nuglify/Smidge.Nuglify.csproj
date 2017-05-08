@@ -16,7 +16,6 @@
     <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <VersionSuffix>beta</VersionSuffix>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Smidge\Smidge.csproj" />
