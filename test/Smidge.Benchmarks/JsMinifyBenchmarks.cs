@@ -72,13 +72,13 @@ namespace Smidge.Benchmarks
                 Add(new MemoryDiagnoser());
                 Add(new MinifiedPercentColumn());
 
-                //The 'quick and dirty' settings, so it runs a little quicker
-                // see benchmarkdotnet FAQ
-                Add(Job.Default
-                    .WithLaunchCount(1)     // benchmark process will be launched only once
-                    .WithIterationTime(TimeInterval.FromMilliseconds(100)) // 100ms per iteration
-                    .WithWarmupCount(3)     // 3 warmup iteration
-                    .WithTargetCount(3));   // 3 target iteration           
+                ////The 'quick and dirty' settings, so it runs a little quicker
+                //// see benchmarkdotnet FAQ
+                //Add(Job.Default
+                //    .WithLaunchCount(1)     // benchmark process will be launched only once
+                //    .WithIterationTime(TimeInterval.FromMilliseconds(100)) // 100ms per iteration
+                //    .WithWarmupCount(3)     // 3 warmup iteration
+                //    .WithTargetCount(3));   // 3 target iteration           
 
             }
         }
@@ -98,7 +98,7 @@ namespace Smidge.Benchmarks
             }
         }
 
-        [Setup]
+        [GlobalSetup]
         public void Setup()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
@@ -162,6 +162,7 @@ namespace Smidge.Benchmarks
             using (var bc = BundleContext.CreateEmpty())
             {
                 var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
+
                 await _jsMin.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
                 return fileProcessContext.FileContent;
             }

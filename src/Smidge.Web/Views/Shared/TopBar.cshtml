@@ -1,9 +1,9 @@
-﻿@inject Microsoft.Extensions.PlatformAbstractions.ApplicationEnvironment AppEnv; 
-
+﻿@using System.Reflection
+@using System.Runtime.Versioning
 <nav class="top-bar" data-topbar role="navigation">  
     <section class="top-bar-section">
         <ul class="right">
-            <li class="active"><a href="#">Runtime: @AppEnv.RuntimeFramework.FullName</a></li>
+            <li class="active"><a href="#">Runtime: @(Assembly.GetEntryAssembly().GetCustomAttribute<TargetFrameworkAttribute>().FrameworkName)</a></li>
         </ul>
         <ul class="left">
             <li><a href="/"><i class="fa fa-camera-retro fa-1x"></i> Home</a></li>
