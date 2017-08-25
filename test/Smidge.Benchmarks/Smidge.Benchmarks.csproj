@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
         <AssemblyName>Smidge.Benchmarks</AssemblyName>
-        <!--<OutputType>Exe</OutputType>-->
+        <OutputType>Exe</OutputType>
         <PackageId>Smidge.Benchmarks</PackageId>
     </PropertyGroup>
 
