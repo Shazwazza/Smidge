@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.NodeServices;
 using Smidge.FileProcessors;
 
@@ -12,13 +14,16 @@ namespace Smidge.JavaScriptServices
     /// </summary>
     public class UglifyNodeMinifier : IPreProcessor
     {
+        private readonly IApplicationLifetime _applicationLifetime;
         private readonly INodeServices _nodeServices;
         private readonly Lazy<StringAsTempFile> _nodeScript;
 
-        public UglifyNodeMinifier(SmidgeJavaScriptServices javaScriptServices)
+        public UglifyNodeMinifier(SmidgeJavaScriptServices javaScriptServices, IApplicationLifetime applicationLifetime)
         {
             if (javaScriptServices == null) throw new ArgumentNullException(nameof(javaScriptServices));
+            if (applicationLifetime == null) throw new ArgumentNullException(nameof(applicationLifetime));
             _nodeServices = javaScriptServices.NodeServicesInstance;
+            _applicationLifetime = applicationLifetime;
 
             _nodeScript = new Lazy<StringAsTempFile>(() =>
             {
@@ -26,7 +31,7 @@ namespace Smidge.JavaScriptServices
                     typeof(UglifyNodeMinifier).GetTypeInfo().Assembly.GetManifestResourceStream("Smidge.JavaScriptServices.UglifyMinifier.js")))
                 {
                     var script = reader.ReadToEnd();
-                    return new StringAsTempFile(script); // Will be cleaned up on process exit
+                    return new StringAsTempFile(script, _applicationLifetime.ApplicationStopping); // Will be cleaned up on process exit
                 }
             });
         }

@@ -12,10 +12,12 @@ using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Diagnostics.Windows;
+using BenchmarkDotNet.Horology;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -26,6 +28,7 @@ using Smidge.JavaScriptServices;
 using Smidge.Models;
 using Smidge.Nuglify;
 using Smidge.Options;
+using MemoryDiagnoser = BenchmarkDotNet.Diagnosers.MemoryDiagnoser;
 
 namespace Smidge.Benchmarks
 {
@@ -73,9 +76,9 @@ namespace Smidge.Benchmarks
                 // see benchmarkdotnet FAQ
                 Add(Job.Default
                     .WithLaunchCount(1) // benchmark process will be launched only once
-                    .WithIterationTime(100) // 100ms per iteration
-                    .WithWarmupCount(3) // 3 warmup iteration
-                    .WithTargetCount(3)); // 3 target iteration           
+                    .WithIterationTime(TimeInterval.FromMilliseconds(100)) // 100ms per iteration
+                    .WithWarmupCount(3)     // 3 warmup iteration
+                    .WithTargetCount(3));   // 3 target iteration           
 
             }
         }
@@ -113,7 +116,7 @@ namespace Smidge.Benchmarks
                     ProjectPath = AssemblyPath,
                     WatchFileExtensions = new string[] {}
                 }));
-            _jsUglify = new UglifyNodeMinifier(nodeServices);            
+            _jsUglify = new UglifyNodeMinifier(nodeServices, Mock.Of<IApplicationLifetime>());            
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)

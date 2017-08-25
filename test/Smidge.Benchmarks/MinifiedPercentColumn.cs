@@ -19,23 +19,37 @@ namespace Smidge.Benchmarks
     /// </remarks>
     public class MinifiedPercentColumn : IColumn
     {
+        public string Id => "MinifiedPercentage";
+        public string Legend => ColumnName;
+        public bool AlwaysShow => true;
         public string ColumnName => "Minified %";
         public bool IsAvailable(Summary summary) => true;
-        public bool AlwaysShow => true;
+        //public bool AlwaysShow => true;
         public ColumnCategory Category => ColumnCategory.Statistics;
+        public int PriorityInCategory => 0;
+        public bool IsNumeric => true;
+        public UnitType UnitType => UnitType.Dimensionless;
+        public bool IsDefault(Summary summary, Benchmark benchmark) => false;
 
         public string GetValue(Summary summary, Benchmark benchmark)
         {
             var target = benchmark.Target;
             var instance = (JsMinifyBenchmarks)Activator.CreateInstance(target.Type);
-            target.SetupMethod.Invoke(instance, new object[0]);
-            var methodName = "Get" + target.MethodTitle;
-            var result = ((Task<string>) target.Type.GetMethod(methodName).Invoke(instance, new object[0])).Result;
-            var original = (string) target.Type.GetField("JQuery").GetValue(null);
-           
+            target.Method.Invoke(instance, new object[0]);
+            var methodName = "Get" + target.MethodDisplayInfo;
+            var result = ((Task<string>)target.Type.GetMethod(methodName).Invoke(instance, new object[0])).Result;
+            var original = (string)target.Type.GetField("JQuery").GetValue(null);
+
 
             return ((double)Encoding.UTF8.GetByteCount(result) / Encoding.UTF8.GetByteCount(original))
                 .ToString("P2", new NumberFormatInfo { PercentPositivePattern = 1, PercentNegativePattern = 1 }); ;
+        }       
+
+        public string GetValue(Summary summary, Benchmark benchmark, ISummaryStyle style)
+        {
+            return GetValue(summary, benchmark);
         }
+
+        
     }
 }

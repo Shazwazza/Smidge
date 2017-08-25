@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
-using Microsoft.Extensions.PlatformAbstractions;
+
 using Smidge.Models;
 using Smidge.Hashing;
 

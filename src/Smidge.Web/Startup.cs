@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
+
 using NUglify.JavaScript;
 using Smidge.Cache;
 using Smidge.Options;
@@ -20,18 +21,29 @@ namespace Smidge.Web
 {
     public class Startup
     {
+
         // Entry point for the application.
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseStartup<Startup>()
-              .Build();
-
-            host.Run();
+            BuildWebHost(args).Run();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>()
+                .Build();
+        
+        //public static void Main(string[] args)
+        //{
+        //    var host = new WebHostBuilder()
+        //      .UseKestrel()
+        //      .UseContentRoot(Directory.GetCurrentDirectory())
+        //      .UseIISIntegration()
+        //      .UseStartup<Startup>()
+        //      .Build();
+
+        //    host.Run();
+        //}
 
         public IConfigurationRoot Configuration { get; }
 
@@ -51,8 +63,6 @@ namespace Smidge.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ApplicationEnvironment>();
-
             services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.

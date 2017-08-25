@@ -1,34 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
-    <AssemblyName>Smidge.Benchmarks</AssemblyName>
-    <OutputType>Exe</OutputType>
-    <PackageId>Smidge.Benchmarks</PackageId>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <AssemblyName>Smidge.Benchmarks</AssemblyName>
+        <!--<OutputType>Exe</OutputType>-->
+        <PackageId>Smidge.Benchmarks</PackageId>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="jQuery.js" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="jQuery.js" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
-    <ProjectReference Include="..\..\src\Smidge.JavaScriptServices\Smidge.JavaScriptServices.csproj" />
-    <ProjectReference Include="..\..\src\Smidge.Nuglify\Smidge.Nuglify.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
+        <ProjectReference Include="..\..\src\Smidge.JavaScriptServices\Smidge.JavaScriptServices.csproj" />
+        <ProjectReference Include="..\..\src\Smidge.Nuglify\Smidge.Nuglify.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.9.9" />
-    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.9.9" />
-    <PackageReference Include="Moq" Version="4.7.9" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.10.9" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.10.9" />
+        <PackageReference Include="Moq" Version="4.7.99" />
+    </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Properties\" />
+    </ItemGroup>
+
 
 </Project>

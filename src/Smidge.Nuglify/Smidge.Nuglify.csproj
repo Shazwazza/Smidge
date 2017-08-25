@@ -5,7 +5,7 @@
     <VersionPrefix>1.0.0</VersionPrefix>
     <Copyright>Copyright © Shannon Deminick 2017</Copyright>
     <Authors>Shannon Deminick</Authors>
-    <TargetFrameworks>netstandard1.6;net452</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Smidge.Nuglify</AssemblyName>
     <PackageId>Smidge.Nuglify</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;nuglify;uglify;aspnetcore</PackageTags>
@@ -13,20 +13,14 @@
     <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Shazwazza/Smidge/master/assets/logo-nuget.png</PackageIconUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>    
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Smidge\Smidge.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Nuglify" Version="1.5.5" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
+    <PackageReference Include="Nuglify" Version="1.5.8" />
+  </ItemGroup>  
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
