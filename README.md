@@ -28,7 +28,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 
 1. Install from Nuget: 
 	```
-	Install-Package Smidge -Pre
+	Install-Package Smidge
 	```
 1. Add Smidge config to appsettings.json:
 	```json
