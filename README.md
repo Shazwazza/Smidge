@@ -16,7 +16,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 ## Features
 
 * Minification, combination, compression for JS/CSS files
-* Properly configurd client side caching, persistent server side caching (no rebunding unecessarily)
+* Properly configured client side caching, persistent server side caching (no rebunding unecessarily)
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
