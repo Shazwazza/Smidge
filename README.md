@@ -9,12 +9,12 @@
 A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
 
 ## News
+* [3.0.0 beta is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0-beta01)
 * [2.0.0 is out!](https://shazwazza.com/post/smidge-plus-nuglify-bundling-minification-and-source-maps/)
 * [Alpha 2.0 is out!](http://shazwazza.com/post/smidge-20-alpha-is-out/)
 
 ## Features
 
-* _Compatible with **NETStandard.1.6** & **.Net Framework 4.5.2**_
 * Minification, combination, compression for JS/CSS files
 * Properly configurd client side caching, persistent server side caching (no rebunding unecessarily)
 * Fluent syntax for creating and configuring bundles
