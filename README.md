@@ -16,7 +16,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 ## Features
 
 * Minification, combination, compression for JS/CSS files
-* Properly configured client side caching, persistent server side caching (no rebunding unecessarily)
+* Properly configured client side caching, persistent server side caching (no rebundling unnecessarily)
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
@@ -122,7 +122,7 @@ __[See Custom Pre-Processing Pipeline](https://github.com/Shazwazza/Smidge/wiki/
 
 ### URLs
 
-There's a couple of methods you can use retrieve the URLs that Smidge will generate when rendering the `<link>` or `<script>` html tags. This might be handy in case you need to load in these assets manually (i.e. lazy load scripts, etc...):
+There's a couple of methods you can use to retrieve the URLs that Smidge will generate when rendering the `<link>` or `<script>` html tags. This might be handy in case you need to load in these assets manually (i.e. lazy load scripts, etc...):
 
 ```csharp
 Task<IEnumerable<string>> SmidgeHelper.GenerateJsUrlsAsync()
