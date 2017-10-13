@@ -1,4 +1,4 @@
-version: 2.0.1-build.{build}
+version: 3.0.0-build.{build}
 skip_tags: true
 image: Visual Studio 2017
 build_script:
