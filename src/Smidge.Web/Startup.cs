@@ -31,19 +31,7 @@ namespace Smidge.Web
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .Build();
-        
-        //public static void Main(string[] args)
-        //{
-        //    var host = new WebHostBuilder()
-        //      .UseKestrel()
-        //      .UseContentRoot(Directory.GetCurrentDirectory())
-        //      .UseIISIntegration()
-        //      .UseStartup<Startup>()
-        //      .Build();
-
-        //    host.Run();
-        //}
+                .Build();        
 
         public IConfigurationRoot Configuration { get; }
 
