@@ -76,7 +76,9 @@ namespace Smidge.Nuglify
             }
 
             //no do the processing
-            var result = Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
+            var result = Uglify.Js(fileProcessContext.FileContent
+                , string.IsNullOrEmpty(fileProcessContext.WebFile.RequestPath) ? fileProcessContext.WebFile.FilePath : fileProcessContext.WebFile.RequestPath
+                , codeSettings);
 
             if (result.HasErrors)
             {

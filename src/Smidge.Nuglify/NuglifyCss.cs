@@ -22,7 +22,9 @@ namespace Smidge.Nuglify
             if (fileProcessContext.WebFile.DependencyType == WebFileType.Js)
                 throw new InvalidOperationException("Cannot use " + nameof(NuglifyCss) + " with a js file source");
             
-            var result = Uglify.Css(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _settings.CssCodeSettings);
+            var result = Uglify.Css(fileProcessContext.FileContent
+                , string.IsNullOrEmpty(fileProcessContext.WebFile.RequestPath) ? fileProcessContext.WebFile.FilePath : fileProcessContext.WebFile.RequestPath
+                , _settings.CssCodeSettings);
 
             if (result.HasErrors)
             {
