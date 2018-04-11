@@ -268,8 +268,8 @@ namespace Smidge
                     foreach (var u in compositeUrls)
                     {
                         //now we need to determine if these files have already been minified
-                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
-                        if (!File.Exists(compositeFilePath))
+                        var compositeFilePath = _fileSystemHelper.GetCompositeFileInfo(cacheBuster, compression, u.Key);
+                        if (!compositeFilePath.Exists)
                         {
                             using (var bundleContext = BundleContext.CreateEmpty())
                             {

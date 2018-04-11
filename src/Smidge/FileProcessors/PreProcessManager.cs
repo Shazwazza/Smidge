@@ -70,9 +70,9 @@ namespace Smidge.FileProcessors
                 ? _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType())
                 : _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(false).GetCacheBusterType()); //the default for any dynamically (non bundle) file is the default bundle options in production
             
-            var cacheFile = _fileSystemHelper.GetCacheFilePath(file, fileWatchEnabled, extension, cacheBuster, out fileInfo);
+            var cacheFile = _fileSystemHelper.GetCacheFile(file, fileWatchEnabled, extension, cacheBuster, out fileInfo);
 
-            var exists = File.Exists(cacheFile);            
+            var exists = cacheFile.Exists;
 
             //check if it's in cache
             if (exists)
@@ -94,7 +94,7 @@ namespace Smidge.FileProcessors
                 _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
 
                 //save it to the cache path
-                await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+                await _fileSystemHelper.WriteCacheFileAsync(cacheFile, processed);
             }
 
             //If file watching is enabled, then watch it - this is regardless of whether the cache file exists or not

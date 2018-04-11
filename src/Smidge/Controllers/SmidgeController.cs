@@ -81,13 +81,13 @@ namespace Smidge.Controllers
             var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
             
             //now we need to determine if this bundle has already been created
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
-            if (compositeFilePath.Exists)
+            var compositeFileInfo = _fileSystemHelper.GetCompositeFileInfo(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
+            if (compositeFileInfo.Exists)
             {
                 _logger.LogDebug($"Returning bundle '{bundle.FileKey}' from cache");
 
                 //this is already processed, return it
-                return File(compositeFilePath.OpenRead(), bundle.Mime);
+                return File(compositeFileInfo.CreateReadStream(), bundle.Mime);
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -106,7 +106,7 @@ namespace Smidge.Controllers
                 return null;
             }
             
-            using (var bundleContext = new BundleContext(bundle, compositeFilePath))
+            using (var bundleContext = new BundleContext(bundle, compositeFileInfo))
             {
                 var watch = new Stopwatch();
                 watch.Start();
@@ -121,7 +121,7 @@ namespace Smidge.Controllers
                 //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
                 Lazy<IFileInfo> fi;
                 var filePaths = files.Select(
-                    x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
+                    x => _fileSystemHelper.GetCacheFile(x, bundleOptions.FileWatchOptions.Enabled, bundle.Extension, bundle.CacheBuster, out fi));
 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {
@@ -134,7 +134,7 @@ namespace Smidge.Controllers
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
                     // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                     // the raw file if it exists for further requests to this path
-                    await CacheCompositeFileAsync(compositeFilePath, compressedStream);
+                    await CacheCompositeFileAsync(compositeFileInfo, compressedStream);
 
                     _logger.LogDebug($"Processed bundle '{bundle.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
@@ -158,22 +158,20 @@ namespace Smidge.Controllers
                 return null;
             }
 
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(file.CacheBuster, file.Compression, file.FileKey));
+            var compositeFilePath = _fileSystemHelper.GetCompositeFileInfo(file.CacheBuster, file.Compression, file.FileKey);
 
             if (compositeFilePath.Exists)
             {
                 //this is already processed, return it
-                return File(compositeFilePath.OpenRead(), file.Mime);
+                return File(compositeFilePath.CreateReadStream(), file.Mime);
             }
 
             //this bundle context isn't really used since this is not a bundle but just a composite file which doesn't support all of the features of a real bundle
             using (var bundleContext = BundleContext.CreateEmpty())
             {
                 var filePaths = file.ParsedPath.Names.Select(filePath =>
-                    Path.Combine(
-                        _fileSystemHelper.CurrentCacheFolder,
-                        filePath + file.Extension));
-
+                    _fileSystemHelper.CacheFileProvider.GetFileInfo(filePath + file.Extension));
+                
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {
                     var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
@@ -185,12 +183,13 @@ namespace Smidge.Controllers
             }
         }
 
-        private static async Task CacheCompositeFileAsync(FileInfo compositeFilePath, Stream compositeStream)
+        private static async Task CacheCompositeFileAsync(IFileInfo compositeFileInfo, Stream compositeStream)
         {
             //ensure it exists
-            compositeFilePath.Directory.Create();            
-            compositeStream.Position = 0;            
-            using (var fs = compositeFilePath.Create())
+            Directory.CreateDirectory(Path.GetDirectoryName(compositeFileInfo.PhysicalPath));
+            
+            compositeStream.Position = 0;
+            using (var fs = System.IO.File.Create(compositeFileInfo.PhysicalPath))
             {
                 await compositeStream.CopyToAsync(fs);
             }
@@ -200,19 +199,18 @@ namespace Smidge.Controllers
         /// <summary>
         /// Combines files into a single stream
         /// </summary>
-        /// <param name="filePaths"></param>
+        /// <param name="files"></param>
         /// <param name="bundleContext"></param>
         /// <returns></returns>
-        private async Task<Stream> GetCombinedStreamAsync(IEnumerable<string> filePaths, BundleContext bundleContext)
+        private async Task<Stream> GetCombinedStreamAsync(IEnumerable<IFileInfo> files, BundleContext bundleContext)
         {
             //TODO: Here we need to be able to prepend/append based on a "BundleContext" (or similar)
 
             List<Stream> inputs = null;
             try
             {
-                inputs = filePaths.Where(System.IO.File.Exists)
-                    .Select(System.IO.File.OpenRead)
-                    .Cast<Stream>()
+                inputs = files.Where(x => x.Exists)
+                    .Select(x => x.CreateReadStream())
                     .ToList();
 
                 var combined = await bundleContext.GetCombinedStreamAsync(inputs);

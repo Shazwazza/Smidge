@@ -29,13 +29,13 @@ namespace Smidge.Nuglify
             }
 
             //now we need to determine if this bundle has already been created
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
+            var compositeFileInfo = _fileSystemHelper.GetCompositeFileInfo(bundle.CacheBuster, bundle.Compression, bundle.FileKey);            
             //we need to go one level above the composite path into the non-compression named folder since the map request will always be 'none' compression
-            var mapPath = new FileInfo(Path.Combine(compositeFilePath.Directory.Parent.FullName, compositeFilePath.Name + ".map"));
+            var mapPath = _fileSystemHelper.CacheFileProvider.GetFileInfo(compositeFileInfo.Name + ".map");
             if (mapPath.Exists)
             {
                 //this should already be processed if this is being requested!
-                return File(mapPath.OpenRead(), "application/json");
+                return File(mapPath.CreateReadStream(), "application/json");
             }
 
             //TODO: Throw an exception, this will result in an exception anyways

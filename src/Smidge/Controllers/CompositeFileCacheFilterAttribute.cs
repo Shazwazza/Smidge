@@ -34,17 +34,17 @@ namespace Smidge.Controllers
         public bool IsReusable => true;
 
         internal static bool TryGetCachedCompositeFileResult(FileSystemHelper fileSystemHelper, ICacheBuster cacheBuster, string filesetKey, CompressionType type, string mime, 
-            out FileResult result, out DateTime lastWriteTime)
+            out FileResult result, out DateTimeOffset lastWriteTime)
         {
             result = null;
-            lastWriteTime = DateTime.Now;
+            lastWriteTime = DateTimeOffset.Now;
 
-            var filesetPath = fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, type, filesetKey);
-            if (System.IO.File.Exists(filesetPath))
+            var filesetInfo = fileSystemHelper.GetCompositeFileInfo(cacheBuster, type, filesetKey);
+            if (filesetInfo.Exists)
             {
-                lastWriteTime = System.IO.File.GetLastWriteTime(filesetPath);
+                lastWriteTime = filesetInfo.LastModified; 
                 //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files
-                result = new PhysicalFileResult(filesetPath, mime);
+                result = new PhysicalFileResult(filesetInfo.PhysicalPath, mime);
                 return true;
             }
 
@@ -87,7 +87,7 @@ namespace Smidge.Controllers
                 if (file != null)
                 {
                     FileResult result;
-                    DateTime lastWrite;
+                    DateTimeOffset lastWrite;
                     if (TryGetCachedCompositeFileResult(_fileSystemHelper, cacheBuster, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
                     {
                         file.LastFileWriteTime = lastWrite;

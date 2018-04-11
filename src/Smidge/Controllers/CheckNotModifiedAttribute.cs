@@ -64,7 +64,7 @@ namespace Smidge.Controllers
                 var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
 
                 var isDifferent = context.HttpContext.Request.HasETagBeenModified(etag);
-                var hasChanged = context.HttpContext.Request.HasRequestBeenModifiedSince(file.LastFileWriteTime.ToUniversalTime());
+                var hasChanged = context.HttpContext.Request.HasRequestBeenModifiedSince(file.LastFileWriteTime.UtcDateTime);
                 if (!isDifferent || !hasChanged)
                 {
                     ReturnNotModified(context);

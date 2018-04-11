@@ -7,11 +7,13 @@ namespace Smidge.Models
     public interface IWebFile
     {
         string FilePath { get; set; }
+
         /// <summary>
         /// If the file has different of physical path and request path
         /// Look at https://github.com/Shazwazza/Smidge/issues/74
         /// </summary>
         string RequestPath { get; set; }
+
         WebFileType DependencyType { get; }
 
         /// <summary>

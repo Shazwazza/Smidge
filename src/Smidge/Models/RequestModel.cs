@@ -57,6 +57,6 @@ namespace Smidge.Models
         public string Extension { get; private set; }
         public string Mime { get; private set; }
 
-        public DateTime LastFileWriteTime { get; set; }
+        public DateTimeOffset LastFileWriteTime { get; set; }
     }
 }

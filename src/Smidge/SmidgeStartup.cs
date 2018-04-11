@@ -21,14 +21,27 @@ using Smidge.Hashing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Http.Extensions;
 using Smidge.Cache;
+using System.Collections.Concurrent;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
 namespace Smidge
 {
+    //cross cutting? Try to avoid extra installation steps? https://cetus.io/tim/ASPNET-Core-2.0-Stripping-Away-Cross-Cutting-Concerns/
+    //public class SmidgeHostBuild : IHostingStartup
+    //{
+    //    public void Configure(IWebHostBuilder builder)
+    //    {
+    //        builder.ConfigureServices(services =>
+    //        {
+    //            services.AddSmidge(Configuration.GetSection("smidge"));
+    //        });
+    //    }
+    //}
+
     public static class SmidgeStartup
     {
-
+        private static ConcurrentBag<string> _mappedRoutes = new ConcurrentBag<string>();
 
         public static IServiceCollection AddSmidge(this IServiceCollection services, 
             IConfiguration smidgeConfiguration = null, 
@@ -88,22 +101,33 @@ namespace Smidge
             return services;
         }
         
-        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null, SmidgeOptions smidgeOptions = null)
         {
             //Create custom route
             app.UseMvc(routes =>
             {
-                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
+                var options = smidgeOptions ?? app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>().Value;
 
-                routes.MapRoute(
-                    "SmidgeComposite",
-                    options.Value.UrlOptions.CompositeFilePath + "/{file}",                    
-                    new { controller = "Smidge", action = "Composite" });
+                var compositeRouteName = $"SmidgeComposite.{options.UrlOptions.CompositeFilePath}";
+                if (!_mappedRoutes.TryPeek(out var _))
+                {
+                    _mappedRoutes.Add(compositeRouteName);
+                    routes.MapRoute(
+                        compositeRouteName,
+                        options.UrlOptions.CompositeFilePath + "/{file}",
+                        new { controller = "Smidge", action = "Composite" });
+                }
 
-                routes.MapRoute(
-                    "SmidgeBundle",
-                    options.Value.UrlOptions.BundleFilePath + "/{bundle}",
-                    new { controller = "Smidge", action = "Bundle" });
+                var bundleRouteName = $"SmidgeBundle.{options.UrlOptions.BundleFilePath}";
+                if (!_mappedRoutes.TryPeek(out var _))
+                {
+                    _mappedRoutes.Add(compositeRouteName);
+                    routes.MapRoute(
+                        bundleRouteName,
+                        options.UrlOptions.BundleFilePath + "/{bundle}",
+                        new { controller = "Smidge", action = "Bundle" });
+                }
+                
             });
 
             if (configureBundles != null)
@@ -159,7 +183,7 @@ namespace Smidge
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
-                var compFilePath = e.FileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compressionType, bundleName);
+                var compFilePath = e.FileSystemHelper.GetCompositeFileInfo(cacheBuster, compressionType, bundleName);
                 if (File.Exists(compFilePath))
                 {
                     File.Delete(compFilePath);

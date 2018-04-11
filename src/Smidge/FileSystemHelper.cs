@@ -22,26 +22,19 @@ namespace Smidge
     public sealed class FileSystemHelper
     {
         private readonly ISmidgeConfig _config;
-        private readonly IHostingEnvironment _hostingEnv;
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private readonly IFileProvider _fileProvider;
         private readonly IHasher _hasher;
 
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
+        public FileSystemHelper(ISmidgeConfig config, IFileProvider fileProvider, IFileProvider cacheFileProvider, IHasher hasher)
         {
             _hasher = hasher;
             _config = config;
-            _hostingEnv = hostingEnv;
             _fileProvider = fileProvider;
+            CacheFileProvider = cacheFileProvider;
         }
-
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
-        {
-            _hasher = hasher;
-            _config = config;
-            _hostingEnv = hostingEnv;
-            _fileProvider = hostingEnv.WebRootFileProvider;
-        }
+        
+        public IFileProvider CacheFileProvider {get; }
 
         public IFileInfo GetFileInfo(IWebFile webfile)
         {
@@ -129,18 +122,9 @@ namespace Smidge
             }
         }
 
-        /// <summary>
-        /// Returns the cache folder for composite files for the current compression supported
-        /// </summary>
-        /// <returns></returns>
-        public string GetCurrentCompositeFolder(ICacheBuster cacheBuster, CompressionType type)
+        public IFileInfo GetCompositeFileInfo(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
         {
-            return Path.Combine(CurrentCacheFolder, cacheBuster.GetValue(), type.ToString());
-        }
-
-        public string GetCurrentCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
-        {
-            return Path.Combine(GetCurrentCompositeFolder(cacheBuster, type), filesetKey + ".s");
+            return CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), type.ToString(),  filesetKey + ".s"));
         }
 
         /// <summary>
@@ -180,20 +164,14 @@ namespace Smidge
             }
         }
 
-        internal async Task WriteContentsAsync(string filePath, string contents)
+        internal async Task WriteCacheFileAsync(IFileInfo fileInfo, string contents)
         {            
-            var locker = _fileLocker.GetOrAdd(filePath, x => new SemaphoreSlim(1));
-
-            //TODO: Need try/catch and maybe a nice solution for locking.
-            // We could keep a concurrent dictionary of file paths and objects to lock so that 
-            // we only lock for a specific path. The dictionary should remain quite small since 
-            // when we write to files it's only when they haven't already been cached.
-            // we could also store this dictionary in an http cache so that it expires.
-
+            var locker = _fileLocker.GetOrAdd(fileInfo.PhysicalPath, x => new SemaphoreSlim(1));
+            
             await locker.WaitAsync();
             try
             {
-                using (var writer = File.CreateText(filePath))
+                using (var writer = File.CreateText(fileInfo.PhysicalPath))
                 {
                     await writer.WriteAsync(contents);
                 }
@@ -216,10 +194,9 @@ namespace Smidge
         /// this if the cache file already exists
         /// </param>
         /// <returns></returns>
-        public string GetCacheFilePath(IWebFile file, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out Lazy<IFileInfo> fileInfo)
+        public IFileInfo GetCacheFile(IWebFile file, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out Lazy<IFileInfo> fileInfo)
         {
-            string cacheDir;
-            string cacheFile;
+            IFileInfo cacheFile;
             if (fileWatchEnabled)
             {
                 //When file watching, the file path will be different since we'll hash twice:
@@ -227,37 +204,26 @@ namespace Smidge
                 // * Hash with timestamp since this will be how we change it
                 // This allows us to lookup the file's folder to store it's timestamped processed files
 
-                var fi = GetFileInfo(file);                
+                var fi = GetFileInfo(file);
 
                 //get the file hash without the extension
                 var fileHash = GetFileHash(file, string.Empty);
                 var timestampedHash = GetFileHash(file, fi, extension);
                 
-                cacheDir = Path.Combine(CurrentCacheFolder, cacheBuster.GetValue(), fileHash);
-                cacheFile = Path.Combine(cacheDir, timestampedHash);
+                cacheFile = CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash, timestampedHash));
                 fileInfo = new Lazy<IFileInfo>(() => fi, LazyThreadSafetyMode.None);
             }
             else
             {
                 var fileHash = GetFileHash(file, extension);
 
-                cacheDir = Path.Combine(CurrentCacheFolder, cacheBuster.GetValue());
-                cacheFile = Path.Combine(cacheDir, fileHash);
+                cacheFile = CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash));
                 fileInfo = new Lazy<IFileInfo>(() => GetFileInfo(file), LazyThreadSafetyMode.None);
             }
-
-            //ensure the folder exists
-            Directory.CreateDirectory(cacheDir);
-
+            
             return cacheFile;
         }
-
-        /// <summary>
-        /// The current cache folder (based on the current machine name)
-        /// </summary>
-        /// <returns></returns>
-        public string CurrentCacheFolder => Path.Combine(_hostingEnv.ContentRootPath, _config.DataFolder, "Cache", GetFileSafeMachineName(Environment.MachineName));
-
+        
         private string GetFileSafeMachineName(string name)
         {
             return name.ReplaceNonAlphanumericChars('-');
@@ -324,5 +290,6 @@ namespace Smidge
 
         //TODO: We need an unwatch
         private readonly ConcurrentDictionary<string, IDisposable> _fileWatchers = new ConcurrentDictionary<string, IDisposable>();
+
     }
 }
