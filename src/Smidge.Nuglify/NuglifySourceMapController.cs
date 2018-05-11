@@ -29,9 +29,11 @@ namespace Smidge.Nuglify
             }
 
             //now we need to determine if this bundle has already been created
-            var compositeFileInfo = _fileSystemHelper.GetCompositeFileInfo(bundle.CacheBuster, bundle.Compression, bundle.FileKey);            
-            //we need to go one level above the composite path into the non-compression named folder since the map request will always be 'none' compression
-            var mapPath = _fileSystemHelper.CacheFileProvider.GetFileInfo(compositeFileInfo.Name + ".map");
+            var compositeFileInfo = _fileSystemHelper.GetCompositeFileInfo(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
+
+            //we need to go to the cache folder directly above the cache bust value (root) since that is where the source map is stored
+            var sourceMapFilePath = Path.Combine(bundle.CacheBuster.GetValue(), compositeFileInfo.Name + ".map");
+            var mapPath = _fileSystemHelper.GetCompositeFileInfo(sourceMapFilePath);
             if (mapPath.Exists)
             {
                 //this should already be processed if this is being requested!

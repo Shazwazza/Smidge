@@ -46,7 +46,7 @@ namespace Smidge.Tests
             _httpContextAccessor.Setup(x => x.HttpContext).Returns(_httpContext.Object);
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
-            _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider, _hasher);
+            _fileSystemHelper = new FileSystemHelper(_fileProvider, _fileProvider, _hasher);
                         
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());

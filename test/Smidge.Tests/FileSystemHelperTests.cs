@@ -128,8 +128,8 @@ namespace Smidge.Tests
             var hasher = Mock.Of<IHasher>();
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>(),
+                fileProvider.Object,
+                fileProvider.Object,
                 hasher);
 
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetFileInfo(url));
@@ -160,9 +160,10 @@ namespace Smidge.Tests
 
 
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
+
             var helper = new FileSystemHelper(
-                Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
-                Mock.Of<ISmidgeConfig>(),
+                fileProvider.Object,
+                fileProvider.Object,
                 Mock.Of<IHasher>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);

@@ -30,7 +30,7 @@ namespace Smidge.Tests
             var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);          
+            var fileSystemHelper = new FileSystemHelper(fileProvider.Object, fileProvider.Object, hasher);
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

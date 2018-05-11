@@ -170,7 +170,7 @@ namespace Smidge.Controllers
             using (var bundleContext = BundleContext.CreateEmpty())
             {
                 var filePaths = file.ParsedPath.Names.Select(filePath =>
-                    _fileSystemHelper.CacheFileProvider.GetFileInfo(filePath + file.Extension));
+                    _fileSystemHelper.GetCompositeFileInfo(Path.Combine(file.CacheBuster.GetValue(), filePath + file.Extension)));
                 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {

@@ -9,11 +9,13 @@ namespace Smidge.Nuglify
 {
     internal class SourceMapDeclaration : ISourceMapDeclaration
     {
+        private readonly FileSystemHelper _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
         private readonly IOptions<SmidgeOptions> _smidgeOptions;
 
-        public SourceMapDeclaration(IRequestHelper requestHelper, IOptions<SmidgeOptions> smidgeOptions)
+        public SourceMapDeclaration(FileSystemHelper fileSystemHelper, IRequestHelper requestHelper, IOptions<SmidgeOptions> smidgeOptions)
         {
+            _fileSystemHelper = fileSystemHelper;
             _requestHelper = requestHelper;
             _smidgeOptions = smidgeOptions;
         }
@@ -30,9 +32,11 @@ namespace Smidge.Nuglify
                     var mapContent = sourceMap.SourceMapOutput;
                     //now we need to save the map file so it can be retreived via the controller
 
-                    //we need to go one level above the composite path into the non-compression named folder since the map request will always be 'none' compression
-                    var mapPath = Path.Combine(bundleContext.BundleCompositeFile.Directory.Parent.FullName, bundleContext.BundleCompositeFile.Name + ".map");
-                    using (var writer = new StreamWriter(File.Create(mapPath)))
+                    //we need to go to the cache folder directly above the cache bust value (root) since that is where the source map is stored
+                    var sourceMapFilePath = Path.Combine(bundleContext.BundleRequest.CacheBuster.GetValue(), bundleContext.BundleCompositeFile.Name + ".map");
+
+                    var mapPath = _fileSystemHelper.GetCompositeFileInfo(sourceMapFilePath);
+                    using (var writer = new StreamWriter(mapPath.PhysicalPath))
                     {
                         writer.Write(mapContent);
                     }

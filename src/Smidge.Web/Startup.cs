@@ -57,10 +57,10 @@ namespace Smidge.Web
             services.AddSmidge(Configuration.GetSection("smidge"));
 
             // We could replace a processor in the default pipeline like this
-            //services.Configure<SmidgeOptions>(opt =>
-            //{
-            //    opt.PipelineFactory.OnCreateDefault = (type, pipeline) => pipeline.Replace<JsMinifier, NuglifyJs>(opt.PipelineFactory);                
-            //});
+            services.Configure<SmidgeOptions>(opt =>
+            {
+                opt.PipelineFactory.OnCreateDefault = (type, pipeline) => pipeline.Replace<JsMinifier, NuglifyJs>(opt.PipelineFactory);
+            });
 
             // We could change a lot of defaults like this
             //services.Configure<SmidgeOptions>(options =>

@@ -21,20 +21,17 @@ namespace Smidge
     /// </summary>
     public sealed class FileSystemHelper
     {
-        private readonly ISmidgeConfig _config;
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private readonly IFileProvider _fileProvider;
         private readonly IHasher _hasher;
+        private readonly IFileProvider _cacheFileProvider;
 
-        public FileSystemHelper(ISmidgeConfig config, IFileProvider fileProvider, IFileProvider cacheFileProvider, IHasher hasher)
+        public FileSystemHelper(IFileProvider sourceFileProvider, IFileProvider cacheFileProvider, IHasher hasher)
         {
-            _hasher = hasher;
-            _config = config;
-            _fileProvider = fileProvider;
-            CacheFileProvider = cacheFileProvider;
+            _hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
+            _fileProvider = sourceFileProvider ?? throw new ArgumentNullException(nameof(sourceFileProvider));
+            _cacheFileProvider = cacheFileProvider ?? throw new ArgumentNullException(nameof(cacheFileProvider));
         }
-        
-        public IFileProvider CacheFileProvider {get; }
 
         public IFileInfo GetFileInfo(IWebFile webfile)
         {
@@ -122,9 +119,26 @@ namespace Smidge
             }
         }
 
+        /// <summary>
+        /// Returns a file from the composite file storage
+        /// </summary>
+        /// <param name="cacheFilePath"></param>
+        /// <returns></returns>
+        public IFileInfo GetCompositeFileInfo(string cacheFilePath)
+        {
+            return _cacheFileProvider.GetFileInfo(cacheFilePath);
+        }
+
+        /// <summary>
+        /// Returns a file from the composite file storage for a cachebuester/compressiontype/fileset combination
+        /// </summary>
+        /// <param name="cacheBuster"></param>
+        /// <param name="type"></param>
+        /// <param name="filesetKey"></param>
+        /// <returns></returns>
         public IFileInfo GetCompositeFileInfo(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
         {
-            return CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), type.ToString(),  filesetKey + ".s"));
+            return GetCompositeFileInfo(Path.Combine(cacheBuster.GetValue(), type.ToString(),  filesetKey + ".s"));
         }
 
         /// <summary>
@@ -171,6 +185,8 @@ namespace Smidge
             await locker.WaitAsync();
             try
             {
+                //ensure dir
+                Directory.CreateDirectory(Path.GetDirectoryName(fileInfo.PhysicalPath));
                 using (var writer = File.CreateText(fileInfo.PhysicalPath))
                 {
                     await writer.WriteAsync(contents);
@@ -210,25 +226,20 @@ namespace Smidge
                 var fileHash = GetFileHash(file, string.Empty);
                 var timestampedHash = GetFileHash(file, fi, extension);
                 
-                cacheFile = CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash, timestampedHash));
+                cacheFile = _cacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash, timestampedHash));
                 fileInfo = new Lazy<IFileInfo>(() => fi, LazyThreadSafetyMode.None);
             }
             else
             {
                 var fileHash = GetFileHash(file, extension);
 
-                cacheFile = CacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash));
+                cacheFile = _cacheFileProvider.GetFileInfo(Path.Combine(cacheBuster.GetValue(), fileHash));
                 fileInfo = new Lazy<IFileInfo>(() => GetFileInfo(file), LazyThreadSafetyMode.None);
             }
             
             return cacheFile;
         }
         
-        private string GetFileSafeMachineName(string name)
-        {
-            return name.ReplaceNonAlphanumericChars('-');
-        }
-
         /// <summary>
         /// Returns a file's hash
         /// </summary>

@@ -41,15 +41,13 @@ namespace Smidge
 
     public static class SmidgeStartup
     {
-        private static ConcurrentBag<string> _mappedRoutes = new ConcurrentBag<string>();
-
-        public static IServiceCollection AddSmidge(this IServiceCollection services, 
-            IConfiguration smidgeConfiguration = null, 
+        public static IServiceCollection AddSmidge(this IServiceCollection services,
+            IConfiguration smidgeConfiguration = null,
             IFileProvider fileProvider = null)
-        {            
+        {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            
+
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
             services.AddSingleton<PreProcessManager>();
@@ -61,10 +59,15 @@ namespace Smidge
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<FileSystemHelper>(p =>
             {
+                //setup the default values for the default FileSystemHelper
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
-            });            
+                var config = p.GetRequiredService<ISmidgeConfig>();
+                var fileSafeMachineName = Environment.MachineName.ReplaceNonAlphanumericChars('-');
+                var defaultCacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", fileSafeMachineName);
+                Directory.CreateDirectory(defaultCacheFolder); //ensure it exists!
+                return new FileSystemHelper(provider, new PhysicalFileProvider(defaultCacheFolder), p.GetRequiredService<IHasher>());
+            });
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
@@ -73,7 +76,7 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
-            
+
             services.AddSingleton<ICacheBuster, ConfigCacheBuster>();
             services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
             services.AddSingleton<CacheBusterResolver>();
@@ -81,11 +84,11 @@ namespace Smidge
             //These all execute as part of the request/scope            
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
-            services.AddScoped<IUrlManager, DefaultUrlManager>();            
+            services.AddScoped<IUrlManager, DefaultUrlManager>();
 
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();
-            services.AddSingleton<IPreProcessor, CssMinifier>();            
+            services.AddSingleton<IPreProcessor, CssMinifier>();
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
             services.AddSingleton<Lazy<IEnumerable<IPreProcessor>>>(provider => new Lazy<IEnumerable<IPreProcessor>>(provider.GetRequiredService<IEnumerable<IPreProcessor>>));
@@ -100,34 +103,24 @@ namespace Smidge
 
             return services;
         }
-        
-        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null, SmidgeOptions smidgeOptions = null)
+
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
         {
             //Create custom route
             app.UseMvc(routes =>
             {
-                var options = smidgeOptions ?? app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>().Value;
+                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
 
-                var compositeRouteName = $"SmidgeComposite.{options.UrlOptions.CompositeFilePath}";
-                if (!_mappedRoutes.TryPeek(out var _))
-                {
-                    _mappedRoutes.Add(compositeRouteName);
-                    routes.MapRoute(
-                        compositeRouteName,
-                        options.UrlOptions.CompositeFilePath + "/{file}",
+                routes.MapRoute(
+                        "SmidgeComposite",
+                        options.Value.UrlOptions.CompositeFilePath + "/{file}",
                         new { controller = "Smidge", action = "Composite" });
-                }
 
-                var bundleRouteName = $"SmidgeBundle.{options.UrlOptions.BundleFilePath}";
-                if (!_mappedRoutes.TryPeek(out var _))
-                {
-                    _mappedRoutes.Add(compositeRouteName);
-                    routes.MapRoute(
-                        bundleRouteName,
-                        options.UrlOptions.BundleFilePath + "/{bundle}",
+                routes.MapRoute(
+                        "SmidgeBundle",
+                        options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                         new { controller = "Smidge", action = "Bundle" });
-                }
-                
+
             });
 
             if (configureBundles != null)
@@ -140,7 +133,7 @@ namespace Smidge
                 //TODO: Now that they are configured we need to wire up the file watching event handlers
                 // to the bundle manager, currently these are on the Bundle, but that is not good enough
                 // since we need the bundle name
-                foreach (var webFileType in new[] {WebFileType.Css, WebFileType.Js })
+                foreach (var webFileType in new[] { WebFileType.Css, WebFileType.Js })
                 {
                     var names = bundleManager.GetBundleNames(webFileType);
                     foreach (var cssName in names)
@@ -149,7 +142,7 @@ namespace Smidge
                         WireUpFileWatchEventHandlers(bundleManager, cacheBusterResolver, cssName, bundle);
                     }
                 }
-            }    
+            }
 
         }
 
@@ -177,16 +170,19 @@ namespace Smidge
 
         private static void FileWatchOptions_FileModified(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle, bool debug, FileWatchEventArgs e)
         {
-            var cacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, debug).GetCacheBusterType());                
+            var cacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, debug).GetCacheBusterType());
 
             //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
                 var compFilePath = e.FileSystemHelper.GetCompositeFileInfo(cacheBuster, compressionType, bundleName);
-                if (File.Exists(compFilePath))
+                if (compFilePath.Exists)
                 {
-                    File.Delete(compFilePath);
+                    if (compFilePath.PhysicalPath != null)
+                    {
+                        File.Delete(compFilePath.PhysicalPath);
+                    }
                 }
             }
         }

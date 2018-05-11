@@ -19,7 +19,7 @@ namespace Smidge.Tests
 @import url(""//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"");";
                         
             IEnumerable<string> importPaths;
-            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IFileProvider>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
 
             var websiteInfo = new Mock<IWebsiteInfo>();
             websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
@@ -44,7 +44,7 @@ body { color: black; }
 div {display: block;}";
 
             IEnumerable<string> importPaths;
-            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IFileProvider>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
             var websiteInfo = new Mock<IWebsiteInfo>();
             websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
