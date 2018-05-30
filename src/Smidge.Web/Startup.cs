@@ -63,14 +63,15 @@ namespace Smidge.Web
             //});
 
             // We could change a lot of defaults like this
-            //services.Configure<SmidgeOptions>(options =>
-            //{
-            //    options.PipelineFactory.OnCreateDefault = (type, processors) => 
-            //    //options.FileWatchOptions.Enabled = true;
-            //    options.PipelineFactory.OnCreateDefault = GetDefaultPipelineFactory;
-            //    options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
-            //    options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
-            //});
+            services.Configure<SmidgeOptions>(options =>
+            {
+                //options.PipelineFactory.OnCreateDefault = (type, processors) =>
+                //options.FileWatchOptions.Enabled = true;
+                //options.PipelineFactory.OnCreateDefault = GetDefaultPipelineFactory;
+
+                options.DefaultBundleOptions.DebugOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
+                options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
+            });
 
             services.AddSmidgeJavaScriptServices();
             services.AddSmidgeNuglify();

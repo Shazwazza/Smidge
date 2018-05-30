@@ -190,3 +190,4 @@ src/Smidge.Web/App_Data/Smidge/*
 /tests/Smidge.Tests/project.lock.json
 test/Smidge.Tests/project.lock.json
 test/Smidge.Benchmarks/BenchmarkDotNet.Artifacts/*
+/.vs/*
