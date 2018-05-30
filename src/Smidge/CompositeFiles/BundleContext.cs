@@ -92,7 +92,7 @@ namespace Smidge.CompositeFiles
         {
             //TODO: Should we use a buffer pool here?
 
-            var semicolon = Encoding.UTF8.GetBytes(";");
+            var newline = Encoding.UTF8.GetBytes("\n");
             var ms = new MemoryStream();
             //prependers
             foreach (var prepender in _prependers)
@@ -105,7 +105,7 @@ namespace Smidge.CompositeFiles
             foreach (var input in inputs)
             {
                 await input.CopyToAsync(ms);
-                await ms.WriteAsync(semicolon, 0, semicolon.Length);
+                await ms.WriteAsync(newline, 0, newline.Length);
             }
 
             //prependers
