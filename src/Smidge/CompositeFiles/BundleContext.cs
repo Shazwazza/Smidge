@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -80,6 +81,13 @@ namespace Smidge.CompositeFiles
             _prependers.Add(prepender);
         }
 
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Obsolete("Use the overload specifying a delimeter")]
+        public async Task<Stream> GetCombinedStreamAsync(IEnumerable<Stream> inputs)
+        {
+            return await GetCombinedStreamAsync(inputs, ";");
+        }
+
         /// <summary>
         /// Combines streams into a single stream
         /// </summary>
@@ -88,11 +96,12 @@ namespace Smidge.CompositeFiles
         /// <remarks>
         /// This does not dispose the input streams
         /// </remarks>
-        public async Task<Stream> GetCombinedStreamAsync(IEnumerable<Stream> inputs)
+        public async Task<Stream> GetCombinedStreamAsync(IEnumerable<Stream> inputs, string delimeter)
         {
             //TODO: Should we use a buffer pool here?
 
-            var newline = Encoding.UTF8.GetBytes("\n");
+            var d = Encoding.UTF8.GetBytes(delimeter);
+
             var ms = new MemoryStream();
             //prependers
             foreach (var prepender in _prependers)
@@ -100,12 +109,12 @@ namespace Smidge.CompositeFiles
                 var bytes = Encoding.UTF8.GetBytes(prepender());
                 await ms.WriteAsync(bytes, 0, bytes.Length);
             }
-            
+
             //files
             foreach (var input in inputs)
             {
                 await input.CopyToAsync(ms);
-                await ms.WriteAsync(newline, 0, newline.Length);
+                await ms.WriteAsync(d, 0, d.Length);
             }
 
             //prependers
