@@ -6,7 +6,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Smidge.svg)](https://www.nuget.org/packages/smidge)
 [![NuGet Pre Release](https://img.shields.io/nuget/vpre/Smidge.svg)](https://www.nuget.org/packages/Smidge)
 
-A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Core**
+A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net Standard**
 
 ## News
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
