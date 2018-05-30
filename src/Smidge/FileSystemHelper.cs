@@ -86,21 +86,24 @@ namespace Smidge
                 return true;
             }
 
-            //This is used when specifying extensions in a folder
-            if (lastPart.Contains("*"))
-            {
-                return true;
-            }
+            //TODO: Use globbing...
+            ////This is used when specifying extensions in a folder
+            //if (lastPart.Contains("*"))
+            //{
+            //    return true;
+            //}
 
             return false;
         }
 
         public IEnumerable<string> GetPathsForFilesInFolder(string folderPath)
         {
-            //parse out the folder if it contains an asterisk
-            var parts = folderPath.Split('*');
-            var folderPart = parts[0];
-            var extensionFilter = parts.Length > 1 ? parts[1] : null;
+            //TODO: Use globbing...
+
+            ////parse out the folder if it contains an asterisk
+            //var parts = folderPath.Split('*');
+            //var folderPart = parts[0];
+            //var extensionFilter = parts.Length > 1 ? parts[1] : null;
 
             var folderContents = _fileProvider.GetDirectoryContents(folderPart);
 
