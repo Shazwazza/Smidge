@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Smidge.Models;
 using System.Linq;
 using Smidge.Options;
+using System.Collections.Concurrent;
 
 namespace Smidge.FileProcessors
 {
@@ -14,7 +15,7 @@ namespace Smidge.FileProcessors
     {
         private readonly Lazy<IReadOnlyCollection<IPreProcessor>> _allProcessors;
         private Func<WebFileType, PreProcessPipeline, PreProcessPipeline> _setGetDefaultCallback;
-        private readonly Dictionary<WebFileType, PreProcessPipeline> _default = new Dictionary<WebFileType, PreProcessPipeline>();
+        private readonly ConcurrentDictionary<WebFileType, PreProcessPipeline> _default = new ConcurrentDictionary<WebFileType, PreProcessPipeline>();
 
         public PreProcessPipelineFactory(Lazy<IEnumerable<IPreProcessor>> allProcessors)
         {
@@ -63,29 +64,25 @@ namespace Smidge.FileProcessors
 
         private PreProcessPipeline GetDefault(WebFileType fileType)
         {
-            if (_default.TryGetValue(fileType, out PreProcessPipeline pipeline))
-                return pipeline;
-
-            switch (fileType)
+            return _default.GetOrAdd(fileType, f =>
             {
-                case WebFileType.Js:
-                    _default[fileType] = new PreProcessPipeline(new IPreProcessor[]
-                    {
-                        _allProcessors.Value.OfType<JsMinifier>().First()
-                    });
-                    break;
-                case WebFileType.Css:
-                default:
-                    _default[fileType] = new PreProcessPipeline(new IPreProcessor[]
-                    {
-                        _allProcessors.Value.OfType<CssImportProcessor>().First(),
-                        _allProcessors.Value.OfType<CssUrlProcessor>().First(),
-                        _allProcessors.Value.OfType<CssMinifier>().First()
-                    });
-                    break;
-            }
-
-            return _default[fileType];
+                switch (fileType)
+                {
+                    case WebFileType.Js:
+                        return new PreProcessPipeline(new IPreProcessor[]
+                        {
+                            _allProcessors.Value.OfType<JsMinifier>().First()
+                        });
+                    case WebFileType.Css:
+                    default:
+                        return new PreProcessPipeline(new IPreProcessor[]
+                        {
+                            _allProcessors.Value.OfType<CssImportProcessor>().First(),
+                            _allProcessors.Value.OfType<CssUrlProcessor>().First(),
+                            _allProcessors.Value.OfType<CssMinifier>().First()
+                        });
+                }
+            });
         }
 
         /// <summary>
