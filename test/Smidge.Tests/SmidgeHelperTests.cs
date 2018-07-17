@@ -49,8 +49,11 @@ namespace Smidge.Tests
             _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider, _hasher);
                         
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
-            _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
-            
+            _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions
+            {
+                DefaultBundleOptions = new BundleEnvironmentOptions()
+            });
+
             _requestHelper = Mock.Of<IRequestHelper>();
             _processorFactory = new PreProcessPipelineFactory(new Lazy<IEnumerable<IPreProcessor>>(() => _preProcessors));
             _bundleManager = new BundleManager(_smidgeOptions.Object, Mock.Of<ILogger<BundleManager>>());
@@ -62,6 +65,21 @@ namespace Smidge.Tests
                 new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
         }
 
+        [Fact]
+        public async Task JsHereAsync_Returns_Empty_String_Result_When_No_Files_Found()
+        {
+            var sut = new SmidgeHelper(
+                _fileSetGenerator,
+                _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper,
+                _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
+                _httpContextAccessor.Object,
+                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));
+
+            _bundleManager.CreateJs("empty", Array.Empty<string>());
+
+            var result = (await sut.JsHereAsync("empty", false)).ToString();
+            Assert.Equal(string.Empty, result);
+        }
 
         [Fact]
         public async Task Generate_Css_Urls_For_Non_Existent_Bundle_Throws_Exception()

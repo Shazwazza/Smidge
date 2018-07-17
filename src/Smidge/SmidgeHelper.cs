@@ -185,8 +185,6 @@ namespace Smidge
             //TODO: We should cache this, but problem is how do we do that with file watchers enabled? We'd still have to lookup the bundleOptions
             // or maybe we just cache when file watchers are not enabled - probably the way to do it
 
-            var result = new List<string>();
-
             var bundle = _bundleManager.GetBundle(bundleName);
             if (bundle == null)
             {
@@ -195,6 +193,8 @@ namespace Smidge
 
             if (bundle.Files.Count == 0)
                 return Enumerable.Empty<string>();
+
+            var result = new List<string>();
 
             //get the bundle options from the bundle if they have been set otherwise with the defaults
             var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
@@ -213,8 +213,9 @@ namespace Smidge
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             
             var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBuster);
-            
-            result.Add(url);
+            if (!string.IsNullOrWhiteSpace(url))
+                result.Add(url);
+
             return result;
         }
 

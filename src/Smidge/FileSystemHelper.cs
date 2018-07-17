@@ -123,10 +123,8 @@ namespace Smidge
                         (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.Name) == string.Format(".{0}", extensionFilter));
                 return files.Select(x => ReverseMapPath(folderPart, x));
             }
-            else
-            {
-                throw new DirectoryNotFoundException($"The directory specified {folderPart} does not exist");
-            }
+
+            return Enumerable.Empty<string>();
         }
 
         /// <summary>

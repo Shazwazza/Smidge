@@ -69,13 +69,12 @@ namespace Smidge.Controllers
         /// </summary>
         /// <param name="bundle">The bundle model</param>
         /// <returns></returns>       
-        public async Task<FileResult> Bundle(
+        public async Task<IActionResult> Bundle(
             [FromServices]BundleRequestModel bundle)
         {
             if (!_bundleManager.TryGetValue(bundle.FileKey, out Bundle foundBundle))
             {
-                //TODO: Throw an exception, this will result in an exception anyways
-                return null;
+                return NotFound();
             }
 
             var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
@@ -102,8 +101,7 @@ namespace Smidge.Controllers
 
             if (files.Length == 0)
             {
-                //TODO: Throw an exception, this will result in an exception anyways
-                return null;
+                return NotFound();
             }
             
             using (var bundleContext = new BundleContext(bundle, compositeFilePath))
@@ -149,13 +147,12 @@ namespace Smidge.Controllers
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public async Task<FileResult> Composite(
+        public async Task<IActionResult> Composite(
              [FromServices]CompositeFileModel file)
         {
             if (!file.ParsedPath.Names.Any())
             {
-                //TODO: Throw an exception, this will result in an exception anyways
-                return null;
+                return NotFound();
             }
 
             var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(file.CacheBuster, file.Compression, file.FileKey));
@@ -165,9 +162,8 @@ namespace Smidge.Controllers
                 //this is already processed, return it
                 return File(compositeFilePath.OpenRead(), file.Mime);
             }
-
-            //this bundle context isn't really used since this is not a bundle but just a composite file which doesn't support all of the features of a real bundle
-            using (var bundleContext = BundleContext.CreateEmpty())
+            
+            using (var bundleContext = new BundleContext(file, compositeFilePath))
             {
                 var filePaths = file.ParsedPath.Names.Select(filePath =>
                     Path.Combine(
