@@ -14,7 +14,7 @@ namespace Smidge.Models
             IsExternal = false;
         }
 
-        private List<WebFilePair> _files = new List<WebFilePair>();
+        private HashSet<WebFilePair> _files = new HashSet<WebFilePair>();
         
         public void AddExternal(IWebFile original)
         {

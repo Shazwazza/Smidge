@@ -76,8 +76,9 @@ namespace Smidge
         /// <returns></returns>
         public bool IsFolder(string path)
         {
-
             var fileInfo = _fileProvider.GetFileInfo(path);
+            if (fileInfo == null) return false;
+
             if (fileInfo.IsDirectory)
             {
                 return true;

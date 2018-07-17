@@ -33,7 +33,7 @@ namespace Smidge.Controllers
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly PreProcessManager _preProcessManager;
         private readonly ILogger _logger;
-
+        
         /// <summary>
         /// Constructor
         /// </summary>
@@ -90,7 +90,7 @@ namespace Smidge.Controllers
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
-            //TODO: We should probably lock here right?! we don't want multiple threads trying to do this at the same time
+            //TODO: We should probably lock here right?! we don't want multiple threads trying to do this at the same time, we'll need a dictionary of locks to do this effectively
 
             //get the files for the bundle
             var files = _fileSetGenerator.GetOrderedFileSet(foundBundle,

@@ -72,15 +72,15 @@ namespace Smidge
                     var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
                     foreach (var p in filePaths)
                     {
-                        var subFile = f.Copy(_requestHelper.Content(p));
-                        var hashedFile = subFile.Copy(_hasher.Hash(subFile.FilePath));
+                        var subFile = f.Duplicate(_requestHelper.Content(p));
+                        var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
                         hashedFile.Pipeline = f.Pipeline;
                         current.AddInternal(subFile, hashedFile);
                     }
                 }
                 else {
-                    var hashedFile = f.Copy(_hasher.Hash(webPath));
-                    current.AddInternal(f.Copy(webPath), hashedFile);
+                    var hashedFile = f.Duplicate(_hasher.Hash(webPath));
+                    current.AddInternal(f.Duplicate(webPath), hashedFile);
                 }
             }
 

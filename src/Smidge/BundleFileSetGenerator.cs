@@ -56,8 +56,8 @@ namespace Smidge
         /// <returns></returns>
         public IEnumerable<IWebFile> GetOrderedFileSet(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
         {
-            var customOrdered = new List<IWebFile>();
-            var defaultOrdered = new List<IWebFile>();
+            var customOrdered = new HashSet<IWebFile>(WebFilePairEqualityComparer.Instance);
+            var defaultOrdered = new HashSet<IWebFile>(WebFilePairEqualityComparer.Instance);
             foreach (var file in files)
             {
                 ValidateFile(file);
@@ -109,7 +109,10 @@ namespace Smidge
             }
 
             //add the custom ordered to the end of the list
-            defaultOrdered.AddRange(customOrdered.OrderBy(x => x.Order));
+            foreach(var f in customOrdered.OrderBy(x => x.Order))
+            {
+                defaultOrdered.Add(f);
+            }
 
             //apply conventions 
             return defaultOrdered.Select(ApplyConventions).Where(x => x != null);

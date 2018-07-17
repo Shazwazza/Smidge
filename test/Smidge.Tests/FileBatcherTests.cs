@@ -17,6 +17,37 @@ namespace Smidge.Tests
     public class FileBatcherTests
     {
         [Fact]
+        public void Get_Composite_File_Collection_For_Url_Generation_No_Duplicates()
+        {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
+
+            var fileProvider = new Mock<IFileProvider>();
+
+            var config = Mock.Of<ISmidgeConfig>();
+            var hasher = Mock.Of<IHasher>();
+            var hostingEnv = Mock.Of<IHostingEnvironment>();
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);
+            var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
+
+            var file = new Mock<IFileInfo>();
+            file.Setup(a => a.IsDirectory).Returns(false);
+            file.SetupAllProperties();
+            fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
+
+            var result = batcher.GetCompositeFileCollectionForUrlGeneration(new IWebFile[] {
+                    Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
+                    Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
+                    Mock.Of<IWebFile>(f => f.FilePath == "hello/world.js")
+                });
+
+            Assert.Equal(2, result.First().Files.Count());
+        }
+
+        [Fact]
         public void Get_Composite_File_Collection_For_Url_Generation()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
@@ -68,7 +99,7 @@ namespace Smidge.Tests
                     Mock.Of<IWebFile>(f => f.FilePath == "hello/world2.js"),
                 });
 
-            Assert.Equal(1, result.Count());
+            Assert.Single(result);
 
             //start internal/end external
             result = batcher.GetCompositeFileCollectionForUrlGeneration(new IWebFile[] {

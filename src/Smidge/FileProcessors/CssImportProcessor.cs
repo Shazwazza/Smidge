@@ -58,7 +58,7 @@ namespace Smidge.FileProcessors
                     //This needs to be put back through the whole pre-processor pipeline before being added,
                     // so we'll clone the original webfile with it's new path, this will inherit the whole pipeline,
                     // and then we'll execute the pipeline for that file
-                    var clone = fileProcessContext.WebFile.Copy(path);
+                    var clone = fileProcessContext.WebFile.Duplicate(path);
                     var processed = await clone.Pipeline.ProcessAsync(new FileProcessContext(content, clone, fileProcessContext.BundleContext));
 
                     sb.Append(processed);

@@ -7,8 +7,6 @@ using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
-
-using Smidge.Models;
 using Smidge.Hashing;
 
 namespace Smidge.Tests
@@ -16,6 +14,23 @@ namespace Smidge.Tests
 
     public class FileSystemHelperTests
     {
+        [Fact]
+        public void No()
+        {
+
+            var url = "~/test/hello.js";
+
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
+
+            var result = urlHelper.Content(url);
+
+            Assert.Equal("/test/hello.js", result);
+        }
+
         [Fact]
         public void Normalize_Web_Path_Virtual_Path()
         {
