@@ -4,6 +4,15 @@ using System.Threading.Tasks;
 
 namespace Smidge.Cache
 {
+    //TODO: Need to implement this which means we need to decouple the file system caching 
+    ///// <summary>
+    ///// The cache provider for caching files
+    ///// </summary>
+    //public interface IFileCacheProvider
+    //{
+
+    //}
+
     /// <summary>
     /// Returns the value to cache bust the request
     /// </summary>

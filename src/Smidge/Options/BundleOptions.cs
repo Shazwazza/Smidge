@@ -11,7 +11,7 @@ namespace Smidge.Options
     public sealed class BundleOptions
     {
         /// <summary>
-        /// Constructor
+        /// Constructor with default values
         /// </summary>
         public BundleOptions()
         {
@@ -48,12 +48,7 @@ namespace Smidge.Options
         {
             return _defaultCacheBuster ?? typeof(ConfigCacheBuster);
         }
-
-        ///// <summary>
-        ///// Gets/sets the cache buster
-        ///// </summary>
-        //public ICacheBuster CacheBuster { get; set; }
-
+        
         /// <summary>
         /// If set to true, will process the bundle as composite files and combine them into a single file
         /// </summary>
