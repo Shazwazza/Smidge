@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
@@ -168,6 +168,7 @@ namespace Smidge.Controllers
                 var filePaths = file.ParsedPath.Names.Select(filePath =>
                     Path.Combine(
                         _fileSystemHelper.CurrentCacheFolder,
+                        file.ParsedPath.Version,
                         filePath + file.Extension));
 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
