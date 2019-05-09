@@ -36,8 +36,8 @@ namespace Smidge.Nuglify
 
                     //TODO: No idea if this is gonna work
                     
-                    //needs to be saved in a non compress folder
-                    var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetRequiredFileInfo(bundleContext.BundleCompositeFile.Name + ".map");
+                    //needs to be saved in the current cache bust folder
+                    var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetFileInfo(bundleContext.GetSourceMapFilePath());
                     await _fileSystem.CacheFileSystem.WriteFileAsync(sourceMapFile, mapContent);
                     
                     var url = GetSourceMapUrl(

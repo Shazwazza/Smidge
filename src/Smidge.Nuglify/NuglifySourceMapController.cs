@@ -21,22 +21,13 @@ namespace Smidge.Nuglify
 
         public FileResult SourceMap([FromServices] BundleRequestModel bundle)
         {
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out Bundle foundBundle))
+            if (!_bundleManager.TryGetValue(bundle.FileKey, out _))
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
             }
 
-            ////now we need to determine if this bundle has already been created
-            //var compositeFile = _fileSystemHelper.GetCachedCompositeFile(
-            //    bundleOptions.CacheControlOptions.FileCacheProvider.FileProvider, bundle.CacheBuster, bundle.Compression, bundle.FileKey);
-
-            //remake the bundle composite file so we can get it's name
-            var bundleCompositeFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
-
-            var bundleCompositeFileName = Path.GetFileName(bundleCompositeFile.Name);
-
-            var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetFileInfo(bundleCompositeFileName + ".map");
+            var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetFileInfo(bundle.GetSourceMapFilePath());
 
             if (sourceMapFile.Exists)
             {
