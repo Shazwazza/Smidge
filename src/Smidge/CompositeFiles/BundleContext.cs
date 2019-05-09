@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
 using Smidge.Cache;
 using Smidge.FileProcessors;
 using Smidge.Models;
@@ -30,7 +31,7 @@ namespace Smidge.CompositeFiles
         {
         }
 
-        public BundleContext(IRequestModel bundleRequest, FileInfo bundleCompositeFile)
+        public BundleContext(IRequestModel bundleRequest, IFileInfo bundleCompositeFile)
         {
             BundleRequest = bundleRequest;
             _bundleCompositeFile = bundleCompositeFile;
@@ -38,7 +39,7 @@ namespace Smidge.CompositeFiles
 
         private readonly List<Func<string>> _appenders = new List<Func<string>>();
         private readonly List<Func<string>> _prependers = new List<Func<string>>();        
-        private readonly FileInfo _bundleCompositeFile;
+        private readonly IFileInfo _bundleCompositeFile;
 
         public IRequestModel BundleRequest { get; }
         /// <summary>
@@ -49,7 +50,7 @@ namespace Smidge.CompositeFiles
         /// <summary>
         /// Returns the FileInfo instance of the composite bundle file
         /// </summary>
-        public FileInfo BundleCompositeFile
+        public IFileInfo BundleCompositeFile
         {
             get
             {
@@ -79,13 +80,6 @@ namespace Smidge.CompositeFiles
         {
             if (_bundleCompositeFile == null) return;
             _prependers.Add(prepender);
-        }
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("Use the overload specifying a delimeter")]
-        public async Task<Stream> GetCombinedStreamAsync(IEnumerable<Stream> inputs)
-        {
-            return await GetCombinedStreamAsync(inputs, ";");
         }
 
         /// <summary>

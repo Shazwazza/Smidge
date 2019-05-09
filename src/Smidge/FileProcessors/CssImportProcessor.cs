@@ -15,17 +15,14 @@ namespace Smidge.FileProcessors
     /// </summary>
     public class CssImportProcessor : IPreProcessor
     {
-        public CssImportProcessor(FileSystemHelper fileSystemHelper, IWebsiteInfo siteInfo, IRequestHelper requestHelper)
+        public CssImportProcessor(ISmidgeFileSystem fileSystem, IWebsiteInfo siteInfo, IRequestHelper requestHelper)
         {
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
-            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-            _fileSystemHelper = fileSystemHelper;
-            _siteInfo = siteInfo;
-            _requestHelper = requestHelper;
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _siteInfo = siteInfo ?? throw new ArgumentNullException(nameof(siteInfo));
+            _requestHelper = requestHelper ?? throw new ArgumentNullException(nameof(requestHelper));
         }
 
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IWebsiteInfo _siteInfo;
         private readonly IRequestHelper _requestHelper;
 
@@ -52,8 +49,8 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystemHelper.GetFileInfo(path);
-                    var content = await _fileSystemHelper.ReadContentsAsync(filePath);
+                    var filePath = _fileSystem.SourceFileProvider.GetRequiredFileInfo(path);
+                    var content = await _fileSystem.ReadContentsAsync(filePath);
 
                     //This needs to be put back through the whole pre-processor pipeline before being added,
                     // so we'll clone the original webfile with it's new path, this will inherit the whole pipeline,

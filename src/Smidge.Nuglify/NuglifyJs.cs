@@ -117,7 +117,7 @@ namespace Smidge.Nuglify
             bundleContext.AddAppender(() =>
             {
                 var sourceMap = bundleContext.GetSourceMapFromContext(sourceMapType);
-                return _sourceMapDeclaration.GetDeclaration(bundleContext, sourceMap);
+                return _sourceMapDeclaration.GetDeclarationAsync(bundleContext, sourceMap).Result;
             });
         }
 

@@ -27,8 +27,7 @@ namespace Smidge.Models
 
             FileKey = ParsedPath.Names.Single();
 
-            Bundle bundle;
-            if (!bundleManager.TryGetValue(FileKey, out bundle))
+            if (!bundleManager.TryGetValue(FileKey, out Bundle bundle))
             {
                 throw new InvalidOperationException("No bundle found with key " + FileKey);
             }

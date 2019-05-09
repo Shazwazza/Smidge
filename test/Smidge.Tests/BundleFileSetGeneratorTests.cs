@@ -11,6 +11,7 @@ using Smidge.Options;
 using System.Linq;
 using Smidge.FileProcessors;
 using Microsoft.Extensions.Options;
+using Smidge.Cache;
 
 namespace Smidge.Tests
 {
@@ -26,11 +27,9 @@ namespace Smidge.Tests
             var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
 
-            var config = Mock.Of<ISmidgeConfig>();
-            var hasher = Mock.Of<IHasher>();
-            var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());

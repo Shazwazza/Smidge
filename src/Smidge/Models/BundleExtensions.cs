@@ -34,5 +34,12 @@ namespace Smidge.Models
 
             return bundleOptions;
         }
+
+        public static BundleOptions GetAvailableOrDefaultBundleOptions(this IBundleManager bundleMgr, BundleOptions options, bool debug)
+        {
+            return options != null
+                ? options
+                : bundleMgr.GetDefaultBundleOptions(debug);
+        }
     }
 }

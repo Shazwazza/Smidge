@@ -15,8 +15,9 @@ namespace Smidge.Models
         /// Constructor
         /// </summary>
         /// <param name="files"></param>
-        public Bundle(List<IWebFile> files)
+        public Bundle(string name, List<IWebFile> files)
         {
+            Name = name;
             Files = files;
         }
 
@@ -25,11 +26,14 @@ namespace Smidge.Models
         /// </summary>
         /// <param name="files"></param>
         /// <param name="bundleOptions"></param>
-        public Bundle(List<IWebFile> files, BundleEnvironmentOptions bundleOptions)
+        public Bundle(string name, List<IWebFile> files, BundleEnvironmentOptions bundleOptions)
         {
+            Name = name;
             Files = files;
             BundleOptions = bundleOptions;
         }
+
+        public string Name { get; }
 
         /// <summary>
         /// Gets the list of files in this bundle

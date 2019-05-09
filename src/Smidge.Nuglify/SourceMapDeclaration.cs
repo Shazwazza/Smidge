@@ -4,6 +4,8 @@ using Microsoft.Extensions.Options;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.Options;
+using Smidge.Models;
+using System.Threading.Tasks;
 
 namespace Smidge.Nuglify
 {
@@ -11,14 +13,16 @@ namespace Smidge.Nuglify
     {
         private readonly IRequestHelper _requestHelper;
         private readonly IOptions<SmidgeOptions> _smidgeOptions;
+        private readonly ISmidgeFileSystem _fileSystem;
 
-        public SourceMapDeclaration(IRequestHelper requestHelper, IOptions<SmidgeOptions> smidgeOptions)
+        public SourceMapDeclaration(IRequestHelper requestHelper, IOptions<SmidgeOptions> smidgeOptions, ISmidgeFileSystem fileSystem)
         {
             _requestHelper = requestHelper;
             _smidgeOptions = smidgeOptions;
+            _fileSystem = fileSystem;
         }
 
-        public string GetDeclaration(BundleContext bundleContext, V3DeferredSourceMap sourceMap)
+        public async Task<string> GetDeclarationAsync(BundleContext bundleContext, V3DeferredSourceMap sourceMap)
         {
             //Close everything so everything is written to the output
             sourceMap.EndPackage();
@@ -30,12 +34,12 @@ namespace Smidge.Nuglify
                     var mapContent = sourceMap.SourceMapOutput;
                     //now we need to save the map file so it can be retreived via the controller
 
-                    //we need to go one level above the composite path into the non-compression named folder since the map request will always be 'none' compression
-                    var mapPath = Path.Combine(bundleContext.BundleCompositeFile.Directory.Parent.FullName, bundleContext.BundleCompositeFile.Name + ".map");
-                    using (var writer = new StreamWriter(File.Create(mapPath)))
-                    {
-                        writer.Write(mapContent);
-                    }
+                    //TODO: No idea if this is gonna work
+                    
+                    //needs to be saved in a non compress folder
+                    var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetRequiredFileInfo(bundleContext.BundleCompositeFile.Name + ".map");
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(sourceMapFile, mapContent);
+                    
                     var url = GetSourceMapUrl(
                         bundleContext.BundleRequest.FileKey,
                         bundleContext.BundleRequest.Extension,

@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Microsoft.Extensions.FileProviders;
+using System;
 
 namespace Smidge.Models
 {
     public class FileWatchEventArgs : EventArgs
     {
         public WatchedFile File { get; }
-        public FileSystemHelper FileSystemHelper { get; }
 
-        public FileWatchEventArgs(WatchedFile file, FileSystemHelper fileSystemHelper)
+        public FileWatchEventArgs(WatchedFile file)
         {
-            File = file;
-            FileSystemHelper = fileSystemHelper;
+            File = file ?? throw new ArgumentNullException(nameof(file));
         }
     }
 }

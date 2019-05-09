@@ -16,11 +16,11 @@ namespace Smidge
     /// </summary>
     internal class FileBatcher
     {
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
         private readonly IHasher _hasher;
 
-        public FileBatcher(FileSystemHelper fileSystemHelper, IRequestHelper requestHelper, IHasher hasher)
+        public FileBatcher(ISmidgeFileSystem fileSystemHelper, IRequestHelper requestHelper, IHasher hasher)
         {
             _fileSystemHelper = fileSystemHelper;
             _requestHelper = requestHelper;

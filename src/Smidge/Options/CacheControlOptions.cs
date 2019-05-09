@@ -1,4 +1,6 @@
-﻿namespace Smidge.Options
+﻿using Smidge.Cache;
+
+namespace Smidge.Options
 {
     public sealed class CacheControlOptions
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -17,14 +18,14 @@ namespace Smidge.FileProcessors
     /// </summary>
     public sealed class PreProcessManager
     {
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly CacheBusterResolver _cacheBusterResolver;
         private readonly IBundleManager _bundleManager;
         private readonly ILogger<PreProcessManager> _logger;
 
-        public PreProcessManager(FileSystemHelper fileSystemHelper, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
+        public PreProcessManager(ISmidgeFileSystem fileSystem, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
         {
-            _fileSystemHelper = fileSystemHelper;
+            _fileSystem = fileSystem;
             _cacheBusterResolver = cacheBusterResolver;
             _bundleManager = bundleManager;
             _logger = logger;
@@ -43,7 +44,7 @@ namespace Smidge.FileProcessors
             if (file == null) throw new ArgumentNullException(nameof(file));
             if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
 
-            await ProcessFile(file, bundleOptions, bundleContext);
+            await ProcessFile(file, _bundleManager.GetAvailableOrDefaultBundleOptions(bundleOptions, false), bundleContext);
         }
 
         private async Task ProcessFile(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
@@ -60,22 +61,22 @@ namespace Smidge.FileProcessors
         private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
-            
+            if (bundleOptions == null) throw new ArgumentNullException(nameof(bundleOptions));
+            if (bundleContext == null) throw new ArgumentNullException(nameof(bundleContext));
+
             var extension = Path.GetExtension(file.FilePath);
 
             var fileWatchEnabled = bundleOptions?.FileWatchOptions.Enabled ?? false;
 
-            Lazy<IFileInfo> fileInfo;
-            var cacheBuster = bundleOptions != null
-                ? _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType())
-                : _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(false).GetCacheBusterType()); //the default for any dynamically (non bundle) file is the default bundle options in production
-            
-            var cacheFile = _fileSystemHelper.GetCacheFilePath(file, fileWatchEnabled, extension, cacheBuster, out fileInfo);
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
 
-            var exists = File.Exists(cacheFile);            
+            //we're making this lazy since we don't always want to resolve it
+            var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.SourceFileProvider.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
+
+            var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBuster);
 
             //check if it's in cache
-            if (exists)
+            if (cacheFile.Exists)
             {
                 _logger.LogDebug($"File already in cache '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled}");
             }
@@ -83,7 +84,7 @@ namespace Smidge.FileProcessors
             {
                 _logger.LogDebug($"Processing file '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled} ...");
 
-                var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo.Value);
+                var contents = await _fileSystem.ReadContentsAsync(sourceFile.Value);
 
                 var watch = new Stopwatch();
                 watch.Start();
@@ -94,7 +95,7 @@ namespace Smidge.FileProcessors
                 _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
 
                 //save it to the cache path
-                await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+                await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, processed);
             }
 
             //If file watching is enabled, then watch it - this is regardless of whether the cache file exists or not
@@ -102,7 +103,7 @@ namespace Smidge.FileProcessors
             if (fileWatchEnabled)
             {
                 // watch this file for changes, if the file is already watched this will do nothing
-                _fileSystemHelper.Watch(file, fileInfo.Value, bundleOptions, FileModified);
+                _fileSystem.Watch(file, sourceFile.Value, bundleOptions, FileModified);
             }
         }
         
@@ -113,7 +114,7 @@ namespace Smidge.FileProcessors
         private void FileModified(WatchedFile file)
         {
             //Raise the event on the file watch options
-            file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file, _fileSystemHelper));            
+            file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file));
         }
     }
 }

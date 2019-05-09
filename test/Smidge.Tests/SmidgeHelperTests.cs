@@ -20,15 +20,14 @@ namespace Smidge.Tests
 {
     public class SmidgeHelperTests
     {
-        private readonly ISmidgeConfig _config = Mock.Of<ISmidgeConfig>();
         private readonly IUrlManager _urlManager = Mock.Of<IUrlManager>();
-        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>();
         private readonly IFileProvider _fileProvider = Mock.Of<IFileProvider>();
+        private readonly ICacheFileSystem _cacheProvider = Mock.Of<ICacheFileSystem>();
         private readonly IHasher _hasher = Mock.Of<IHasher>();
         private readonly IEnumerable<IPreProcessor> _preProcessors = new List<IPreProcessor>();
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly SmidgeFileSystem _fileSystemHelper;
         private readonly PreProcessManager _preProcessManager;
         private Mock<IOptions<SmidgeOptions>> _smidgeOptions;
         private readonly PreProcessPipelineFactory _processorFactory;
@@ -46,8 +45,7 @@ namespace Smidge.Tests
             _httpContextAccessor.Setup(x => x.HttpContext).Returns(_httpContext.Object);
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
-            _fileSystemHelper = new FileSystemHelper(_hostingEnvironment, _config, _fileProvider, _hasher);
-                        
+            _fileSystemHelper = new SmidgeFileSystem(_fileProvider, _cacheProvider);
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions
             {
@@ -58,7 +56,7 @@ namespace Smidge.Tests
             _processorFactory = new PreProcessPipelineFactory(new Lazy<IEnumerable<IPreProcessor>>(() => _preProcessors));
             _bundleManager = new BundleManager(_smidgeOptions.Object, Mock.Of<ILogger<BundleManager>>());
             _preProcessManager = new PreProcessManager(
-                _fileSystemHelper,                
+                _fileSystemHelper,
                 new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()),
                 _bundleManager, Mock.Of<ILogger<PreProcessManager>>());
             _fileSetGenerator = new BundleFileSetGenerator(_fileSystemHelper, _requestHelper, 
@@ -70,7 +68,7 @@ namespace Smidge.Tests
         {
             var sut = new SmidgeHelper(
                 _fileSetGenerator,
-                _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper,
+                _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
                 _httpContextAccessor.Object,
                 new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()));

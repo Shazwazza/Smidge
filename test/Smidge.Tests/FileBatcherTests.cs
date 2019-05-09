@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 using Smidge.Hashing;
+using Smidge.Cache;
 
 namespace Smidge.Tests
 {
@@ -26,11 +27,10 @@ namespace Smidge.Tests
             var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
 
-            var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
-            var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -57,11 +57,9 @@ namespace Smidge.Tests
             var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
-
-            var config = Mock.Of<ISmidgeConfig>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
             var hasher = Mock.Of<IHasher>();
-            var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);          
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

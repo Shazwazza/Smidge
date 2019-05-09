@@ -22,7 +22,7 @@ namespace Smidge
     {
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly PreProcessManager _preProcessManager;
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
@@ -39,7 +39,7 @@ namespace Smidge
         /// <param name="fileSetGenerator"></param>
         /// <param name="dynamicallyRegisteredWebFiles"></param>
         /// <param name="preProcessManager"></param>
-        /// <param name="fileSystemHelper"></param>
+        /// <param name="fileSystem"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
         /// <param name="processorFactory"></param>
@@ -51,7 +51,7 @@ namespace Smidge
             IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             PreProcessManager preProcessManager,
-            FileSystemHelper fileSystemHelper,
+            ISmidgeFileSystem fileSystem,
             IHasher hasher,
             IBundleManager bundleManager,
             PreProcessPipelineFactory processorFactory,
@@ -60,27 +60,17 @@ namespace Smidge
             IHttpContextAccessor httpContextAccessor,
             CacheBusterResolver cacheBusterResolver)
         {
-            if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
-            if (dynamicallyRegisteredWebFiles == null) throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
-            if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
-            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
-            if (urlManager == null) throw new ArgumentNullException(nameof(urlManager));
-            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-            if (httpContextAccessor == null) throw new ArgumentNullException(nameof(httpContextAccessor));
-            if (cacheBusterResolver == null) throw new ArgumentNullException(nameof(cacheBusterResolver));
-            _fileSetGenerator = fileSetGenerator;
-            _processorFactory = processorFactory;
-            _urlManager = urlManager;
-            _requestHelper = requestHelper;
-            _httpContextAccessor = httpContextAccessor;
-            _cacheBusterResolver = cacheBusterResolver;
-            _bundleManager = bundleManager;
-            _preProcessManager = preProcessManager;
-            _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
-            _fileSystemHelper = fileSystemHelper;
-            _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
+            _fileSetGenerator = fileSetGenerator ?? throw new ArgumentNullException(nameof(fileSetGenerator));
+            _processorFactory = processorFactory ?? throw new ArgumentNullException(nameof(processorFactory));
+            _urlManager = urlManager ?? throw new ArgumentNullException(nameof(urlManager));
+            _requestHelper = requestHelper ?? throw new ArgumentNullException(nameof(requestHelper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _cacheBusterResolver = cacheBusterResolver ?? throw new ArgumentNullException(nameof(cacheBusterResolver));
+            _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
+            _preProcessManager = preProcessManager ?? throw new ArgumentNullException(nameof(preProcessManager));
+            _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles ?? throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _fileBatcher = new FileBatcher(_fileSystem, _requestHelper, hasher);
         }
 
         public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
@@ -269,8 +259,11 @@ namespace Smidge
                     foreach (var u in compositeUrls)
                     {
                         //now we need to determine if these files have already been minified
-                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
-                        if (!File.Exists(compositeFilePath))
+
+                        var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
+
+                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compression, u.Key);
+                        if (!cacheFile.Exists)
                         {
                             using (var bundleContext = BundleContext.CreateEmpty())
                             {

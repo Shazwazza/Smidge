@@ -29,6 +29,13 @@ namespace Smidge
         IEnumerable<string> GetBundleNames(WebFileType type);
 
         /// <summary>
+        /// Returns all bundles registered
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        IEnumerable<Bundle> GetBundles(WebFileType type);
+
+        /// <summary>
         /// Checks if the bundle exists by name
         /// </summary>
         /// <param name="bundleName"></param>

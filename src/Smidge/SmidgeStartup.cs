@@ -8,18 +8,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.FileProviders;
-using System.Linq;
 using Smidge.Models;
 using Microsoft.Extensions.Options;
 using Smidge.Options;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Http.Extensions;
 using Smidge.Cache;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
@@ -44,14 +40,30 @@ namespace Smidge
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
             services.AddSingleton<IHasher, Crc32Hasher>();
-            services.AddSingleton<IBundleManager, BundleManager>();
+            services.AddSingleton<IBundleManager, BundleManager>();            
             services.AddSingleton<PreProcessPipelineFactory>();
-            services.AddSingleton<FileSystemHelper>(p =>
+            services.AddSingleton<ISmidgeFileSystem>(p =>
             {
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
-            });            
+                return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>());
+            });
+            services.AddSingleton<ICacheFileSystem>(p =>
+            {
+                //The default cache folder is a physical folder
+
+                var hosting = p.GetRequiredService<IHostingEnvironment>();
+                var provider = fileProvider ?? hosting.WebRootFileProvider;                
+                var config = p.GetRequiredService<ISmidgeConfig>();
+                var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
+
+                //ensure it exists
+                Directory.CreateDirectory(cacheFolder);
+
+                var cacheFileProvider = new PhysicalFileProvider(cacheFolder);
+                
+                return new PhysicalFileCacheFileSystem(cacheFileProvider, p.GetRequiredService<IHasher>());
+            });
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
@@ -112,57 +124,59 @@ namespace Smidge
                 configureBundles(bundleManager);
 
                 var cacheBusterResolver = app.ApplicationServices.GetRequiredService<CacheBusterResolver>();
+                var fileSystem = app.ApplicationServices.GetRequiredService<ISmidgeFileSystem>();
 
                 //TODO: Now that they are configured we need to wire up the file watching event handlers
                 // to the bundle manager, currently these are on the Bundle, but that is not good enough
                 // since we need the bundle name
                 foreach (var webFileType in new[] {WebFileType.Css, WebFileType.Js })
                 {
-                    var names = bundleManager.GetBundleNames(webFileType);
-                    foreach (var cssName in names)
+                    var bundles = bundleManager.GetBundles(webFileType);
+                    foreach (var bundle in bundles)
                     {
-                        var bundle = bundleManager.GetBundle(cssName);
-                        WireUpFileWatchEventHandlers(bundleManager, cacheBusterResolver, cssName, bundle);
+                        WireUpFileWatchEventHandlers(cacheBusterResolver, fileSystem, bundle);
                     }
                 }
             }    
 
         }
 
-        private static void WireUpFileWatchEventHandlers(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle)
+        private static void WireUpFileWatchEventHandlers(CacheBusterResolver cacheBusterResolver, ISmidgeFileSystem fileSystem, Bundle bundle)
         {
             if (bundle.BundleOptions == null) return;
 
             if (bundle.BundleOptions.DebugOptions.FileWatchOptions.Enabled)
             {
-                bundle.BundleOptions.DebugOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, true);
+                bundle.BundleOptions.DebugOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(cacheBusterResolver, fileSystem, bundle.Name);
             }
             if (bundle.BundleOptions.ProductionOptions.FileWatchOptions.Enabled)
             {
-                bundle.BundleOptions.ProductionOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, false);
+                bundle.BundleOptions.ProductionOptions.FileWatchOptions.FileModified += FileWatchOptions_FileModified(cacheBusterResolver, fileSystem, bundle.Name);
             }
         }
 
-        private static EventHandler<FileWatchEventArgs> FileWatchOptions_FileModified(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle, bool debug)
+        private static EventHandler<FileWatchEventArgs> FileWatchOptions_FileModified(CacheBusterResolver cacheBusterResolver, ISmidgeFileSystem fileSystem, string bundleName)
         {
             return (sender, args) =>
             {
-                FileWatchOptions_FileModified(bundleManager, cacheBusterResolver, bundleName, bundle, debug, args);
+                FileWatchOptions_FileModified(cacheBusterResolver, fileSystem, bundleName, args);
             };
         }
 
-        private static void FileWatchOptions_FileModified(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle, bool debug, FileWatchEventArgs e)
+        //async void = ok here sincew this is an event handler
+        private static async void FileWatchOptions_FileModified(CacheBusterResolver cacheBusterResolver, ISmidgeFileSystem fileSystem, string bundleName, FileWatchEventArgs e)
         {
-            var cacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, debug).GetCacheBusterType());                
+            var bundleOptions = e.File.BundleOptions;
+            var cacheBuster = cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
 
             //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
-                var compFilePath = e.FileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compressionType, bundleName);
-                if (File.Exists(compFilePath))
+                var compFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compressionType, bundleName);
+                if (compFile.Exists)
                 {
-                    File.Delete(compFilePath);
+                    await fileSystem.CacheFileSystem.ClearFileAsync(compFile);
                 }
             }
         }

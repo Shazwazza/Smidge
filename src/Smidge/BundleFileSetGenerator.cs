@@ -15,19 +15,19 @@ namespace Smidge
     public class BundleFileSetGenerator : IBundleFileSetGenerator
     {
         private readonly FileProcessingConventions _conventions;
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IRequestHelper _requestHelper;
         
         public BundleFileSetGenerator(
-            FileSystemHelper fileSystemHelper,
+            ISmidgeFileSystem fileSystem,
             IRequestHelper requestHelper,
             FileProcessingConventions conventions)
         {
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
+            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
             if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
             if (conventions == null) throw new ArgumentNullException(nameof(conventions));     
             _conventions = conventions;
-            _fileSystemHelper = fileSystemHelper;
+            _fileSystem = fileSystem;
             _requestHelper = requestHelper;
         }
 
@@ -68,9 +68,9 @@ namespace Smidge
                 file.FilePath = _requestHelper.Content(file.FilePath);
 
                 //We need to check if this path is a folder, then iterate the files
-                if (_fileSystemHelper.IsFolder(file.FilePath))
+                if (_fileSystem.IsFolder(file.FilePath))
                 {
-                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(file.FilePath);
+                    var filePaths = _fileSystem.GetPathsForFilesInFolder(file.FilePath);
                     foreach (var f in filePaths)
                     {
                         if (file.Order > 0)

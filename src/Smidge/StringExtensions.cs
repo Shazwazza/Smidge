@@ -7,6 +7,7 @@ namespace Smidge
 {
     public static class StringExtensions
     {
+
         internal static bool InvariantIgnoreCaseStartsWith(this string input, string value)
         {
             return CultureInfo.InvariantCulture.CompareInfo.IsPrefix(input, value, CompareOptions.IgnoreCase);            

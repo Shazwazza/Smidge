@@ -1,4 +1,5 @@
 ﻿using Smidge.CompositeFiles;
+using System.Threading.Tasks;
 
 namespace Smidge.Nuglify
 {
@@ -7,6 +8,6 @@ namespace Smidge.Nuglify
     /// </summary>
     public interface ISourceMapDeclaration
     {
-        string GetDeclaration(BundleContext bundleContext, V3DeferredSourceMap sourceMap);
+        Task<string> GetDeclarationAsync(BundleContext bundleContext, V3DeferredSourceMap sourceMap);
     }
 }

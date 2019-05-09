@@ -19,8 +19,7 @@ namespace Smidge
     {
         public BundleManager(IOptions<SmidgeOptions> smidgeOptions, ILogger<BundleManager> logger)
         {
-            if (smidgeOptions == null) throw new ArgumentNullException(nameof(smidgeOptions));
-            _smidgeOptions = smidgeOptions;
+            _smidgeOptions = smidgeOptions ?? throw new ArgumentNullException(nameof(smidgeOptions));
             _logger = logger;
         }
 
@@ -40,7 +39,7 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files");
 
-            var collection = new Bundle(new List<IWebFile>(jsFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -52,7 +51,7 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files");
 
-            var collection = new Bundle(new List<IWebFile>(cssFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -65,8 +64,8 @@ namespace Smidge
             _logger.LogDebug($"Creating {type} bundle '{bundleName}' with {paths.Length} files");
 
             var collection = type == WebFileType.Css
-                ? new Bundle(paths.Select(x => (IWebFile)new CssFile(x)).ToList())
-                : new Bundle(paths.Select(x => (IWebFile)new JavaScriptFile(x)).ToList());
+                ? new Bundle(bundleName, paths.Select(x => (IWebFile)new CssFile(x)).ToList())
+                : new Bundle(bundleName, paths.Select(x => (IWebFile)new JavaScriptFile(x)).ToList());
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -85,7 +84,7 @@ namespace Smidge
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(new List<IWebFile>(jsFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -104,7 +103,7 @@ namespace Smidge
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(new List<IWebFile>(cssFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -117,16 +116,15 @@ namespace Smidge
             _logger.LogDebug($"Creating {type} bundle '{bundleName}' with {paths.Length} files and a custom pipeline");
 
             var collection = type == WebFileType.Css
-                ? new Bundle(paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList())
-                : new Bundle(paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }).ToList());
+                ? new Bundle(bundleName, paths.Select(x => (IWebFile)new CssFile(x) { Pipeline = pipeline }).ToList())
+                : new Bundle(bundleName, paths.Select(x => (IWebFile)new JavaScriptFile(x) { Pipeline = pipeline }).ToList());
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
 
         public bool TryGetValue(string key, out Bundle value)
         {
-            Bundle collection;
-            var val = _bundles.TryGetValue(key, out collection);
+            var val = _bundles.TryGetValue(key, out Bundle collection);
             value = val ? collection : null;
             return val;
         }
@@ -142,14 +140,23 @@ namespace Smidge
         }
 
         /// <summary>
+        /// Returns all bundles registered
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public IEnumerable<Bundle> GetBundles(WebFileType type)
+        {
+            return _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Value);
+        }
+
+        /// <summary>
         /// Checks if the bundle exists by name
         /// </summary>
         /// <param name="bundleName"></param>
         /// <returns></returns>
         public bool Exists(string bundleName)
         {
-            Bundle collection;
-            return TryGetValue(bundleName, out collection);
+            return TryGetValue(bundleName, out _);
         }
 
         /// <summary>

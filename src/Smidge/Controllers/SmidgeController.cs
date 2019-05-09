@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
 using Smidge.Models;
@@ -7,13 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Smidge.Cache;
 using Smidge.FileProcessors;
-using Smidge.Hashing;
+using Smidge.Cache;
 
 namespace Smidge.Controllers
 {
@@ -27,7 +24,7 @@ namespace Smidge.Controllers
     [CompositeFileCacheFilter(Order = 3)]        
     public class SmidgeController : Controller
     {
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
@@ -44,23 +41,18 @@ namespace Smidge.Controllers
         /// <param name="preProcessManager"></param>
         /// <param name="logger"></param>
         public SmidgeController(
-            FileSystemHelper fileSystemHelper, 
+            ISmidgeFileSystem fileSystemHelper,
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory,
             PreProcessManager preProcessManager,
             ILogger<SmidgeController> logger)
         {
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
-            if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
-            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
-            if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
-            _fileSystemHelper = fileSystemHelper;
-            _bundleManager = bundleManager;
-            _fileSetGenerator = fileSetGenerator;
-            _processorFactory = processorFactory;
-            _preProcessManager = preProcessManager;
+            _fileSystem = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));
+            _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
+            _fileSetGenerator = fileSetGenerator ?? throw new ArgumentNullException(nameof(fileSetGenerator));
+            _processorFactory = processorFactory ?? throw new ArgumentNullException(nameof(processorFactory));
+            _preProcessManager = preProcessManager ?? throw new ArgumentNullException(nameof(preProcessManager));
             _logger = logger;
         }
 
@@ -78,15 +70,25 @@ namespace Smidge.Controllers
             }
 
             var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
-            
+
             //now we need to determine if this bundle has already been created
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
-            if (compositeFilePath.Exists)
+            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
+            if (cacheFile.Exists)
             {
+                //this is already processed, return it
+
                 _logger.LogDebug($"Returning bundle '{bundle.FileKey}' from cache");
 
-                //this is already processed, return it
-                return File(compositeFilePath.OpenRead(), bundle.Mime);
+                if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
+                {
+                    //if physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
+                    //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
+                    return PhysicalFile(cacheFile.PhysicalPath, bundle.Mime);
+                }
+                else
+                {
+                    return File(cacheFile.CreateReadStream(), bundle.Mime);
+                }
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -104,7 +106,7 @@ namespace Smidge.Controllers
                 return NotFound();
             }
             
-            using (var bundleContext = new BundleContext(bundle, compositeFilePath))
+            using (var bundleContext = new BundleContext(bundle, cacheFile))
             {
                 var watch = new Stopwatch();
                 watch.Start();
@@ -117,9 +119,8 @@ namespace Smidge.Controllers
                 }
 
                 //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
-                Lazy<IFileInfo> fi;
-                var filePaths = files.Select(
-                    x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundle.CacheBuster, out fi));
+                var filePaths = files.Select(x => _fileSystem.CacheFileSystem.GetCacheFile(
+                    x, () => _fileSystem.SourceFileProvider.GetRequiredFileInfo(x), bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundle.CacheBuster));
 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {
@@ -132,7 +133,7 @@ namespace Smidge.Controllers
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
                     // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
                     // the raw file if it exists for further requests to this path
-                    await CacheCompositeFileAsync(compositeFilePath, compressedStream);
+                    await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFile, compressedStream);
 
                     _logger.LogDebug($"Processed bundle '{bundle.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
@@ -155,61 +156,64 @@ namespace Smidge.Controllers
                 return NotFound();
             }
 
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(file.CacheBuster, file.Compression, file.FileKey));
+            var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
 
-            if (compositeFilePath.Exists)
+            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(file.CacheBuster, file.Compression, file.FileKey);
+
+            if (cacheFile.Exists)
             {
                 //this is already processed, return it
-                return File(compositeFilePath.OpenRead(), file.Mime);
+                if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
+                {
+                    //if physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
+                    //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
+                    return PhysicalFile(cacheFile.PhysicalPath, file.Mime);
+                }
+                else
+                {
+                    return File(cacheFile.CreateReadStream(), file.Mime);
+                }
             }
             
-            using (var bundleContext = new BundleContext(file, compositeFilePath))
+            using (var bundleContext = new BundleContext(file, cacheFile))
             {
-                var filePaths = file.ParsedPath.Names.Select(filePath =>
-                    Path.Combine(
-                        _fileSystemHelper.CurrentCacheFolder,
-                        file.ParsedPath.Version,
-                        filePath + file.Extension));
+                var files = file.ParsedPath.Names.Select(filePath =>
+                    _fileSystem.CacheFileSystem.FileProvider.GetRequiredFileInfo(
+                        $"{file.ParsedPath.Version}/{filePath + file.Extension}"));
 
-                using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
+                using (var resultStream = await GetCombinedStreamAsync(files, bundleContext))
                 {
                     var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
-                    await CacheCompositeFileAsync(compositeFilePath, compressedStream);
+                    await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFile, compressedStream);
 
                     return File(compressedStream, file.Mime);
                 }
             }
         }
 
-        private static async Task CacheCompositeFileAsync(FileInfo compositeFilePath, Stream compositeStream)
+        private static async Task CacheCompositeFileAsync(ICacheFileSystem cacheProvider, IFileInfo compositeFile, Stream compositeStream)
         {
-            //ensure it exists
-            compositeFilePath.Directory.Create();            
-            compositeStream.Position = 0;            
-            using (var fs = compositeFilePath.Create())
-            {
-                await compositeStream.CopyToAsync(fs);
-            }
-            compositeStream.Position = 0;
+            await cacheProvider.WriteFileAsync(compositeFile, compositeStream);
+            if (compositeStream.CanSeek)
+                compositeStream.Position = 0;
         }
 
         /// <summary>
         /// Combines files into a single stream
         /// </summary>
-        /// <param name="filePaths"></param>
+        /// <param name="files"></param>
         /// <param name="bundleContext"></param>
         /// <returns></returns>
-        private async Task<Stream> GetCombinedStreamAsync(IEnumerable<string> filePaths, BundleContext bundleContext)
+        private async Task<Stream> GetCombinedStreamAsync(IEnumerable<IFileInfo> files, BundleContext bundleContext)
         {
             //TODO: Here we need to be able to prepend/append based on a "BundleContext" (or similar)
 
             List<Stream> inputs = null;
             try
             {
-                inputs = filePaths.Where(System.IO.File.Exists)
-                    .Select(System.IO.File.OpenRead)
-                    .Cast<Stream>()
+                inputs = files.Where(x => x.Exists)
+                    .Select(x => x.CreateReadStream())
                     .ToList();
 
                 var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";" : "\n";
