@@ -8,18 +8,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.FileProviders;
-using System.Linq;
 using Smidge.Models;
 using Microsoft.Extensions.Options;
 using Smidge.Options;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Http.Extensions;
 using Smidge.Cache;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
@@ -28,8 +24,6 @@ namespace Smidge
 {
     public static class SmidgeStartup
     {
-
-
         public static IServiceCollection AddSmidge(this IServiceCollection services, 
             IConfiguration smidgeConfiguration = null, 
             IFileProvider fileProvider = null)
@@ -90,6 +84,19 @@ namespace Smidge
         
         public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
         {
+#if NETCORE3_0
+            //It's no longer polite to call UseMVC as it enables things that the developer may not need.
+            //caveat here is that if a developer disables endpointrouting in their call to 
+            //services.AddMvc or services.AddControllersWithViews then this will fail.
+            //There doesn't appear to be an easy way to handle both endpointrouting enabled and disabled
+
+            app.UseEndpoints(endpoints =>
+            {
+                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
+                endpoints.MapControllerRoute("SmidgeComposite", options.Value.UrlOptions.CompositeFilePath + "/{file}", "{controller=Smidge}/{action=Composite}");
+                endpoints.MapControllerRoute("SmidgeBundle", options.Value.UrlOptions.CompositeFilePath + "/{file}", "{controller=Smidge}/{action=Bundle}");
+            });
+#else
             //Create custom route
             app.UseMvc(routes =>
             {
@@ -105,7 +112,7 @@ namespace Smidge
                     options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                     new { controller = "Smidge", action = "Bundle" });
             });
-
+#endif
             if (configureBundles != null)
             {
                 var bundleManager = app.ApplicationServices.GetRequiredService<IBundleManager>();
