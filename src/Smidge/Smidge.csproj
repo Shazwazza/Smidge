@@ -28,11 +28,5 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" />
     </ItemGroup>
     <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-        <!--
-        <PackageReference Include="Microsoft.AspNetCore.Routing" Version="3.0.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
-        -->
     </ItemGroup>  
 </Project>
