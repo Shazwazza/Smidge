@@ -94,7 +94,7 @@ namespace Smidge
             {
                 var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
                 endpoints.MapControllerRoute("SmidgeComposite", options.Value.UrlOptions.CompositeFilePath + "/{file}", "{controller=Smidge}/{action=Composite}");
-                endpoints.MapControllerRoute("SmidgeBundle", options.Value.UrlOptions.BundleFilePath + "/{file}", "{controller=Smidge}/{action=Bundle}");
+                endpoints.MapControllerRoute("SmidgeBundle", options.Value.UrlOptions.BundleFilePath + "/{bundle}", "{controller=Smidge}/{action=Bundle}");
             });
 #else
             //Create custom route
