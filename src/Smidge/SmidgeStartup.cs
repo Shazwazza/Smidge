@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
-using Smidge.CompositeFiles;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
-using Smidge.Models;
 using Microsoft.Extensions.Options;
-using Smidge.Options;
+using Smidge.Cache;
+using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Smidge.Cache;
+using Smidge.Models;
+using Smidge.Options;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -24,13 +25,25 @@ namespace Smidge
 {
     public static class SmidgeStartup
     {
-        public static IServiceCollection AddSmidge(this IServiceCollection services, 
-            IConfiguration smidgeConfiguration = null, 
+        //For .net core 3.0, call this before AddControllers/AddControllersWithViews etc
+        //If you call it after, then if AddControllersAsServices was used before you need
+        //to tell smidge to do so
+
+#if NETCORE3_0
+        public static IServiceCollection AddSmidge(this IServiceCollection services,
+            IConfiguration smidgeConfiguration = null,
+            IFileProvider fileProvider = null,
+            bool regControllersAsService = false)
+#else
+
+        public static IServiceCollection AddSmidge(this IServiceCollection services,
+            IConfiguration smidgeConfiguration = null,
             IFileProvider fileProvider = null)
-        {            
+#endif
+        {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
-            
+
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
             services.AddSingleton<PreProcessManager>();
@@ -45,7 +58,7 @@ namespace Smidge
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
                 return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
-            });            
+            });
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
@@ -54,7 +67,7 @@ namespace Smidge
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
-            
+
             services.AddSingleton<ICacheBuster, ConfigCacheBuster>();
             services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
             services.AddSingleton<CacheBusterResolver>();
@@ -62,11 +75,11 @@ namespace Smidge
             //These all execute as part of the request/scope            
             services.AddScoped<DynamicallyRegisteredWebFiles>();
             services.AddScoped<SmidgeHelper>();
-            services.AddScoped<IUrlManager, DefaultUrlManager>();            
+            services.AddScoped<IUrlManager, DefaultUrlManager>();
 
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();
-            services.AddSingleton<IPreProcessor, CssMinifier>();            
+            services.AddSingleton<IPreProcessor, CssMinifier>();
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
             services.AddSingleton<Lazy<IEnumerable<IPreProcessor>>>(provider => new Lazy<IEnumerable<IPreProcessor>>(provider.GetRequiredService<IEnumerable<IPreProcessor>>));
@@ -79,39 +92,67 @@ namespace Smidge
             services.AddTransient<BundleRequestModel>();
             services.AddTransient<CompositeFileModel>();
 
+#if NETCORE3_0
+            //tell .net core 3.0 where to find our controller
+            var assembly = typeof(SmidgeStartup).Assembly;
+
+            var builder = services.AddControllers()
+                    .AddApplicationPart(assembly);
+
+            //if AddControllersAsServices has already been then you must do this 
+            //Since there is no way to detect this, we allow the caller to tell us.
+            if (regControllersAsService)
+                builder.AddControllersAsServices(); 
+#endif
             return services;
         }
-        
-        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
-        {
+
+
+
 #if NETCORE3_0
-            //It's no longer polite to call UseMVC as it enables things that the developer may not need.
-            //caveat here is that if a developer disables endpointrouting in their call to 
-            //services.AddMvc or services.AddControllersWithViews then this will fail.
-            //There doesn't appear to be an easy way to handle both endpointrouting enabled and disabled
-
-            app.UseEndpoints(endpoints =>
-            {
-                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
-                endpoints.MapControllerRoute("SmidgeComposite", options.Value.UrlOptions.CompositeFilePath + "/{file}", "{controller=Smidge}/{action=Composite}");
-                endpoints.MapControllerRoute("SmidgeBundle", options.Value.UrlOptions.BundleFilePath + "/{bundle}", "{controller=Smidge}/{action=Bundle}");
-            });
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null, bool useEndpointRouting = true)
 #else
-            //Create custom route
-            app.UseMvc(routes =>
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
+#endif
+        {
+            //Creates custom routes 
+            var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
+#if NETCORE3_0
+            //NOTE: It's no longer polite to just call UseMVC as it enables things that the developer may 
+            //not need and the dev must disable EndpointRouting - so we let the dev decide.
+            //with core 3.0 you have to explicitly disable EndpointRouting se we default to on here 
+            if (useEndpointRouting)
             {
-                var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(
+                            name: "SmidgeComposite",
+                            pattern: options.Value.UrlOptions.CompositeFilePath + "/{file}",
+                            defaults: new { controller = "Smidge", action = "Composite" });
+                    endpoints.MapControllerRoute(
+                            name: "SmidgeBundle",
+                            pattern: options.Value.UrlOptions.BundleFilePath + "/{bundle}",
+                            defaults: new { controller = "Smidge", action = "Bundle" });
+                });
 
-                routes.MapRoute(
-                    "SmidgeComposite",
-                    options.Value.UrlOptions.CompositeFilePath + "/{file}",                    
-                    new { controller = "Smidge", action = "Composite" });
+            }
+            else
+            {
+#endif
+                app.UseMvc(routes =>
+                {
+                    routes.MapRoute(
+                        "SmidgeComposite",
+                        options.Value.UrlOptions.CompositeFilePath + "/{file}",
+                        new { controller = "Smidge", action = "Composite" });
 
-                routes.MapRoute(
-                    "SmidgeBundle",
-                    options.Value.UrlOptions.BundleFilePath + "/{bundle}",
-                    new { controller = "Smidge", action = "Bundle" });
-            });
+                    routes.MapRoute(
+                        "SmidgeBundle",
+                        options.Value.UrlOptions.BundleFilePath + "/{bundle}",
+                        new { controller = "Smidge", action = "Bundle" });
+                });
+#if NETCORE3_0
+            }
 #endif
             if (configureBundles != null)
             {
@@ -133,7 +174,6 @@ namespace Smidge
                     }
                 }
             }    
-
         }
 
         private static void WireUpFileWatchEventHandlers(IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver, string bundleName, Bundle bundle)
