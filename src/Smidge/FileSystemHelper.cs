@@ -22,12 +22,20 @@ namespace Smidge
     public sealed class FileSystemHelper
     {
         private readonly ISmidgeConfig _config;
+#if NETCORE3_0        
+        private readonly IWebHostEnvironment _hostingEnv;
+#else
         private readonly IHostingEnvironment _hostingEnv;
+#endif
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private readonly IFileProvider _fileProvider;
         private readonly IHasher _hasher;
 
+#if NETCORE3_0        
+        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
+#else
         public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
+#endif
         {
             _hasher = hasher;
             _config = config;
@@ -35,14 +43,17 @@ namespace Smidge
             _fileProvider = fileProvider;
         }
 
+#if NETCORE3_0        
+        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
+#else
         public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
+#endif
         {
             _hasher = hasher;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = hostingEnv.WebRootFileProvider;
         }
-
         public IFileInfo GetFileInfo(IWebFile webfile)
         {
             var path = webfile.FilePath.TrimStart(new[] { '~' });

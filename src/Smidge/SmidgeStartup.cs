@@ -55,15 +55,24 @@ namespace Smidge
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<FileSystemHelper>(p =>
             {
+#if NETCORE3_0                     
+                var hosting = p.GetRequiredService<IWebHostEnvironment>();
+#else
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
+#endif
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
+
                 return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
             });
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
                 {
+#if NETCORE3_0                     
+                    return new SmidgeConfig(p.GetRequiredService<IWebHostEnvironment>());
+#else
                     return new SmidgeConfig(p.GetRequiredService<IHostingEnvironment>());
+#endif
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });

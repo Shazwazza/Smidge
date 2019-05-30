@@ -21,7 +21,11 @@ namespace Smidge
         /// Constructor that will use a smidge.json configuration file in env.ApplicationBasePath
         /// </summary>
         /// <param name="env"></param>
+#if NETCORE3_0
+        public SmidgeConfig(IWebHostEnvironment env)
+#else
         public SmidgeConfig(IHostingEnvironment env)
+#endif
         {
             //  use smidge.json file if it exists for backwards compatibility.
             var cfg = new ConfigurationBuilder()
