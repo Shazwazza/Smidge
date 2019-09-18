@@ -16,9 +16,31 @@ using Smidge.Models;
 using Smidge.FileProcessors;
 using Smidge.JavaScriptServices;
 using Smidge.Nuglify;
+using System.Threading.Tasks;
 
 namespace Smidge.Web
 {
+    public class DotlessPreProcessor : IPreProcessor
+    {
+        private readonly IHostingEnvironment _hostingEnvironment;
+
+        public DotlessPreProcessor(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
+
+        public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
+        {
+            if (Path.GetExtension(fileProcessContext.WebFile.FilePath) == ".less")
+            {
+                var result = dotless.Core.Less.Parse(fileProcessContext.FileContent);
+                fileProcessContext.Update(result);
+            }
+
+            await next(fileProcessContext);
+        }
+    }
+
     public class Startup
     {
 
@@ -75,6 +97,8 @@ namespace Smidge.Web
 
             services.AddSmidgeJavaScriptServices();
             services.AddSmidgeNuglify();
+
+            services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }
 
         /// <summary>
@@ -123,6 +147,16 @@ namespace Smidge.Web
             app.UseSmidge(bundles =>
             {
                 //Create pre-defined bundles
+
+                var lessPipeline = bundles.PipelineFactory.DefaultCss();
+                lessPipeline.Processors.Insert(0, bundles.PipelineFactory.Resolve<DotlessPreProcessor>());
+                bundles.CreateCss(
+                    "less-test",
+                    lessPipeline,
+                    "~/Css/test.less")
+                    .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+                        .ForDebug(builder => builder.EnableCompositeProcessing().SetCacheBusterType<AppDomainLifetimeCacheBuster>())
+                        .Build());
 
                 bundles.Create("test-bundle-1",                    
                     new JavaScriptFile("~/Js/Bundle1/a1.js"),

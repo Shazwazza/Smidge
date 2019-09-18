@@ -7,6 +7,7 @@
 
     @await SmidgeHelper.JsHereAsync("libs-js")
     @await SmidgeHelper.CssHereAsync("libs-css")
+    @await SmidgeHelper.CssHereAsync("less-test")
 
     @{
         SmidgeHelper
@@ -30,8 +31,8 @@
 
     <script src="inline-js-bundle" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" />
-    <link rel="stylesheet" href="inline-css-bundle"/>
-    <link rel="stylesheet" href="test-bundle-4" />    
+    <link rel="stylesheet" href="inline-css-bundle" />
+    <link rel="stylesheet" href="test-bundle-4" />
 </head>
 <body>
 
