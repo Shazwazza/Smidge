@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
         <AssemblyName>Smidge.Benchmarks</AssemblyName>
         <OutputType>Exe</OutputType>
         <PackageId>Smidge.Benchmarks</PackageId>
@@ -13,14 +13,13 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
-        <ProjectReference Include="..\..\src\Smidge.JavaScriptServices\Smidge.JavaScriptServices.csproj" />
         <ProjectReference Include="..\..\src\Smidge.Nuglify\Smidge.Nuglify.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.10.9" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.10.9" />
-        <PackageReference Include="Moq" Version="4.7.99" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.5" />
+        <PackageReference Include="Moq" Version="4.13.0" />
     </ItemGroup>
 
     <ItemGroup>

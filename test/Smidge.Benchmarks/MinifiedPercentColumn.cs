@@ -24,32 +24,36 @@ namespace Smidge.Benchmarks
         public bool AlwaysShow => true;
         public string ColumnName => "Minified %";
         public bool IsAvailable(Summary summary) => true;
+
+        public string GetValue(Summary summary, BenchmarkCase benchmarkCase)
+        {
+            throw new NotSupportedException("TODO: Need to figure out how to get this compiling again ... though it's not really important");
+
+            //var target = benchmark.Target;
+            //var instance = (JsMinifyBenchmarks)Activator.CreateInstance(target.Type);
+            //target.Method.Invoke(instance, new object[0]);
+            //var methodName = "Get" + target.MethodDisplayInfo;
+            //var result = ((Task<string>)target.Type.GetMethod(methodName).Invoke(instance, new object[0])).Result;
+            //var original = (string)target.Type.GetField("JQuery").GetValue(null);
+
+
+            //return ((double)Encoding.UTF8.GetByteCount(result) / Encoding.UTF8.GetByteCount(original))
+            //    .ToString("P2", new NumberFormatInfo { PercentPositivePattern = 1, PercentNegativePattern = 1 }); ;
+        }
+
+        public string GetValue(Summary summary, BenchmarkCase benchmarkCase, SummaryStyle style)
+        {
+            return GetValue(summary, benchmarkCase);
+        }
+
+        public bool IsDefault(Summary summary, BenchmarkCase benchmarkCase) => false;
+
         //public bool AlwaysShow => true;
         public ColumnCategory Category => ColumnCategory.Statistics;
         public int PriorityInCategory => 0;
         public bool IsNumeric => true;
         public UnitType UnitType => UnitType.Dimensionless;
-        public bool IsDefault(Summary summary, Benchmark benchmark) => false;
-
-        public string GetValue(Summary summary, Benchmark benchmark)
-        {
-            var target = benchmark.Target;
-            var instance = (JsMinifyBenchmarks)Activator.CreateInstance(target.Type);
-            target.Method.Invoke(instance, new object[0]);
-            var methodName = "Get" + target.MethodDisplayInfo;
-            var result = ((Task<string>)target.Type.GetMethod(methodName).Invoke(instance, new object[0])).Result;
-            var original = (string)target.Type.GetField("JQuery").GetValue(null);
-
-
-            return ((double)Encoding.UTF8.GetByteCount(result) / Encoding.UTF8.GetByteCount(original))
-                .ToString("P2", new NumberFormatInfo { PercentPositivePattern = 1, PercentNegativePattern = 1 }); ;
-        }       
-
-        public string GetValue(Summary summary, Benchmark benchmark, ISummaryStyle style)
-        {
-            return GetValue(summary, benchmark);
-        }
-
+        
         
     }
 }

@@ -60,23 +60,24 @@ foreach($project in $root.ChildNodes) {
 
 	#Update the csproj with the correct info
 	[xml]$xmlCsproj = Get-Content $csproj
-	$xmlCsproj.Project.PropertyGroup.VersionPrefix = "$projectVersion"
+
+	$xmlCsproj.Project.PropertyGroup[0].VersionPrefix = "$projectVersion"
 	#Remove all VersionSuffix elements to start
-	$xmlCsproj.Project.PropertyGroup.SelectNodes("VersionSuffix") | % {   
+	$xmlCsproj.Project.PropertyGroup[0].SelectNodes("VersionSuffix") | % {   
 		Write-Host "DELETING!"
-        $xmlCsproj.Project.PropertyGroup.RemoveChild($_) | Out-Null
+        $xmlCsproj.Project.PropertyGroup[0].RemoveChild($_) | Out-Null
     }
 
 	#Set the pre release if t here is one
 	if(-not [string]::IsNullOrEmpty($prerelease)){
 		$xmlVersionSuffix = $xmlCsproj.CreateElement("VersionSuffix")
-		[void]$xmlCsproj.Project.PropertyGroup.AppendChild($xmlVersionSuffix)
-		$xmlCsproj.Project.PropertyGroup.VersionSuffix = "$prerelease"	
+		[void]$xmlCsproj.Project.PropertyGroup[0].AppendChild($xmlVersionSuffix)
+		$xmlCsproj.Project.PropertyGroup[0].VersionSuffix = "$prerelease"	
 	}
 	
 	# Set the copyright
 	$DateYear = (Get-Date).year
-	$xmlCsproj.Project.PropertyGroup.Copyright = "Copyright © Shannon Deminick $DateYear"
+	$xmlCsproj.Project.PropertyGroup[0].Copyright = "Copyright $([char]0x00A9) Shannon Deminick $DateYear"
 	$xmlCsproj.Save($csproj)
 
 }

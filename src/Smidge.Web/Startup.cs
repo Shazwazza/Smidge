@@ -1,20 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using NUglify.JavaScript;
 using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;
-using Smidge.JavaScriptServices;
 using Smidge.Nuglify;
 
 namespace Smidge.Web
@@ -73,7 +68,6 @@ namespace Smidge.Web
                 options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
             });
 
-            services.AddSmidgeJavaScriptServices();
             services.AddSmidgeNuglify();
         }
 
