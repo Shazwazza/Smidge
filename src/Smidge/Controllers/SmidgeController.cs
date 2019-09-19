@@ -67,26 +67,26 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for named bundles
         /// </summary>
-        /// <param name="bundle">The bundle model</param>
+        /// <param name="bundleModel">The bundle model</param>
         /// <returns></returns>       
         public async Task<IActionResult> Bundle(
-            [FromServices]BundleRequestModel bundle)
+            [FromServices]BundleRequestModel bundleModel)
         {
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out Bundle foundBundle))
+            if (!_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
             {
                 return NotFound();
             }
 
-            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
+            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
             
             //now we need to determine if this bundle has already been created
-            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundle.CacheBuster, bundle.Compression, bundle.FileKey));
+            var compositeFilePath = new FileInfo(_fileSystemHelper.GetCurrentCompositeFilePath(bundleModel.CacheBuster, bundleModel.Compression, bundleModel.FileKey));
             if (compositeFilePath.Exists)
             {
-                _logger.LogDebug($"Returning bundle '{bundle.FileKey}' from cache");
+                _logger.LogDebug($"Returning bundle '{bundleModel.FileKey}' from cache");
 
                 //this is already processed, return it
-                return File(compositeFilePath.OpenRead(), bundle.Mime);
+                return File(compositeFilePath.OpenRead(), bundleModel.Mime);
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -104,11 +104,11 @@ namespace Smidge.Controllers
                 return NotFound();
             }
             
-            using (var bundleContext = new BundleContext(bundle, compositeFilePath))
+            using (var bundleContext = new BundleContext(bundleModel, compositeFilePath))
             {
                 var watch = new Stopwatch();
                 watch.Start();
-                _logger.LogDebug($"Processing bundle '{bundle.FileKey}', debug? {bundle.Debug} ...");
+                _logger.LogDebug($"Processing bundle '{bundleModel.FileKey}', debug? {bundleModel.Debug} ...");
 
                 //we need to do the minify on the original files
                 foreach (var file in files)
@@ -119,14 +119,14 @@ namespace Smidge.Controllers
                 //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
                 Lazy<IFileInfo> fi;
                 var filePaths = files.Select(
-                    x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundle.CacheBuster, out fi));
+                    x => _fileSystemHelper.GetCacheFilePath(x, bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundleModel.CacheBuster, out fi));
 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {
                     //compress the response (if enabled)
                     var compressedStream = await Compressor.CompressAsync(
                         //do not compress anything if it's not enabled in the bundle options
-                        bundleOptions.CompressResult ? bundle.Compression : CompressionType.none,
+                        bundleOptions.CompressResult ? bundleModel.Compression : CompressionType.none,
                         resultStream);
 
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
@@ -134,10 +134,10 @@ namespace Smidge.Controllers
                     // the raw file if it exists for further requests to this path
                     await CacheCompositeFileAsync(compositeFilePath, compressedStream);
 
-                    _logger.LogDebug($"Processed bundle '{bundle.FileKey}' in {watch.ElapsedMilliseconds}ms");
+                    _logger.LogDebug($"Processed bundle '{bundleModel.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
                     //return the stream
-                    return File(compressedStream, bundle.Mime);
+                    return File(compressedStream, bundleModel.Mime);
                 }
             }
         }

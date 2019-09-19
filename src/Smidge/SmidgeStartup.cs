@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
+using Smidge.Controllers;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.Models;
@@ -32,8 +34,7 @@ namespace Smidge
 #if NETCORE3_0
         public static IServiceCollection AddSmidge(this IServiceCollection services,
             IConfiguration smidgeConfiguration = null,
-            IFileProvider fileProvider = null,
-            bool regControllersAsService = false)
+            IFileProvider fileProvider = null)
 #else
 
         public static IServiceCollection AddSmidge(this IServiceCollection services,
@@ -102,16 +103,18 @@ namespace Smidge
             services.AddTransient<CompositeFileModel>();
 
 #if NETCORE3_0
-            //tell .net core 3.0 where to find our controller
-            var assembly = typeof(SmidgeStartup).Assembly;
 
-            var builder = services.AddControllers()
-                    .AddApplicationPart(assembly);
 
-            //if AddControllersAsServices has already been then you must do this 
-            //Since there is no way to detect this, we allow the caller to tell us.
-            if (regControllersAsService)
-                builder.AddControllersAsServices(); 
+            var builder = services.AddMvcCore();
+            builder.ConfigureApplicationPartManager(manager =>
+            {
+                var assembly = typeof(SmidgeStartup).Assembly;
+                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
+                {
+                    manager.ApplicationParts.Add(applicationPart);
+                }
+            });
 #endif
             return services;
         }

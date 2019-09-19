@@ -75,7 +75,7 @@ namespace Smidge.Controllers
                 RequestModel file = null;
                 if (bundleFile != null)
                 {
-                    cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleFile.FileBundle.GetBundleOptions(_bundleManager, bundleFile.Debug).GetCacheBusterType());                        
+                    cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleFile.Bundle.GetBundleOptions(_bundleManager, bundleFile.Debug).GetCacheBusterType());                        
                 }
                 else
                 {

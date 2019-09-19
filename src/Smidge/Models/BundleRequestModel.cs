@@ -32,13 +32,13 @@ namespace Smidge.Models
             {
                 throw new InvalidOperationException("No bundle found with key " + FileKey);
             }
-            FileBundle = bundle;
+            Bundle = bundle;
 
             CacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, Debug).GetCacheBusterType());                
         }
 
         public override ICacheBuster CacheBuster { get; }
-        public Bundle FileBundle { get; }        
+        public Bundle Bundle { get; }        
         public override string FileKey { get; }
     }
 }

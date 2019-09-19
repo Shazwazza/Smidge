@@ -75,7 +75,7 @@ namespace Smidge.Tests
                 new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
                 Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
 
-            Assert.Equal(1, url.Count());
+            Assert.Single(url);
             Assert.Equal("/sg/Test1.Test2.js.v1", url.First().Url);
             Assert.Equal("test1.test2", url.First().Key);
         }
