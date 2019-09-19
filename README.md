@@ -19,7 +19,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
-* JS source maps (via the [Smidge.Nuglify](https://www.nuget.org/packages/smidge.nuglify) package)
+* JS source maps (via the [Smidge.Nuglify](https://github.com/Shazwazza/Smidge/wiki/installation#nuglify-minification-engine) package)
 * File watchers to auto invalidate/refresh a processed bundle
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 
