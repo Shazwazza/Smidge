@@ -102,20 +102,11 @@ namespace Smidge
             services.AddTransient<BundleRequestModel>();
             services.AddTransient<CompositeFileModel>();
 
-#if NETCORE3_0
-
-
+            // NOTE: This wasn't explicitly requred for app previous to .net core 3, however it seems like it should have always been there for 
+            // previous versions anyways. Seems sort of odd that this ever worked without it?
             var builder = services.AddMvcCore();
-            builder.ConfigureApplicationPartManager(manager =>
-            {
-                var assembly = typeof(SmidgeStartup).Assembly;
-                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
-                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
-                {
-                    manager.ApplicationParts.Add(applicationPart);
-                }
-            });
-#endif
+            builder.AddApplicationPart(typeof(SmidgeStartup).Assembly);
+
             return services;
         }
 
