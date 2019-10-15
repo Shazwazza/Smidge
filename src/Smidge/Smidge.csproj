@@ -18,7 +18,6 @@
     <OutputType>Library</OutputType>
     <StartupObject />
     <IsPackable>true</IsPackable>
-    <VersionSuffix>beta.1</VersionSuffix>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
