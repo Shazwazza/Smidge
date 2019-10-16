@@ -28,7 +28,7 @@ twitter_username: shazwazza
 github_username:  shazwazza
 
 # Build settings
-theme: minima
+theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
 
