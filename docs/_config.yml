@@ -1,1 +1,10 @@
+title: Smidge
+# email: your-email@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  A lightweight runtime CSS/JavaScript file minification, combination, compression & management library for ASP.Net Core.
+baseurl: "/Smidge" # the subpath of your site, e.g. /blog
+url: "https://shazwazza.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: shazwazza
+github_username:  shazwazza
+
 theme: jekyll-theme-cayman
