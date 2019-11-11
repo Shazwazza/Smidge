@@ -7,6 +7,10 @@
 
 A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net (.NET Standard)**
 
+---
+_❤️ If you use and like Articulate please consider [becoming a GitHub Sponsor](https://github.com/sponsors/Shazwazza/) ❤️_
+
+
 ## News
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
 * [2.0.0 is out!](https://shazwazza.com/post/smidge-plus-nuglify-bundling-minification-and-source-maps/)
