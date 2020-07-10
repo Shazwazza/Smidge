@@ -212,7 +212,7 @@ namespace Smidge.Controllers
                     .Cast<Stream>()
                     .ToList();
 
-                var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";" : "\n";
+                var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";\n" : "\n";
                 var combined = await bundleContext.GetCombinedStreamAsync(inputs, delimeter);
                 return combined;
             }
