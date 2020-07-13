@@ -124,13 +124,13 @@ namespace Smidge.Tests
         public void Get_File_Info_Non_Existent_File_Throws_Informative_Exception()
         {
 
-            var webRootPath = "C:\\MySolution\\MyProject";
+            var webRootPath = $"C:{Path.DirectorySeparatorChar}MySolution{Path.DirectorySeparatorChar}MyProject";
 
             var url = "~/Js/Test1.js";
 
             var fileProvider = new Mock<IFileProvider>();
             var file = new Mock<IFileInfo>();
-            string filePath = Path.Combine(webRootPath, "Js\\Test1.js");
+            string filePath = Path.Combine(webRootPath, $"Js{Path.DirectorySeparatorChar}Test1.js");
 
             file.Setup(x => x.Exists).Returns(false);
             file.Setup(x => x.IsDirectory).Returns(false);
@@ -157,8 +157,8 @@ namespace Smidge.Tests
         [Fact]
         public void Reverse_Map_Path()
         {
-            var webRootPath = "C:\\MySolution\\MyProject";
-            var subPath = "Js\\Test1.js";
+            var webRootPath = $"C:{Path.DirectorySeparatorChar}MySolution{Path.DirectorySeparatorChar}MyProject";
+            var subPath = $"Js{Path.DirectorySeparatorChar}Test1.js";
             var filePath = Path.Combine(webRootPath, subPath);
 
             var file = new Mock<IFileInfo>();
@@ -181,6 +181,9 @@ namespace Smidge.Tests
                 Mock.Of<IHasher>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);
+
+            //Expected: ~/Js/Test1.js
+            //Actual:   ~/Js/Test1.js/Js\Test1.js
 
             Assert.Equal("~/Js/Test1.js", result);
         }
