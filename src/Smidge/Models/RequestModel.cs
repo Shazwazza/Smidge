@@ -12,6 +12,11 @@ namespace Smidge.Models
     {
         protected RequestModel(string valueName, IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
         {
+            if (string.IsNullOrWhiteSpace(valueName)) throw new ArgumentException("message", nameof(valueName));
+            if (urlManager is null) throw new ArgumentNullException(nameof(urlManager));
+            if (accessor is null)throw new ArgumentNullException(nameof(accessor));
+            if (requestHelper is null)throw new ArgumentNullException(nameof(requestHelper));
+
             //default 
             LastFileWriteTime = DateTime.Now;
 
@@ -19,6 +24,10 @@ namespace Smidge.Models
 
             var bundleId = (string)accessor.ActionContext.RouteData.Values[valueName];
             ParsedPath = urlManager.ParsePath(bundleId);
+
+            if (ParsedPath == null)
+                throw new InvalidOperationException($"Could not parse {bundleId} as a valid smidge path");
+
             Debug = ParsedPath.Debug;
 
             switch (ParsedPath.WebType)
