@@ -11,6 +11,7 @@ using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;
 using Smidge.Nuglify;
+using Microsoft.Extensions.Hosting;
 
 namespace Smidge.Web
 {
@@ -35,7 +36,7 @@ namespace Smidge.Web
         /// a sub configuration value of 'smidge'
         /// </summary>
         /// <param name="env"></param>
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -91,10 +92,8 @@ namespace Smidge.Web
             return null;
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddDebug(LogLevel.Debug);
-
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
@@ -108,10 +107,13 @@ namespace Smidge.Web
             }
 
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("Default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                        name: "Default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}");                
             });
 
             app.UseSmidge(bundles =>

@@ -75,7 +75,7 @@ namespace Smidge.Nuglify
                 sourceMap.StartPackage(fileName, fileName + ".map");
             }
 
-            //no do the processing
+            //now do the processing
             var result = Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
 
             if (result.HasErrors)

@@ -1,5 +1,7 @@
 using NUglify.Css;
 using NUglify.JavaScript;
+using System;
+using System.ComponentModel;
 
 namespace Smidge.Nuglify
 {
@@ -10,6 +12,8 @@ namespace Smidge.Nuglify
     {
         public CodeSettings CodeSettings { get; }
 
+        [Obsolete("This is not used and will be removed in future versions")]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public CssSettings CssSettings { get; }
 
         /// <summary>

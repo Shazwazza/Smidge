@@ -20,6 +20,7 @@
             .CreateCssBundle("inline-css-bundle")
             .RequiresCss("~/Css/test1.css", "~/Css/test2.css");
 
+        // This is here just to test what hapens when files don't exist
         SmidgeHelper
             .CreateJsBundle("no-files")
             .RequiresJs("~/Js/not-found*js");

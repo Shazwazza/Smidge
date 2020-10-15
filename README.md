@@ -37,7 +37,7 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 1. Add Smidge config to appsettings.json:
 	```json
 	"smidge": {
-	    "dataFolder" : "App_Data/Smidge",
+	    "dataFolder" : "Smidge",
 	    "version" : "1"
 	  }  
 	```

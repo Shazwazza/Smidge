@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Smidge
 {
@@ -37,7 +38,7 @@ namespace Smidge
         
         public string Version => _config["version"] ?? "1";
 
-        public string DataFolder => (_config["dataFolder"] ?? "App_Data/Smidge").Replace("/", "\\");
+        public string DataFolder => (_config["dataFolder"] ?? "Smidge").Replace('/', Path.DirectorySeparatorChar);
         
     }
 }
