@@ -35,23 +35,21 @@ namespace Smidge.FileProcessors
         {
             var sb = new StringBuilder();
 
-            IEnumerable<string> importedPaths;
-            var removedImports = ParseImportStatements(fileProcessContext.FileContent, out importedPaths);
+            var removedImports = ParseImportStatements(fileProcessContext.FileContent, out IEnumerable<string> internalImports, out _);
 
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
-            foreach (var importPath in importedPaths)
+            foreach (var importPath in internalImports)
             {
                 // convert to it's absolute path
                 var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
                 var uri = new Uri(contentPath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
                 var absolute = uri.ToAbsolutePath(importPath);
-
                 var path = _requestHelper.Content(absolute);
+
                 //is it external?
                 if (path.Contains(Constants.SchemeDelimiter))
                 {
-                    //Pretty sure we just leave the external refs in there
-                    //TODO: Look in CDF, we have tests for this, pretty sure the ParseImportStatements removes that
+                    // This should never happend
                 }
                 else
                 {
@@ -92,10 +90,15 @@ namespace Smidge.FileProcessors
         /// </summary>
         /// <param name="content">The original css contents</param>
         /// <param name="importedPaths"></param>
+        /// <param name="externalPaths">
+        /// imports declared that are external resources - this output is just information, those declared imports will remain in the content string 
+        /// to be loaded naturally by the output css file.
+        /// </param>
         /// <returns></returns>
-        internal string ParseImportStatements(string content, out IEnumerable<string> importedPaths)
+        internal string ParseImportStatements(string content, out IEnumerable<string> importedPaths, out IEnumerable<string> externalPaths)
         {
-            var pathsFound = new List<string>();
+            var internalPathsFound = new List<string>();
+            var externalPathsFound = new List<string>();
             var matches = RegexStatements.ImportCssRegex.Matches(content);
             foreach (Match match in matches)
             {                
@@ -104,10 +107,14 @@ namespace Smidge.FileProcessors
                 if (urlMatch.Success && urlMatch.Groups.Count >= 2)
                 {
                     var path = urlMatch.Groups[1].Value.Trim('\'', '"');
-                    if (_requestHelper.IsExternalRequestPath(path)) continue;
+                    if (_requestHelper.IsExternalRequestPath(path))
+                    {
+                        externalPathsFound.Add(path);
+                        continue;
+                    }
                 }
                 
-                //Strip the import statement                
+                //Strip the import statement
                 content = content.ReplaceFirst(match.Value, "");
 
                 //get the last non-empty match
@@ -116,10 +123,11 @@ namespace Smidge.FileProcessors
                 //Ignore external imports - this will occur if they are not wrapped in a url block
                 if (_requestHelper.IsExternalRequestPath(filePath)) continue;
 
-                pathsFound.Add(filePath);
+                internalPathsFound.Add(filePath);
             }
 
-            importedPaths = pathsFound;
+            importedPaths = internalPathsFound;
+            externalPaths = externalPathsFound;
             return content.Trim();
         }
 
