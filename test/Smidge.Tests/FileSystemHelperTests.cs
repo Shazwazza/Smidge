@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 using Moq;
 using System.IO;
@@ -11,122 +10,11 @@ using Smidge.Hashing;
 
 namespace Smidge.Tests
 {
-
     public class FileSystemHelperTests
     {
-        [Fact]
-        public void No()
+        private FileSystemHelper Create(IWebsiteInfo websiteInfo, string url = "~/Js/Test1.js")
         {
-
-            var url = "~/test/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("/test/hello.js", result);
-        }
-
-        [Fact]
-        public void Normalize_Web_Path_Virtual_Path()
-        {
-
-            var url = "~/test/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-           
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("/test/hello.js", result);
-        }
-
-        [Fact]
-        public void Normalize_Web_Path_Relative()
-        {
-
-            var url = "test/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("test/hello.js", result);
-        }
-
-        [Fact]
-        public void Normalize_Web_Path_Absolute()
-        {
-
-            var url = "/test/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("/test/hello.js", result);
-        }
-
-        [Fact]
-        public void Normalize_Web_Path_External_Schemaless()
-        {
-
-            var url = "//test.com/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("http://test.com/hello.js", result);
-        }
-
-        [Fact]
-        public void Normalize_Web_Path_External_With_Schema()
-        {
-
-            var url = "http://test.com/hello.js";
-
-            var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
-            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
-
-            var urlHelper = new RequestHelper(websiteInfo.Object);
-
-
-            var result = urlHelper.Content(url);
-
-            Assert.Equal("http://test.com/hello.js", result);
-        }
-        
-        
-        
-
-        [Fact]
-        public void Get_File_Info_Non_Existent_File_Throws_Informative_Exception()
-        {
-
             var webRootPath = $"C:{Path.DirectorySeparatorChar}MySolution{Path.DirectorySeparatorChar}MyProject";
-
-            var url = "~/Js/Test1.js";
 
             var fileProvider = new Mock<IFileProvider>();
             var file = new Mock<IFileInfo>();
@@ -145,7 +33,22 @@ namespace Smidge.Tests
             var helper = new FileSystemHelper(
                 Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
                 Mock.Of<ISmidgeConfig>(),
-                hasher);
+                hasher,
+                websiteInfo);
+
+            return helper;
+        }
+
+        [Fact]
+        public void Get_File_Info_Non_Existent_File_Throws_Informative_Exception()
+        {
+            var url = "~/Js/Test1.js";
+
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var helper = Create(websiteInfo.Object, url);
 
             FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetFileInfo(url));
 
@@ -178,7 +81,8 @@ namespace Smidge.Tests
             var helper = new FileSystemHelper(
                 Mock.Of<IHostingEnvironment>(x => x.WebRootPath == webRootPath && x.WebRootFileProvider == fileProvider.Object),
                 Mock.Of<ISmidgeConfig>(),
-                Mock.Of<IHasher>());
+                Mock.Of<IHasher>(),
+                Mock.Of<IWebsiteInfo>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);
 

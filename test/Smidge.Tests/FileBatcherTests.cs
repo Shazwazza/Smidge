@@ -20,7 +20,7 @@ namespace Smidge.Tests
         public void Get_Composite_File_Collection_For_Url_Generation_No_Duplicates()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -30,7 +30,7 @@ namespace Smidge.Tests
             var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher, websiteInfo.Object);
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -51,7 +51,7 @@ namespace Smidge.Tests
         public void Get_Composite_File_Collection_For_Url_Generation()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -61,7 +61,7 @@ namespace Smidge.Tests
             var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);          
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher, websiteInfo.Object);          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

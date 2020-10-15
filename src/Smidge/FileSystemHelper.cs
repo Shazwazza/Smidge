@@ -13,6 +13,7 @@ using Smidge.CompositeFiles;
 using Smidge.Hashing;
 using Smidge.Models;
 using Smidge.Options;
+using System.Diagnostics;
 
 namespace Smidge
 {
@@ -22,7 +23,7 @@ namespace Smidge
     public sealed class FileSystemHelper
     {
         private readonly ISmidgeConfig _config;
-#if NETCORE3_0        
+#if NETCORE3_0
         private readonly IWebHostEnvironment _hostingEnv;
 #else
         private readonly IHostingEnvironment _hostingEnv;
@@ -30,46 +31,46 @@ namespace Smidge
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocker = new ConcurrentDictionary<string, SemaphoreSlim>();
         private readonly IFileProvider _fileProvider;
         private readonly IHasher _hasher;
+        private readonly IWebsiteInfo _siteInfo;
 
-#if NETCORE3_0        
-        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
+#if NETCORE3_0
+        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher, IWebsiteInfo siteInfo)
 #else
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IFileProvider fileProvider, IHasher hasher, IWebsiteInfo siteInfo)
 #endif
         {
             _hasher = hasher;
+            _siteInfo = siteInfo;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = fileProvider;
         }
 
 #if NETCORE3_0        
-        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
+        public FileSystemHelper(IWebHostEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher, IWebsiteInfo siteInfo)
 #else
-        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher)
+        public FileSystemHelper(IHostingEnvironment hostingEnv, ISmidgeConfig config, IHasher hasher, IWebsiteInfo siteInfo)
 #endif
         {
             _hasher = hasher;
+            _siteInfo = siteInfo;
             _config = config;
             _hostingEnv = hostingEnv;
             _fileProvider = hostingEnv.WebRootFileProvider;
         }
-        public IFileInfo GetFileInfo(IWebFile webfile)
-        {
-            var path = webfile.FilePath.TrimStart(new[] { '~' });
-            var fileInfo = _fileProvider.GetFileInfo(path);
+        public IFileInfo GetFileInfo(IWebFile webfile) => GetFileInfo(webfile.FilePath);
 
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath} (mapped from {path})", fileInfo.PhysicalPath);
-            }
-
-            return fileInfo;
-        }
-
+        /// <summary>
+        /// Get <see cref="IFileInfo"/> for the filePath specified
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException">Will throw if the file is not found</exception>
         public IFileInfo GetFileInfo(string filePath)
         {
-            var path = filePath.TrimStart(new[] { '~' });
+            var path = ConvertToFileProviderPath(filePath);
+            //string pathBase = (_siteInfo.GetBasePath() ?? string.Empty).TrimEnd('/');
+            //path = path.Substring(pathBase.Length);
             var fileInfo = _fileProvider.GetFileInfo(path);
 
             if (!fileInfo.Exists)
@@ -87,7 +88,7 @@ namespace Smidge
         /// <returns></returns>
         public bool IsFolder(string path)
         {
-            var fileInfo = _fileProvider.GetFileInfo(path);
+            var fileInfo = _fileProvider.GetFileInfo(ConvertToFileProviderPath(path));
             if (fileInfo == null) return false;
 
             if (fileInfo.IsDirectory)
@@ -123,8 +124,8 @@ namespace Smidge
             var parts = folderPath.Split('*');
             var folderPart = parts[0];
             var extensionFilter = parts.Length > 1 ? parts[1] : null;
-
-            var folderContents = _fileProvider.GetDirectoryContents(folderPart);
+            var fileProviderFolderPath = ConvertToFileProviderPath(folderPart);
+            var folderContents = _fileProvider.GetDirectoryContents(fileProviderFolderPath);
 
             if (folderContents.Exists)
             {
@@ -133,7 +134,7 @@ namespace Smidge
                     ? folderContents
                     : folderContents.Where(
                         (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.Name) == string.Format(".{0}", extensionFilter));
-                return files.Select(x => ReverseMapPath(folderPart, x));
+                return files.Select(x => ReverseMapPath(fileProviderFolderPath, x));
             }
 
             return Enumerable.Empty<string>();
@@ -311,7 +312,7 @@ namespace Smidge
         /// </returns>
         public bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback)
         {
-            var path = webFile.FilePath.TrimStart(new[] { '~' }).ToLowerInvariant();
+            var path = ConvertToFileProviderPath(webFile.FilePath).ToLowerInvariant();
 
             //don't double watch if there's already a watcher for this file
             if (_fileWatchers.ContainsKey(path)) return false;
@@ -322,14 +323,43 @@ namespace Smidge
             _fileWatchers.TryAdd(path, changeToken.RegisterChangeCallback(o =>
             {
                 //try to remove the item from the dictionary so it can be added again
-                IDisposable watcher;
-                _fileWatchers.TryRemove(path, out watcher);
+                _fileWatchers.TryRemove(path, out IDisposable watcher);
 
                 //call the callback with the strongly typed object
                 fileModifiedCallback((WatchedFile)o);
             }, watchedFile));
 
             return true;
+        }
+
+        /// <summary>
+        /// Formats a file path into a compatible path for use with the file provider
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// This will handle virtual paths like ~/myfile.js
+        /// This will handle absolute paths like /myfile.js
+        /// This will handle absolute paths like /myvirtualapp/myfile.js - where myvirtualapp is a virtual application (Path Base)
+        /// </remarks>
+        public string ConvertToFileProviderPath(string path)
+        {
+#if NETCORE3_0
+            if (path.StartsWith('~'))
+#else
+            if (path.StartsWith("~"))
+#endif
+            {
+                return path.TrimStart('~');
+            }
+                
+
+            string pathBase = _siteInfo.GetBasePath();
+            
+            if (pathBase.Length > 0 && path.StartsWith(pathBase))
+                return path.Substring(pathBase.Length);
+
+            return path;
         }
 
         //TODO: We need an unwatch

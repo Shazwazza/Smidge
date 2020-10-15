@@ -7,6 +7,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Smidge.FileProcessors
 {
@@ -39,7 +41,9 @@ namespace Smidge.FileProcessors
             //need to write the imported sheets first since these theoretically should *always* be at the top for browser to support them
             foreach (var importPath in importedPaths)
             {
-                var uri = new Uri(fileProcessContext.WebFile.FilePath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
+                // convert to it's absolute path
+                var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
+                var uri = new Uri(contentPath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
                 var absolute = uri.ToAbsolutePath(importPath);
 
                 var path = _requestHelper.Content(absolute);
@@ -52,7 +56,7 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystemHelper.GetFileInfo(path);
+                    var filePath = _fileSystemHelper.GetFileInfo(path); // throws if it doesn't exist
                     var content = await _fileSystemHelper.ReadContentsAsync(filePath);
 
                     //This needs to be put back through the whole pre-processor pipeline before being added,

@@ -63,7 +63,7 @@ namespace Smidge
 #endif
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
 
-                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>());
+                return new FileSystemHelper(hosting, p.GetRequiredService<ISmidgeConfig>(), provider, p.GetRequiredService<IHasher>(), p.GetRequiredService<IWebsiteInfo>());
             });
             services.AddSingleton<ISmidgeConfig>((p) =>
             {

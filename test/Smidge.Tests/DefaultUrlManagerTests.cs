@@ -38,7 +38,7 @@ namespace Smidge.Tests
         public void Make_Bundle_Url()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -59,7 +59,7 @@ namespace Smidge.Tests
         public void Make_Composite_Url()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -84,7 +84,7 @@ namespace Smidge.Tests
         public void Make_Composite_Url_Splits()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -111,7 +111,7 @@ namespace Smidge.Tests
         public void Throws_When_Single_Dependency_Too_Long()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);

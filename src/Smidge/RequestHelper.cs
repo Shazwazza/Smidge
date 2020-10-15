@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 
@@ -44,6 +45,7 @@ namespace Smidge
             // since it is not dependent on the ActionContext
             if (string.IsNullOrEmpty(path))
                 return (string)null;
+            
             if (path[0] == 126)
             {
                 PathString pathBase = _siteInfo.GetBasePath();

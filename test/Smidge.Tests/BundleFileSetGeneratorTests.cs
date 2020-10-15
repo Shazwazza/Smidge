@@ -20,7 +20,7 @@ namespace Smidge.Tests
         public void Get_Ordered_File_Set_No_Duplicates()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -30,7 +30,7 @@ namespace Smidge.Tests
             var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
             var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher);
+            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher, websiteInfo.Object);
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());

@@ -8,7 +8,7 @@ using Smidge.Hashing;
 
 namespace Smidge
 {
-   
+
 
     /// <summary>
     /// Puts a collection of web files into appropriate batches - based on internal vs external dependencies or for other
@@ -78,9 +78,10 @@ namespace Smidge
                         current.AddInternal(subFile, hashedFile);
                     }
                 }
-                else {
-                    var hashedFile = f.Duplicate(_hasher.Hash(webPath));
-                    current.AddInternal(f.Duplicate(webPath), hashedFile);
+                else
+                {
+                    var hashedFile = f.Duplicate(_hasher.Hash(f.FilePath));
+                    current.AddInternal(f.Duplicate(f.FilePath), hashedFile);
                 }
             }
 
@@ -93,6 +94,6 @@ namespace Smidge
             return result;
         }
 
-        
+
     }
 }

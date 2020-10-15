@@ -17,13 +17,15 @@ namespace Smidge.Tests
         {
             var cssWithImport = @"@import url(""//fonts.googleapis.com/css?subset=latin,cyrillic-ext,latin-ext,cyrillic&family=Open+Sans+Condensed:300|Open+Sans:400,600,400italic,600italic|Merriweather:400,300,300italic,400italic,700,700italic|Roboto+Slab:400,300"");
 @import url(""//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css"");";
-                        
-            IEnumerable<string> importPaths;
-            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
 
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            IEnumerable<string> importPaths;
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>(), websiteInfo.Object);
+
+            
             var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo.Object, new RequestHelper(websiteInfo.Object));
             var output = cssImportProcessor.ParseImportStatements(cssWithImport, out importPaths);
 
@@ -43,11 +45,13 @@ namespace Smidge.Tests
 body { color: black; }
 div {display: block;}";
 
-            IEnumerable<string> importPaths;
-            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>());
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            IEnumerable<string> importPaths;
+            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>(), websiteInfo.Object);
+            
             var cssImportProcessor = new CssImportProcessor(fileSystemHelper, websiteInfo.Object, new RequestHelper(websiteInfo.Object));
             var output = cssImportProcessor.ParseImportStatements(css, out importPaths);
 

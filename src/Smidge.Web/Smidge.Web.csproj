@@ -23,8 +23,4 @@
     <Folder Include="Smidge\Cache\" />
   </ItemGroup>
 
-  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish">
-    <Exec Command="npm install" />
-  </Target>
-
 </Project>

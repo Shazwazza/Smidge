@@ -206,7 +206,7 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => d.FilePath));
+                result.AddRange(files.Select(d => _requestHelper.Content(d.FilePath)));
                 return result;
             }
 
