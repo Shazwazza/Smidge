@@ -29,8 +29,9 @@ namespace Smidge.Tests
         {
             var css = @"@import url('/css/typography.css');
 @import '/css/layout.css' ;
+/*@import ""bootstrap/variables"";*/
 @import url('http://mysite/css/color.css');
-@import url(/css/blah.css);
+ @import url(/css/blah.css);
 @import ""css/blah2.css"";
 @import ""https://mysite.com/css/blah2.css"";
 
@@ -41,7 +42,8 @@ div {display: block;}";
 
             var output = cssImportProcessor.ParseImportStatements(css, out IEnumerable<string> importPaths, out _);
 
-            Assert.Equal(@"@import url('http://mysite/css/color.css');
+            Assert.Equal(@"/*@import ""bootstrap/variables"";*/
+@import url('http://mysite/css/color.css');
 body { color: black; }
 div {display: block;}".Replace("\r\n", string.Empty).Replace("\n", string.Empty), output.Replace("\r\n", string.Empty).Replace("\n", string.Empty));
 
