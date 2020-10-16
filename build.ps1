@@ -99,7 +99,7 @@ foreach($project in $root.ChildNodes) {
 		}
 	}
 	else {
-		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion-$prerelease"
+		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion-$prerelease" -p:FileVersion="$projectVersion-$prerelease"
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."
