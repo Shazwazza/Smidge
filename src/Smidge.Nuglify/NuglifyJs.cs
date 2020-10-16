@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,6 +81,7 @@ namespace Smidge.Nuglify
 
             if (result.HasErrors)
             {
+                Debugger.Launch();
                 throw new InvalidOperationException(
                     string.Join(",", result.Errors.Select(x => x.ToString())));
             }

@@ -92,7 +92,7 @@ if (-not $?)
 	throw "The dotnet restore process returned an error code."
 }
 
-& $DOTNET build "$SmidgeSln" --configuration "Release"
+& $DOTNET build "$SmidgeSln" --configuration "Debug"
 if (-not $?)
 {
 	throw "The dotnet build process returned an error code."
