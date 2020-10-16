@@ -82,7 +82,7 @@ namespace Smidge.Nuglify
             {
                 //TODO: need to format this exception message nicely
                 throw new InvalidOperationException(
-                    string.Join(",", result.Errors.Select(x => x.Message)));
+                    string.Join(",", result.Errors.Select(x => x.Message + " (file: " + x.File + ")")));
             }
 
             fileProcessContext.Update(result.Code);

@@ -89,6 +89,7 @@ namespace Smidge
 
             //pre-processors
             services.AddSingleton<IPreProcessor, JsMinifier>();
+            services.AddSingleton<IPreProcessor, JsSourceMapProcessor>();
             services.AddSingleton<IPreProcessor, CssMinifier>();
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();

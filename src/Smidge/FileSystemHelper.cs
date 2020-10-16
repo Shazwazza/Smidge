@@ -191,6 +191,8 @@ namespace Smidge
             }
         }
 
+        internal void CopyFile(string sourcePath, string destPath) => File.Copy(sourcePath, destPath);
+
         internal async Task WriteContentsAsync(string filePath, string contents)
         {            
             var locker = _fileLocker.GetOrAdd(filePath, x => new SemaphoreSlim(1));

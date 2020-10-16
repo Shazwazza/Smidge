@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Linq;
+using Smidge.FileProcessors;
 using Smidge.Models;
 
-namespace Smidge.FileProcessors
+namespace Smidge.Nuglify
 {
+
     /// <summary>
     /// Remove the minifiers from the pipeline if the file path matches the minified globbing pattern.
     /// </summary>
-    public class MinifiedFilePathConvention : IFileProcessingConvention
+    public class NuglifyMinifiedFilePathConvention : IFileProcessingConvention
     {
         public IWebFile Apply(IWebFile file)
         {
             var pattern = file.DependencyType == WebFileType.Css ? "min.css" : "min.js";
             if (file.FilePath.EndsWith(pattern, StringComparison.OrdinalIgnoreCase))
             {
-                var found = file.Pipeline.Processors.Where(x => x is JsMinifier || x is CssMinifier).ToList();
+                var found = file.Pipeline.Processors.Where(x => x is NuglifyJs || x is NuglifyCss).ToList();
                 if (found.Count > 0)
                 {
                     // copy the pipeline 

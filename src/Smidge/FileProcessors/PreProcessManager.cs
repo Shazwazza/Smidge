@@ -80,21 +80,25 @@ namespace Smidge.FileProcessors
                 _logger.LogDebug($"File already in cache '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled}");
             }
             else
-            {
-                _logger.LogDebug($"Processing file '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled} ...");
-
-                var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo.Value);
-
-                var watch = new Stopwatch();
-                watch.Start();
-                //process the file
-                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file, bundleContext));
-                watch.Stop();
-
-                _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
-
-                //save it to the cache path
-                await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+            {                
+                if (file.Pipeline.Processors.Count > 0)
+                {
+                    _logger.LogDebug($"Processing file '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled} ...");
+                    var contents = await _fileSystemHelper.ReadContentsAsync(fileInfo.Value);
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    //process the file
+                    var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file, bundleContext));
+                    watch.Stop();
+                    _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
+                    //save it to the cache path
+                    await _fileSystemHelper.WriteContentsAsync(cacheFile, processed);
+                }
+                else
+                {
+                    // we can just copy the the file as-is to the cache file
+                    _fileSystemHelper.CopyFile(fileInfo.Value.PhysicalPath, cacheFile);
+                }
             }
 
             //If file watching is enabled, then watch it - this is regardless of whether the cache file exists or not

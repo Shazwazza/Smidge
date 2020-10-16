@@ -8,7 +8,7 @@ namespace Smidge.Options
     /// <summary>
     /// Custom collection to validate types
     /// </summary>
-    internal class FileProcessingConventionsCollection : Collection<Type>
+    public sealed class FileProcessingConventionsCollection : Collection<Type>
     {
         protected override void InsertItem(int index, Type item)
         {

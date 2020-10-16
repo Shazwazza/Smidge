@@ -28,7 +28,12 @@ namespace Smidge.Nuglify
             services.AddSingleton<ISourceMapDeclaration, SourceMapDeclaration>();
 
             services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()));
-            
+
+            services.AddTransient<IConfigureOptions<SmidgeOptions>, NuglifySmidgeOptionsSetup>();
+
+            //conventions
+            services.AddSingleton<IFileProcessingConvention, NuglifyMinifiedFilePathConvention>();
+
             return services;
         }
 

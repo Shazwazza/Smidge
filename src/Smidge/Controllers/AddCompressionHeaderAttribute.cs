@@ -61,6 +61,8 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
+                if (context.Exception != null) return;
+
                 //get the model from the items
                 if (!context.HttpContext.Items.ContainsKey(nameof(AddCompressionHeaderAttribute))) return;
                 var file = context.HttpContext.Items[nameof(AddCompressionHeaderAttribute)] as RequestModel;

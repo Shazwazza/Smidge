@@ -1,6 +1,4 @@
 ﻿using Smidge.FileProcessors;
-using System;
-using System.IO;
 
 namespace Smidge.Models
 {

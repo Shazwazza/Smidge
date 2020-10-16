@@ -1,5 +1,4 @@
 using System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Smidge.CompositeFiles;
 using Smidge.Models;
@@ -7,20 +6,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Smidge.Cache;
 using Smidge.FileProcessors;
-using Smidge.Hashing;
 
 namespace Smidge.Controllers
 {
 
     /// <summary>
     /// Controller for handling minified/combined responses
-    /// </summary>    
+    /// </summary>
     [AddCompressionHeader(Order = 0)]
     [AddExpiryHeaders(Order = 1)]
     [CheckNotModified(Order = 2)]

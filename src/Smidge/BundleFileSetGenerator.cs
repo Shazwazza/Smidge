@@ -63,7 +63,7 @@ namespace Smidge
                 ValidateFile(file);
                 if (file.Pipeline == null)
                 {
-                    file.Pipeline = pipeline.Copy();
+                    file.Pipeline = pipeline;
                 }
                 
                 //We need to check if this path is a folder, then iterate the files
