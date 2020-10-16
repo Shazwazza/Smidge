@@ -81,7 +81,6 @@ namespace Smidge.Nuglify
 
             if (result.HasErrors)
             {
-                Debugger.Launch();
                 throw new InvalidOperationException(
                     string.Join(",", result.Errors.Select(x => x.ToString())));
             }

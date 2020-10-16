@@ -61,23 +61,9 @@ foreach($project in $root.ChildNodes) {
 
 }
 
-# Build the proj in release mode
-
 & $DOTNET --info
 
-& $DOTNET restore --configfile "$NugetConfig"
-if (-not $?)
-{
-	throw "The dotnet restore process returned an error code."
-}
-
-& $DOTNET build "$SmidgeSln" --configuration "$BuildConfig"
-if (-not $?)
-{
-	throw "The dotnet build process returned an error code."
-}
-
-# Build the nugets for each proj
+# Build the project and nugets for each proj
 
 foreach($project in $root.ChildNodes) {
 
