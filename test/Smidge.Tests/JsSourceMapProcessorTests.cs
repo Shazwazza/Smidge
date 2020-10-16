@@ -14,9 +14,9 @@ namespace Smidge.Tests
         public async Task Source_Map_Removed()
         {
             var js = @"!function(e,t){""function""==typeof define&&define.amd?define([],function();
-//# sourceMappingURL=tmhDynamicLocale.min.js.map;
+//# sourceMappingURL=tmhDynamicLocale.min.js.map
    Testing 123
-   //# sourceMappingURL=https://hello.com/blah.min.js.map;
+   //# sourceMappingURL=https://hello.com/blah.min.js.map ;
  asdf asdf asd fasdf
  //# sourceMappingURL=../blah.min.js.map;
  asdf asdf asd fasdf";
@@ -34,8 +34,8 @@ namespace Smidge.Tests
 //# sourceMappingURL=https://hello.com/blah.min.js.map;
  asdf asdf asd fasdf
 //# sourceMappingURL=/blah.min.js.map;
- asdf asdf asd fasdf", 
-                    fileProcessContext.FileContent);
+ asdf asdf asd fasdf".Replace("\r\n", "\n"), 
+                    fileProcessContext.FileContent.Replace("\r\n", "\n"));
             }
         }
 
