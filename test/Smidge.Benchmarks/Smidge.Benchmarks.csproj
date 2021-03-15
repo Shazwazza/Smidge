@@ -17,9 +17,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.11.5" />
-        <PackageReference Include="Moq" Version="4.13.0" />
+        <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.12.1" />
+        <PackageReference Include="Moq" Version="4.16.1" />
     </ItemGroup>
 
     <ItemGroup>

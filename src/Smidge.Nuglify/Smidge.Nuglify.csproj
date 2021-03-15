@@ -27,7 +27,7 @@
     <ProjectReference Include="..\Smidge\Smidge.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Nuglify" Version="1.9.9" />
+    <PackageReference Include="Nuglify" Version="1.13.6" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />

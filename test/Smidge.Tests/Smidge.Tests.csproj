@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
         <AssemblyName>Smidge.Tests</AssemblyName>
         <PackageId>Smidge.Tests</PackageId>
         <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -12,10 +12,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="xunit" Version="2.3.0-beta4-build3742" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta4-build3742" />        
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />        
-        <PackageReference Include="Moq" Version="4.7.99" />
+        <PackageReference Include="NUglify" Version="1.13.6" />
+        <PackageReference Include="xunit" Version="2.4.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>        
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />        
+        <PackageReference Include="Moq" Version="4.16.1" />
         <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
         <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.0-beta4-build3742" />
     </ItemGroup>
