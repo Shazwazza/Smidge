@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NUglify;
 using NUglify.Helpers;
+using NUglify.JavaScript;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Models;
@@ -25,8 +26,7 @@ namespace Smidge.Nuglify
         }
         
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
-        {
-            
+        {            
             //Info for source mapping, see http://ajaxmin.codeplex.com/wikipage?title=SourceMaps
             // as an example, see http://ajaxmin.codeplex.com/SourceControl/latest#AjaxMinTask/AjaxMinManifestTask.cs under ProcessJavaScript
             // When a source map provider is specified, the process is:
@@ -77,7 +77,7 @@ namespace Smidge.Nuglify
             }
 
             //now do the processing
-            var result = Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
+            var result = NuglifyProcess(fileProcessContext, codeSettings);
 
             if (result.HasErrors)
             {
@@ -95,6 +95,15 @@ namespace Smidge.Nuglify
             return next(fileProcessContext);
         }
 
+        /// <summary>
+        /// Processes the file content by Nuglify
+        /// </summary>
+        /// <remarks>
+        /// This is virtual allowing developers to override this in cases where customizations may need to be done 
+        /// to the Nuglify process. For example, changing the FilePath used.
+        /// </remarks>
+        protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
+            => Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
 
         /// <summary>
         /// Adds a SourceMapAppender into the current bundle context if it doesn't already exist

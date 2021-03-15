@@ -15,8 +15,6 @@ namespace Smidge.CompositeFiles
     /// </summary>
     public class BundleContext : IDisposable
     {
-        
-
         /// <summary>
         /// Creates an empty <see cref="BundleContext"/> which does not track prependers or appenders
         /// </summary>
@@ -41,6 +39,7 @@ namespace Smidge.CompositeFiles
         private readonly FileInfo _bundleCompositeFile;
 
         public IRequestModel BundleRequest { get; }
+
         /// <summary>
         /// Allows for any <see cref="IPreProcessor"/> to track state among the collection of files
         /// </summary>
