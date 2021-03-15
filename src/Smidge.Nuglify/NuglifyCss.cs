@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using NUglify;
+using NUglify.Css;
 using Smidge.FileProcessors;
 using Smidge.Models;
 
@@ -22,7 +23,7 @@ namespace Smidge.Nuglify
             if (fileProcessContext.WebFile.DependencyType == WebFileType.Js)
                 throw new InvalidOperationException("Cannot use " + nameof(NuglifyCss) + " with a js file source");
             
-            var result = Uglify.Css(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, _settings.CssCodeSettings);
+            var result = NuglifyProcess(fileProcessContext, _settings.CssCodeSettings);
 
             if (result.HasErrors)
             {
@@ -35,5 +36,15 @@ namespace Smidge.Nuglify
 
             return next(fileProcessContext);
         }
+
+        /// <summary>
+        /// Processes the file content by Nuglify
+        /// </summary>
+        /// <remarks>
+        /// This is virtual allowing developers to override this in cases where customizations may need to be done 
+        /// to the Nuglify process. For example, changing the FilePath used.
+        /// </remarks>
+        protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CssSettings cssSettings)
+            => Uglify.Css(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, cssSettings);
     }
 }

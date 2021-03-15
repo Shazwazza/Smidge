@@ -1,4 +1,4 @@
-version: 3.2.0-build.{build}
+version: 3.2.1-build.{build}
 skip_tags: true
 image: Visual Studio 2019 Preview
 build_script:

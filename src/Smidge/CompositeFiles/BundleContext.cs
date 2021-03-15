@@ -16,8 +16,6 @@ namespace Smidge.CompositeFiles
     /// </summary>
     public class BundleContext : IDisposable
     {
-        
-
         /// <summary>
         /// Creates an empty <see cref="BundleContext"/> which does not track prependers or appenders
         /// </summary>

@@ -2,8 +2,8 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge.Nuglify</AssemblyTitle>
     <Description>A Nuglify engine for Smidge</Description>
-    <VersionPrefix>3.2.0</VersionPrefix>
-    <Copyright>Copyright © Shannon Deminick 2020</Copyright>
+    <VersionPrefix>3.2.1</VersionPrefix>
+    <Copyright>Copyright © Shannon Deminick 2021</Copyright>
     <Authors>Shannon Deminick</Authors>
     <TargetFrameworks>netcoreapp3.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>Smidge.Nuglify</AssemblyName>
