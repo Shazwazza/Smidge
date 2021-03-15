@@ -42,6 +42,7 @@ namespace Smidge.CompositeFiles
         private readonly IFileInfo _bundleCompositeFile;
 
         public IRequestModel BundleRequest { get; }
+
         /// <summary>
         /// Allows for any <see cref="IPreProcessor"/> to track state among the collection of files
         /// </summary>
