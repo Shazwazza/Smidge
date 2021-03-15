@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,14 +76,13 @@ namespace Smidge.Nuglify
                 sourceMap.StartPackage(fileName, fileName + ".map");
             }
 
-            //no do the processing
+            //now do the processing
             var result = Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
 
             if (result.HasErrors)
             {
-                //TODO: need to format this exception message nicely
                 throw new InvalidOperationException(
-                    string.Join(",", result.Errors.Select(x => x.Message)));
+                    string.Join(",", result.Errors.Select(x => x.ToString())));
             }
 
             fileProcessContext.Update(result.Code);

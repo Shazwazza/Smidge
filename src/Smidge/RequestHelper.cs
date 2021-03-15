@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
 
 namespace Smidge
 {
@@ -33,6 +33,9 @@ namespace Smidge
         /// <returns></returns>
         public string Content(string path)
         {
+            if (string.IsNullOrEmpty(path))
+                return null;
+
             //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
             // logic to work properly
             if (path.StartsWith("//"))
@@ -43,8 +46,6 @@ namespace Smidge
 
             //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
             // since it is not dependent on the ActionContext
-            if (string.IsNullOrEmpty(path))
-                return (string)null;
             if (path[0] == 126)
             {
                 PathString pathBase = _siteInfo.GetBasePath();

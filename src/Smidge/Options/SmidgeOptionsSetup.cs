@@ -10,7 +10,7 @@ namespace Smidge.Options
     /// </summary>
     public sealed class SmidgeOptionsSetup : ConfigureOptions<SmidgeOptions>
     {
-        public SmidgeOptionsSetup(PreProcessPipelineFactory pipelineFactory, IServiceProvider serviceProvider) : base(ConfigureSmidge)
+        public SmidgeOptionsSetup(PreProcessPipelineFactory pipelineFactory) : base(ConfigureSmidge)
         {
             PipelineFactory = pipelineFactory;
         }

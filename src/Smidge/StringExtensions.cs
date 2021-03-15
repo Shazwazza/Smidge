@@ -16,7 +16,7 @@ namespace Smidge
         internal static string TrimExtension(this string input, string extension)
         {
             extension = extension.TrimStart('.');
-            var li = input.LastIndexOf(".");
+            var li = input.LastIndexOf('.');
             if (li > 0)
             {
                 input = input.Substring(0, li);

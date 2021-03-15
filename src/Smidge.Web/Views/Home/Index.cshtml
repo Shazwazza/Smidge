@@ -21,6 +21,7 @@
             .CreateCssBundle("inline-css-bundle")
             .RequiresCss("~/Css/test1.css", "~/Css/test2.css");
 
+        // This is here just to test what hapens when files don't exist
         SmidgeHelper
             .CreateJsBundle("no-files")
             .RequiresJs("~/Js/not-found*js");
@@ -36,8 +37,8 @@
 </head>
 <body>
 
-    @Html.Partial("TopBar")
-    @Html.Partial("LoadedDependencies", false)
+    @await Html.PartialAsync("TopBar")
+    @await Html.PartialAsync("LoadedDependencies", false)
 
     @await SmidgeHelper.JsHereAsync(debug: false)
     @await SmidgeHelper.JsHereAsync("test-bundle-1")

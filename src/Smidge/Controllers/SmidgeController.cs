@@ -17,11 +17,11 @@ namespace Smidge.Controllers
 
     /// <summary>
     /// Controller for handling minified/combined responses
-    /// </summary>    
+    /// </summary>
     [AddCompressionHeader(Order = 0)]
     [AddExpiryHeaders(Order = 1)]
     [CheckNotModified(Order = 2)]
-    [CompositeFileCacheFilter(Order = 3)]        
+    [CompositeFileCacheFilter(Order = 3)]
     public class SmidgeController : Controller
     {
         private readonly ISmidgeFileSystem _fileSystem;
@@ -30,7 +30,7 @@ namespace Smidge.Controllers
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly PreProcessManager _preProcessManager;
         private readonly ILogger _logger;
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -59,35 +59,34 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for named bundles
         /// </summary>
-        /// <param name="bundle">The bundle model</param>
+        /// <param name="bundleModel">The bundle model</param>
         /// <returns></returns>       
         public async Task<IActionResult> Bundle(
-            [FromServices]BundleRequestModel bundle)
+            [FromServices] BundleRequestModel bundleModel)
         {
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out Bundle foundBundle))
+            if (!_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
             {
                 return NotFound();
             }
 
-            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundle.Debug);
+            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
 
             //now we need to determine if this bundle has already been created
-            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(bundle.CacheBuster, bundle.Compression, bundle.FileKey);
+            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(bundleModel.CacheBuster, bundleModel.Compression, bundleModel.FileKey);
             if (cacheFile.Exists)
             {
-                //this is already processed, return it
+                _logger.LogDebug($"Returning bundle '{bundleModel.FileKey}' from cache");
 
-                _logger.LogDebug($"Returning bundle '{bundle.FileKey}' from cache");
 
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
                 {
                     //if physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
                     //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
-                    return PhysicalFile(cacheFile.PhysicalPath, bundle.Mime);
+                    return PhysicalFile(cacheFile.PhysicalPath, bundleModel.Mime);
                 }
                 else
                 {
-                    return File(cacheFile.CreateReadStream(), bundle.Mime);
+                    return File(cacheFile.CreateReadStream(), bundleModel.Mime);
                 }
             }
 
@@ -105,12 +104,12 @@ namespace Smidge.Controllers
             {
                 return NotFound();
             }
-            
-            using (var bundleContext = new BundleContext(bundle, cacheFile))
+
+            using (var bundleContext = new BundleContext(bundleModel, cacheFile))
             {
                 var watch = new Stopwatch();
                 watch.Start();
-                _logger.LogDebug($"Processing bundle '{bundle.FileKey}', debug? {bundle.Debug} ...");
+                _logger.LogDebug($"Processing bundle '{bundleModel.FileKey}', debug? {bundleModel.Debug} ...");
 
                 //we need to do the minify on the original files
                 foreach (var file in files)
@@ -120,14 +119,14 @@ namespace Smidge.Controllers
 
                 //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
                 var filePaths = files.Select(x => _fileSystem.CacheFileSystem.GetCacheFile(
-                    x, () => _fileSystem.SourceFileProvider.GetRequiredFileInfo(x), bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundle.CacheBuster));
+                    x, () => _fileSystem.SourceFileProvider.GetRequiredFileInfo(x), bundleOptions.FileWatchOptions.Enabled, Path.GetExtension(x.FilePath), bundleModel.CacheBuster));
 
                 using (var resultStream = await GetCombinedStreamAsync(filePaths, bundleContext))
                 {
                     //compress the response (if enabled)
                     var compressedStream = await Compressor.CompressAsync(
                         //do not compress anything if it's not enabled in the bundle options
-                        bundleOptions.CompressResult ? bundle.Compression : CompressionType.none,
+                        bundleOptions.CompressResult ? bundleModel.Compression : CompressionType.none,
                         resultStream);
 
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
@@ -135,10 +134,10 @@ namespace Smidge.Controllers
                     // the raw file if it exists for further requests to this path
                     await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFile, compressedStream);
 
-                    _logger.LogDebug($"Processed bundle '{bundle.FileKey}' in {watch.ElapsedMilliseconds}ms");
+                    _logger.LogDebug($"Processed bundle '{bundleModel.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
                     //return the stream
-                    return File(compressedStream, bundle.Mime);
+                    return File(compressedStream, bundleModel.Mime);
                 }
             }
         }
@@ -149,7 +148,7 @@ namespace Smidge.Controllers
         /// <param name="file"></param>
         /// <returns></returns>
         public async Task<IActionResult> Composite(
-             [FromServices]CompositeFileModel file)
+             [FromServices] CompositeFileModel file)
         {
             if (!file.ParsedPath.Names.Any())
             {
@@ -174,7 +173,7 @@ namespace Smidge.Controllers
                     return File(cacheFile.CreateReadStream(), file.Mime);
                 }
             }
-            
+
             using (var bundleContext = new BundleContext(file, cacheFile))
             {
                 var files = file.ParsedPath.Names.Select(filePath =>
@@ -216,7 +215,7 @@ namespace Smidge.Controllers
                     .Select(x => x.CreateReadStream())
                     .ToList();
 
-                var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";" : "\n";
+                var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";\n" : "\n";
                 var combined = await bundleContext.GetCombinedStreamAsync(inputs, delimeter);
                 return combined;
             }
@@ -232,7 +231,7 @@ namespace Smidge.Controllers
             }
         }
 
-        
+
     }
 
 

@@ -1,4 +1,5 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/y2c08r2wsqsliq7o?svg=true)](https://ci.appveyor.com/project/Shandem/smidge)
+![CI](https://github.com/Shazwazza/Smidge/workflows/CI/badge.svg)
 
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
@@ -6,6 +7,10 @@
 [![NuGet](https://img.shields.io/nuget/v/Smidge.svg)](https://www.nuget.org/packages/smidge)
 
 A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net (.NET Standard)**
+
+---
+_❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](https://github.com/sponsors/Shazwazza/) ❤️_
+
 
 ## News
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
@@ -19,7 +24,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
-* JS source maps (via the [Smidge.Nuglify](https://www.nuget.org/packages/smidge.nuglify) package)
+* JS source maps (via the [Smidge.Nuglify](https://github.com/Shazwazza/Smidge/wiki/installation#nuglify-minification-engine) package)
 * File watchers to auto invalidate/refresh a processed bundle
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 
@@ -32,7 +37,7 @@ A lightweight __runtime__ CSS/JavaScript file minification, combination, compres
 1. Add Smidge config to appsettings.json:
 	```json
 	"smidge": {
-	    "dataFolder" : "App_Data/Smidge",
+	    "dataFolder" : "Smidge",
 	    "version" : "1"
 	  }  
 	```
@@ -138,7 +143,7 @@ I haven't had time to document all of the features and extensibility points just
 
 ## Copyright & Licence
 
-&copy; 2018 by Shannon Deminick
+&copy; 2019 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
 

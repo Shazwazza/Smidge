@@ -38,7 +38,7 @@ namespace Smidge.Tests
         public void Make_Bundle_Url()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -59,7 +59,7 @@ namespace Smidge.Tests
         public void Make_Composite_Url()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -75,7 +75,7 @@ namespace Smidge.Tests
                 new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
                 Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
 
-            Assert.Equal(1, url.Count());
+            Assert.Single(url);
             Assert.Equal("/sg/Test1.Test2.js.v1", url.First().Url);
             Assert.Equal("test1.test2", url.First().Key);
         }
@@ -84,7 +84,7 @@ namespace Smidge.Tests
         public void Make_Composite_Url_Splits()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -111,7 +111,7 @@ namespace Smidge.Tests
         public void Throws_When_Single_Dependency_Too_Long()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);

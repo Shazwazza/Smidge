@@ -11,17 +11,20 @@ namespace Smidge.FileProcessors
     public class CssUrlProcessor : IPreProcessor
     {
         private readonly IWebsiteInfo _siteInfo;
+        private readonly IRequestHelper _requestHelper;
 
-        public CssUrlProcessor(IWebsiteInfo siteInfo)
+        public CssUrlProcessor(IWebsiteInfo siteInfo, IRequestHelper requestHelper)
         {
             if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
             _siteInfo = siteInfo;
+            _requestHelper = requestHelper;
         }
 
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
-            //ensure the Urls in the css are changed to absolute
-            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath);
+            //ensure the Urls in the css are changed to absolute            
+            var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
+            var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, contentPath);
 
             fileProcessContext.Update(parsedUrls);
             return next(fileProcessContext);

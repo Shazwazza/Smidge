@@ -21,7 +21,7 @@ namespace Smidge.Tests
         public void Get_Composite_File_Collection_For_Url_Generation_No_Duplicates()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);
@@ -51,7 +51,7 @@ namespace Smidge.Tests
         public void Get_Composite_File_Collection_For_Url_Generation()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             var urlHelper = new RequestHelper(websiteInfo.Object);

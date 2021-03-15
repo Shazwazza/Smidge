@@ -23,6 +23,7 @@ $PSScriptFilePath = (Get-Item $MyInvocation.MyCommand.Path).FullName
 " PSScriptFilePath = $PSScriptFilePath"
 
 $SolutionRoot = Split-Path -Path $PSScriptFilePath -Parent
+$BuildConfig = "Release"
 
 $DOTNET = "dotnet"
 
@@ -49,55 +50,20 @@ foreach($project in $root.ChildNodes) {
 
 	$projectPath = Join-Path -Path $SolutionRoot -ChildPath ("src\" + $project.id)
 	$csproj = Join-Path -Path $projectPath -ChildPath ($project.id + ".csproj")
-	$projectVersion = $project.version;
-	$prerelease = $project.prerelease;
-	# Override with passed in params
-	if(-not [string]::IsNullOrEmpty($PreReleaseName)){
-		$prerelease = [string]$PreReleaseName
-	}
-
-	Write-Host "Updating verion for $projectPath to ($projectVersion-$prerelease)"
-
+	
 	#Update the csproj with the correct info
 	[xml]$xmlCsproj = Get-Content $csproj
-	$xmlCsproj.Project.PropertyGroup.VersionPrefix = "$projectVersion"
-	#Remove all VersionSuffix elements to start
-	$xmlCsproj.Project.PropertyGroup.SelectNodes("VersionSuffix") | % {   
-		Write-Host "DELETING!"
-        $xmlCsproj.Project.PropertyGroup.RemoveChild($_) | Out-Null
-    }
 
-	#Set the pre release if t here is one
-	if(-not [string]::IsNullOrEmpty($prerelease)){
-		$xmlVersionSuffix = $xmlCsproj.CreateElement("VersionSuffix")
-		[void]$xmlCsproj.Project.PropertyGroup.AppendChild($xmlVersionSuffix)
-		$xmlCsproj.Project.PropertyGroup.VersionSuffix = "$prerelease"	
-	}
-	
 	# Set the copyright
 	$DateYear = (Get-Date).year
-	$xmlCsproj.Project.PropertyGroup.Copyright = "Copyright © Shannon Deminick $DateYear"
+	$xmlCsproj.Project.PropertyGroup[0].Copyright = "Copyright $([char]0x00A9) Shannon Deminick $DateYear"
 	$xmlCsproj.Save($csproj)
 
 }
 
-# Build the proj in release mode
-
 & $DOTNET --info
 
-& $DOTNET restore --configfile "$NugetConfig"
-if (-not $?)
-{
-	throw "The dotnet restore process returned an error code."
-}
-
-& $DOTNET build "$SmidgeSln" --configuration "Release"
-if (-not $?)
-{
-	throw "The dotnet build process returned an error code."
-}
-
-# Build the nugets for each proj
+# Build the project and nugets for each proj
 
 foreach($project in $root.ChildNodes) {
 
@@ -112,14 +78,14 @@ foreach($project in $root.ChildNodes) {
 
 	if([string]::IsNullOrEmpty($prerelease))
 	{
-		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder"
+		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion"
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."
 		}
 	}
 	else {
-		& $DOTNET pack "$csproj" --configuration Release --output "$ReleaseFolder" --version-suffix $prerelease
+		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion-$prerelease" -p:FileVersion="$projectVersion-$prerelease"
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."

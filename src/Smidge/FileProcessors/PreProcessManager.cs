@@ -82,20 +82,25 @@ namespace Smidge.FileProcessors
             }
             else
             {
-                _logger.LogDebug($"Processing file '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled} ...");
-
-                var contents = await _fileSystem.ReadContentsAsync(sourceFile.Value);
-
-                var watch = new Stopwatch();
-                watch.Start();
-                //process the file
-                var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file, bundleContext));
-                watch.Stop();
-
-                _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
-
-                //save it to the cache path
-                await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, processed);
+                if (file.Pipeline.Processors.Count > 0)
+                {
+                    _logger.LogDebug($"Processing file '{file.FilePath}', type: {file.DependencyType}, cacheFile: {cacheFile}, watching? {fileWatchEnabled} ...");
+                    var contents = await _fileSystem.ReadContentsAsync(sourceFile.Value);
+                    var watch = new Stopwatch();
+                    watch.Start();
+                    //process the file
+                    var processed = await file.Pipeline.ProcessAsync(new FileProcessContext(contents, file, bundleContext));
+                    watch.Stop();
+                    _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
+                    //save it to the cache path
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, processed);
+                }
+                else
+                {
+                    // we can just write the the file as-is to the cache file
+                    var contents = await _fileSystem.ReadContentsAsync(sourceFile.Value);
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, contents);
+                }
             }
 
             //If file watching is enabled, then watch it - this is regardless of whether the cache file exists or not
@@ -106,7 +111,7 @@ namespace Smidge.FileProcessors
                 _fileSystem.Watch(file, sourceFile.Value, bundleOptions, FileModified);
             }
         }
-        
+
         /// <summary>
         /// Executed when a processed file is modified
         /// </summary>

@@ -1,45 +1,40 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using NUglify.JavaScript;
 using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Models;
 using Smidge.FileProcessors;
-using Smidge.JavaScriptServices;
 using Smidge.Nuglify;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace Smidge.Web
 {
-    public class DotlessPreProcessor : IPreProcessor
-    {
-        private readonly IHostingEnvironment _hostingEnvironment;
+    //public class DotlessPreProcessor : IPreProcessor
+    //{
+    //    private readonly IHostingEnvironment _hostingEnvironment;
 
-        public DotlessPreProcessor(IHostingEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment;
-        }
+    //    public DotlessPreProcessor(IHostingEnvironment hostingEnvironment)
+    //    {
+    //        _hostingEnvironment = hostingEnvironment;
+    //    }
 
-        public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
-        {
-            if (Path.GetExtension(fileProcessContext.WebFile.FilePath) == ".less")
-            {
-                var result = dotless.Core.Less.Parse(fileProcessContext.FileContent);
-                fileProcessContext.Update(result);
-            }
+    //    public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
+    //    {
+    //        if (Path.GetExtension(fileProcessContext.WebFile.FilePath) == ".less")
+    //        {
+    //            var result = dotless.Core.Less.Parse(fileProcessContext.FileContent);
+    //            fileProcessContext.Update(result);
+    //        }
 
-            await next(fileProcessContext);
-        }
-    }
+    //        await next(fileProcessContext);
+    //    }
+    //}
 
     public class Startup
     {
@@ -62,7 +57,7 @@ namespace Smidge.Web
         /// a sub configuration value of 'smidge'
         /// </summary>
         /// <param name="env"></param>
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
@@ -95,10 +90,9 @@ namespace Smidge.Web
                 options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
             });
 
-            services.AddSmidgeJavaScriptServices();
             services.AddSmidgeNuglify();
 
-            services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
+            //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }
 
         /// <summary>
@@ -121,10 +115,8 @@ namespace Smidge.Web
             return null;
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddDebug(LogLevel.Debug);
-
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
             {
@@ -138,25 +130,28 @@ namespace Smidge.Web
             }
 
             app.UseStaticFiles();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute("Default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute(
+                        name: "Default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}");                
             });
 
             app.UseSmidge(bundles =>
             {
                 //Create pre-defined bundles
 
-                var lessPipeline = bundles.PipelineFactory.DefaultCss();
-                lessPipeline.Processors.Insert(0, bundles.PipelineFactory.Resolve<DotlessPreProcessor>());
-                bundles.CreateCss(
-                    "less-test",
-                    lessPipeline,
-                    "~/Css/test.less")
-                    .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
-                        .ForDebug(builder => builder.EnableCompositeProcessing().SetCacheBusterType<AppDomainLifetimeCacheBuster>())
-                        .Build());
+                //var lessPipeline = bundles.PipelineFactory.DefaultCss();
+                //lessPipeline.Processors.Insert(0, bundles.PipelineFactory.Resolve<DotlessPreProcessor>());
+                //bundles.CreateCss(
+                //    "less-test",
+                //    lessPipeline,
+                //    "~/Css/test.less")
+                //    .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+                //        .ForDebug(builder => builder.EnableCompositeProcessing().SetCacheBusterType<AppDomainLifetimeCacheBuster>())
+                //        .Build());
 
                 bundles.Create("test-bundle-1",                    
                     new JavaScriptFile("~/Js/Bundle1/a1.js"),

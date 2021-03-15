@@ -1,33 +1,17 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Diagnosers;
-using BenchmarkDotNet.Diagnostics.Windows;
-using BenchmarkDotNet.Horology;
-using BenchmarkDotNet.Jobs;
-using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Reports;
-using BenchmarkDotNet.Running;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.NodeServices;
-using Microsoft.Extensions.Options;
 using Moq;
 using NUglify.Css;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
-using Smidge.JavaScriptServices;
 using Smidge.Models;
 using Smidge.Nuglify;
-using Smidge.Options;
 using MemoryDiagnoser = BenchmarkDotNet.Diagnosers.MemoryDiagnoser;
 
 namespace Smidge.Benchmarks
@@ -69,7 +53,7 @@ namespace Smidge.Benchmarks
         {
             public Config()
             {
-                Add(new MemoryDiagnoser());
+                Add(MemoryDiagnoser.Default);
                 Add(new MinifiedPercentColumn());
 
                 ////The 'quick and dirty' settings, so it runs a little quicker
@@ -85,7 +69,6 @@ namespace Smidge.Benchmarks
 
         private JsMinifier _jsMin;
         private NuglifyJs _nuglify;
-        private UglifyNodeMinifier _jsUglify;        
         private static readonly string AssemblyPath;
 
         public static readonly string JQuery;
@@ -102,21 +85,13 @@ namespace Smidge.Benchmarks
         public void Setup()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
-            websiteInfo.Setup(x => x.GetBasePath()).Returns("/");
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
             _jsMin = new JsMinifier();
             _nuglify = new NuglifyJs(
                 new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()),
-                Mock.Of<ISourceMapDeclaration>());
-            
-            var nodeServices = new SmidgeJavaScriptServices(NodeServicesFactory.CreateNodeServices(
-                new NodeServicesOptions(new NullServiceProvider())
-                {
-                    ProjectPath = AssemblyPath,
-                    WatchFileExtensions = new string[] {}
-                }));
-            _jsUglify = new UglifyNodeMinifier(nodeServices, Mock.Of<IApplicationLifetime>());            
+                Mock.Of<ISourceMapDeclaration>());               
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
@@ -179,16 +154,6 @@ namespace Smidge.Benchmarks
             
         }
 
-        public async Task<string> GetJsServicesUglify()
-        {
-            using (var bc = BundleContext.CreateEmpty())
-            {
-                var fileProcessContext = new FileProcessContext(JQuery, new JavaScriptFile(), bc);
-                await _jsUglify.ProcessAsync(fileProcessContext, s => Task.FromResult(0));
-                return fileProcessContext.FileContent;
-            }
-        }
-
         [Benchmark(Baseline = true)]
         public async Task JsMin()
         {
@@ -200,13 +165,6 @@ namespace Smidge.Benchmarks
         {
             await GetNuglify();
         }
-
-        [Benchmark]
-        public async Task JsServicesUglify()
-        {
-            await GetJsServicesUglify();
-        }
-
 
     }
 }

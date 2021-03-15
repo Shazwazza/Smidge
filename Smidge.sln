@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29230.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5154E3B-762A-4720-A947-C7A3EA25835A}"
 EndProject
@@ -28,8 +28,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Web", "src\Smidge.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Nuglify", "src\Smidge.Nuglify\Smidge.Nuglify.csproj", "{8CBB999A-D071-4B95-B973-E1ECB8661333}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.JavaScriptServices", "src\Smidge.JavaScriptServices\Smidge.JavaScriptServices.csproj", "{B00163BB-185E-4C55-BABD-830086316929}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Benchmarks", "test\Smidge.Benchmarks\Smidge.Benchmarks.csproj", "{8AA76B60-A92C-41C8-A045-06433E33C40C}"
 EndProject
 Global
@@ -54,10 +52,6 @@ Global
 		{8CBB999A-D071-4B95-B973-E1ECB8661333}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CBB999A-D071-4B95-B973-E1ECB8661333}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CBB999A-D071-4B95-B973-E1ECB8661333}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B00163BB-185E-4C55-BABD-830086316929}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B00163BB-185E-4C55-BABD-830086316929}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B00163BB-185E-4C55-BABD-830086316929}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B00163BB-185E-4C55-BABD-830086316929}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8AA76B60-A92C-41C8-A045-06433E33C40C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8AA76B60-A92C-41C8-A045-06433E33C40C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AA76B60-A92C-41C8-A045-06433E33C40C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -71,7 +65,9 @@ Global
 		{8C286364-9589-4B52-818E-657A9B12C172} = {46C13455-622B-44B6-A129-F96EADAD24C8}
 		{89D8D7E5-4145-4A7E-A41A-EEDCB5FA7AE7} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
 		{8CBB999A-D071-4B95-B973-E1ECB8661333} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
-		{B00163BB-185E-4C55-BABD-830086316929} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
 		{8AA76B60-A92C-41C8-A045-06433E33C40C} = {46C13455-622B-44B6-A129-F96EADAD24C8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A0EB5714-BE56-4F17-B40A-8E8FADFDF503}
 	EndGlobalSection
 EndGlobal

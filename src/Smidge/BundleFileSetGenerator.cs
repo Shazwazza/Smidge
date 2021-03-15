@@ -63,10 +63,9 @@ namespace Smidge
                 ValidateFile(file);
                 if (file.Pipeline == null)
                 {
-                    file.Pipeline = pipeline.Copy();
+                    file.Pipeline = pipeline;
                 }
-                file.FilePath = _requestHelper.Content(file.FilePath);
-
+                
                 //We need to check if this path is a folder, then iterate the files
                 if (_fileSystem.IsFolder(file.FilePath))
                 {
@@ -77,7 +76,7 @@ namespace Smidge
                         {
                             customOrdered.Add(new WebFile
                             {
-                                FilePath = _requestHelper.Content(f),
+                                FilePath = f,
                                 DependencyType = file.DependencyType,
                                 Pipeline = file.Pipeline,
                                 Order = file.Order
@@ -87,7 +86,7 @@ namespace Smidge
                         {
                             defaultOrdered.Add(new WebFile
                             {
-                                FilePath = _requestHelper.Content(f),
+                                FilePath = f,
                                 DependencyType = file.DependencyType,
                                 Pipeline = file.Pipeline,
                                 Order = file.Order

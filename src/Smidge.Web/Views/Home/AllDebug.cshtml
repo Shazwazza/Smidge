@@ -32,13 +32,13 @@
     <link rel="stylesheet" href="test-bundle-4" debug="true" />
 </head>
 <body>
-    
-    @Html.Partial("TopBar")
-    @Html.Partial("LoadedDependencies", true)
 
-    @await SmidgeHelper.JsHereAsync(debug:true)
+    @await Html.PartialAsync("TopBar")
+    @await Html.PartialAsync("LoadedDependencies", true)
+
+    @await SmidgeHelper.JsHereAsync(debug: true)
     @await SmidgeHelper.JsHereAsync("test-bundle-1", debug: true)
     @await SmidgeHelper.JsHereAsync("test-bundle-2", debug: true)
-    
+
 </body>
 </html>

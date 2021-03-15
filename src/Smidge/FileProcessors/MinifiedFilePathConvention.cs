@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Smidge.Models;
 
 namespace Smidge.FileProcessors
@@ -16,10 +14,17 @@ namespace Smidge.FileProcessors
             var pattern = file.DependencyType == WebFileType.Css ? "min.css" : "min.js";
             if (file.FilePath.EndsWith(pattern, StringComparison.OrdinalIgnoreCase))
             {
-                var found = file.Pipeline.Processors.Where(x => x is JsMinifier || x is CssMinifier).ToArray();
-                foreach (var preProcessor in found)
+                var found = file.Pipeline.Processors.Where(x => x is JsMinifier || x is CssMinifier).ToList();
+                if (found.Count > 0)
                 {
-                    file.Pipeline.Processors.Remove(preProcessor);
+                    // copy the pipeline 
+                    file.Pipeline = file.Pipeline.Copy();
+
+                    // now modify the pipeline
+                    foreach (var preProcessor in found)
+                    {
+                        file.Pipeline.Processors.Remove(preProcessor);
+                    }
                 }
             }
             return file;
