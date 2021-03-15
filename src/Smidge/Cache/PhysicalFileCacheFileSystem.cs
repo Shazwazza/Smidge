@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 namespace Smidge.Cache
 {
+    
+
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
         private readonly IHasher _hasher;
