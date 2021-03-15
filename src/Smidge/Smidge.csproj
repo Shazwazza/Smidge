@@ -2,8 +2,8 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge</AssemblyTitle>
     <Description>A lightweight ASP.Net Core library for runtime CSS and JavaScript file management, minification, combination &amp; compression</Description>
-    <VersionPrefix>3.2.0</VersionPrefix>
-    <Copyright>Copyright © Shannon Deminick 2020</Copyright>
+    <VersionPrefix>3.2.1</VersionPrefix>
+    <Copyright>Copyright © Shannon Deminick 2021</Copyright>
     <Authors>Shannon Deminick</Authors>
     <TargetFrameworks>netcoreapp3.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>Smidge</AssemblyName>
