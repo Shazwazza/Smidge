@@ -5,7 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Smidge\Smidge.csproj" />
+    <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Smidge\Smidge.csproj" />
   </ItemGroup>
 
 </Project>
