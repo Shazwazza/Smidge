@@ -23,7 +23,7 @@ namespace Smidge.FileProcessors
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {
             //ensure the Urls in the css are changed to absolute            
-            var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
+            var contentPath = _requestHelper.Content(fileProcessContext.WebFile);
             var parsedUrls = ReplaceUrlsWithAbsolutePaths(fileProcessContext.FileContent, contentPath);
 
             fileProcessContext.Update(parsedUrls);

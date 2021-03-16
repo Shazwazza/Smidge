@@ -20,6 +20,8 @@ namespace Smidge.Models
 
         public string FilePath { get; set; }
 
+        public string RequestPath { get; set; }
+
         public PreProcessPipeline Pipeline { get; set; }
 
 

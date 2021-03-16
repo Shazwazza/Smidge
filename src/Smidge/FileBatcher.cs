@@ -50,7 +50,7 @@ namespace Smidge
             var result = new List<WebFileBatch>();
             foreach (var f in files)
             {
-                var webPath = _requestHelper.Content(f.FilePath);
+                var webPath = _requestHelper.Content(f);
 
                 //if this is an external path then we need to split and start new
                 if (webPath.Contains(Constants.SchemeDelimiter))

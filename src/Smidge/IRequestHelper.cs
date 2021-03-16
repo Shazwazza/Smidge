@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Smidge.Models;
 
 namespace Smidge
 {
@@ -13,6 +14,13 @@ namespace Smidge
         /// <param name="path"></param>
         /// <returns></returns>
         string Content(string path);
+
+        /// <summary>
+        /// Converts a virtual (relative) path to an application absolute path.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        string Content(IWebFile file);
 
         /// <summary>
         /// Returns the compression type for the current request

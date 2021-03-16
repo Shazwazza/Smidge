@@ -106,7 +106,7 @@ namespace Smidge.Nuglify
         /// </remarks>
         // TODO: WE need to MapPath the file path!
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
-            => Uglify.Js(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile.FilePath), codeSettings);
+            => Uglify.Js(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile), codeSettings);
 
         /// <summary>
         /// Adds a SourceMapAppender into the current bundle context if it doesn't already exist

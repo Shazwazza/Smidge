@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Smidge.Models;
 
 namespace Smidge
 {
@@ -24,6 +25,38 @@ namespace Smidge
                 return true;
             }
             return false;
+        }
+
+        public string Content(IWebFile file)
+        {
+            if (string.IsNullOrEmpty(file.FilePath))
+                return null;
+
+            //if this is a protocol-relative/protocol-less uri, then we need to add the protocol for the remaining
+            // logic to work properly
+            if (file.FilePath.StartsWith("//"))
+            {
+                var scheme = _siteInfo.GetBaseUrl().Scheme;
+                return Regex.Replace(file.FilePath, @"^\/\/", string.Format("{0}{1}", scheme, Constants.SchemeDelimiter));
+            }
+
+            var filePath = Content(file.FilePath);
+            if (filePath == null) return null;
+
+            var requestPath = file.RequestPath != null ? Content(file.RequestPath) : string.Empty;
+#if NETCORE3_0
+            if (requestPath.EndsWith('/'))
+            {
+                requestPath.TrimEnd('/');
+            }
+#else
+            if (requestPath.EndsWith("/"))
+            {
+                requestPath.TrimEnd(new[] { '/' });
+            }
+#endif
+
+            return string.Concat(requestPath, filePath);
         }
 
         /// <summary>

@@ -92,7 +92,7 @@ namespace Smidge.Benchmarks
             _nuglify = new NuglifyJs(
                 new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()),
                 Mock.Of<ISourceMapDeclaration>(),
-                Mock.Of<ISmidgeFileSystem>());               
+                Mock.Of<IRequestHelper>());               
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)

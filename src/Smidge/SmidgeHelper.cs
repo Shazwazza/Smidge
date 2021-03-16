@@ -196,7 +196,7 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _requestHelper.Content(d.FilePath)));
+                result.AddRange(files.Select(d => _requestHelper.Content(d)));
                 return result;
             }
 
@@ -229,7 +229,7 @@ namespace Smidge
 
             if (debug)
             {
-                return orderedFiles.Select(x => _requestHelper.Content(x.FilePath));
+                return orderedFiles.Select(x => _requestHelper.Content(x));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);

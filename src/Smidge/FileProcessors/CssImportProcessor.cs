@@ -38,7 +38,7 @@ namespace Smidge.FileProcessors
             foreach (var importPath in internalImports)
             {
                 // convert to it's absolute path
-                var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
+                var contentPath = _requestHelper.Content(fileProcessContext.WebFile);
                 var uri = new Uri(contentPath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
                 var absolute = uri.ToAbsolutePath(importPath);
                 var path = _requestHelper.Content(absolute);

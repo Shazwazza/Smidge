@@ -80,7 +80,7 @@ namespace Smidge.Web
                 Configuration.GetSection("smidge"),
                 new CompositeFileProvider(
                     CurrentEnvironment.WebRootFileProvider,
-                    new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge"))));
+                    new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge", "Static"))));
 
             // We could replace a processor in the default pipeline like this
             //services.Configure<SmidgeOptions>(opt =>
@@ -142,6 +142,13 @@ namespace Smidge.Web
             }
 
             app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge", "Static")),
+                RequestPath = "/smidge-static"
+            });
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -204,7 +211,10 @@ namespace Smidge.Web
                     bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
                     "~/Css/Libs/font-awesome.css");
 
-                bundles.Create("test-bundle-10", WebFileType.Js, "~/test10.js");
+                bundles.Create("test-bundle-10", new JavaScriptFile("~/test10.js")
+                {
+                    RequestPath = "/smidge-static"
+                });
             });
 
             app.UseSmidgeNuglify();

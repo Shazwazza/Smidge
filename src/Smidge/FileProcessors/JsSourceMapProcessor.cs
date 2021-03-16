@@ -54,7 +54,7 @@ namespace Smidge.FileProcessors
                                 {
                                     var url = match.Groups[1].Value;
                                     // convert to it's absolute path
-                                    var contentPath = _requestHelper.Content(fileProcessContext.WebFile.FilePath);
+                                    var contentPath = _requestHelper.Content(fileProcessContext.WebFile);
                                     var uri = new Uri(contentPath, UriKind.RelativeOrAbsolute).MakeAbsoluteUri(_siteInfo.GetBaseUrl());
                                     var absolute = uri.ToAbsolutePath(url);
                                     var path = _requestHelper.Content(absolute);
