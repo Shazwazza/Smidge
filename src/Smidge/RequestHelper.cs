@@ -45,7 +45,7 @@ namespace Smidge
             }
 
             //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
-            // since it is not dependent on the ActionContext
+            // since it is not dependent on the ActionContext           
             if (path[0] == 126)
             {
                 PathString pathBase = _siteInfo.GetBasePath();

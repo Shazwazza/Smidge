@@ -229,7 +229,7 @@ namespace Smidge
 
             if (debug)
             {
-                return orderedFiles.Select(x => x.FilePath);
+                return orderedFiles.Select(x => _requestHelper.Content(x.FilePath));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);

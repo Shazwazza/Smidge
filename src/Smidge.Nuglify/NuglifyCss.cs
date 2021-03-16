@@ -12,12 +12,12 @@ namespace Smidge.Nuglify
     public class NuglifyCss : IPreProcessor
     {
         private readonly NuglifySettings _settings;
-        private readonly ISmidgeFileSystem _fileSystem;
+        private readonly IRequestHelper _requestHelper;
 
-        public NuglifyCss(NuglifySettings settings, ISmidgeFileSystem fileSystem)
+        public NuglifyCss(NuglifySettings settings, IRequestHelper requestHelper)
         {
             _settings = settings;
-            _fileSystem = fileSystem;
+            _requestHelper = requestHelper;
         }
 
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
@@ -47,6 +47,6 @@ namespace Smidge.Nuglify
         /// to the Nuglify process. For example, changing the FilePath used.
         /// </remarks>
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CssSettings cssSettings)
-            => Uglify.Css(fileProcessContext.FileContent, _fileSystem.ConvertToFileProviderPath(fileProcessContext.WebFile.FilePath), cssSettings);
+            => Uglify.Css(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile.FilePath), cssSettings);
     }
 }
