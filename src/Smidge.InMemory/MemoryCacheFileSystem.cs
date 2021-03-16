@@ -18,23 +18,36 @@ namespace Smidge.InMemory
     {
         private readonly IDirectory _directory;
         private readonly IHasher _hasher;
+        private readonly IFileProvider _fileProvider;
 
         public MemoryCacheFileSystem(IHasher hasher)
         {
             _directory = new InMemoryDirectory();
-            FileProvider = new InMemoryFileProvider(_directory);
+            _fileProvider = new InMemoryFileProvider(_directory);
             _hasher = hasher;
         }
 
-        public IFileProvider FileProvider { get; }
-
-        public Task ClearCachedCompositeFile(IFileInfo file)
+        public IFileInfo GetRequiredFileInfo(string filePath)
         {
-            if (file.IsDirectory)
-                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+            var fileInfo = _fileProvider.GetFileInfo(filePath);
 
-            var f = _directory.GetFile(file.Name);
-            if (f != null)
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
+            }
+
+            return fileInfo;
+        }
+
+        private string GetCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey) 
+            => $"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}";
+
+        public Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+        {
+            var path = GetCompositeFilePath(cacheBuster, type, filesetKey);
+
+            var f = _directory.GetFile(path);
+            if (f != null && !f.FileInfo.IsDirectory && f.FileInfo.Exists)
             {
                 f.Delete();
             }
@@ -42,12 +55,13 @@ namespace Smidge.InMemory
             return Task.CompletedTask;
         }
 
-        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath)
         {
-            return FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}");
+            filePath = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            return _fileProvider.GetFileInfo(filePath);
         }
 
-        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster)
+        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath)
         {
             IFileInfo cacheFile;
             if (fileWatchEnabled)
@@ -61,24 +75,26 @@ namespace Smidge.InMemory
                 var fileHash = _hasher.GetFileHash(file, string.Empty);
                 var timestampedHash = _hasher.GetFileHash(file, sourceFile(), extension);
 
-                cacheFile = FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}");
+                filePath = $"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}";
+                cacheFile = _fileProvider.GetFileInfo(filePath);
             }
             else
             {
                 var fileHash = _hasher.GetFileHash(file, extension);
 
-                cacheFile = FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{fileHash}");
+                filePath = $"{cacheBuster.GetValue()}/{fileHash}";
+                cacheFile = _fileProvider.GetFileInfo(filePath);
             }
 
             return cacheFile;
         }
 
-        public Task WriteFileAsync(IFileInfo file, string contents)
+        public Task WriteFileAsync(string filePath, string contents)
         {
-            if (file.IsDirectory)
-                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+            if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+                throw new InvalidOperationException("The path supplied must contain a file extension.");
 
-            var segments = PathUtils.SplitPathIntoSegments(file.Name);
+            var segments = PathUtils.SplitPathIntoSegments(filePath);
             var dir = string.Join('/', segments.Take(segments.Length - 1));
 
             var f = _directory.AddFile(dir, new StringFileInfo(contents, segments[segments.Length - 1]));
@@ -86,15 +102,15 @@ namespace Smidge.InMemory
             return Task.CompletedTask;
         }
 
-        public async Task WriteFileAsync(IFileInfo file, Stream contents)
+        public async Task WriteFileAsync(string filePath, Stream contents)
         {
-            if (file.IsDirectory)
-                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+            if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+                throw new InvalidOperationException("The path supplied must contain a file extension.");
 
             var memStream = new MemoryStream();
             await contents.CopyToAsync(memStream);
 
-            var segments = PathUtils.SplitPathIntoSegments(file.Name);
+            var segments = PathUtils.SplitPathIntoSegments(filePath);
             var dir = string.Join('/', segments.Take(segments.Length - 1));
 
             var f = _directory.AddFile(dir, new MemoryStreamFileInfo(memStream, segments[segments.Length - 1]));

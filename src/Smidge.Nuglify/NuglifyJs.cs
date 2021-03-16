@@ -102,6 +102,7 @@ namespace Smidge.Nuglify
         /// This is virtual allowing developers to override this in cases where customizations may need to be done 
         /// to the Nuglify process. For example, changing the FilePath used.
         /// </remarks>
+        // TODO: WE need to MapPath the file path!
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
             => Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
 

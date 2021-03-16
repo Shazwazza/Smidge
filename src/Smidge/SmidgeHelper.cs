@@ -262,7 +262,7 @@ namespace Smidge
 
                         var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
 
-                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compression, u.Key);
+                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compression, u.Key, out _);
                         if (!cacheFile.Exists)
                         {
                             using (var bundleContext = BundleContext.CreateEmpty())

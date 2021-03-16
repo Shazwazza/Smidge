@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using NUglify.JavaScript;
 using Smidge.CompositeFiles;
 using Smidge.Models;
@@ -32,7 +33,7 @@ namespace Smidge.Nuglify
 
         public static string GetSourceMapFilePath(this BundleContext bundleContext)
         {
-            return $"{bundleContext.BundleRequest.CacheBuster.GetValue()}/{bundleContext.BundleCompositeFile.Name}.map";
+            return $"{bundleContext.BundleRequest.CacheBuster.GetValue()}/{Path.GetFileName(bundleContext.BundleCompositeFilePath)}.map";
         }
 
         public static string GetSourceMapFilePath(this BundleRequestModel bundleRequest)

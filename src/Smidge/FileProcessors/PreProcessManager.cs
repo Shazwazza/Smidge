@@ -71,9 +71,9 @@ namespace Smidge.FileProcessors
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
 
             //we're making this lazy since we don't always want to resolve it
-            var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.SourceFileProvider.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
+            var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
 
-            var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBuster);
+            var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBuster, out var filePath);
 
             //check if it's in cache
             if (cacheFile.Exists)
@@ -93,13 +93,13 @@ namespace Smidge.FileProcessors
                     watch.Stop();
                     _logger.LogDebug($"Processed file '{file.FilePath}' in {watch.ElapsedMilliseconds}ms");
                     //save it to the cache path
-                    await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, processed);
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(filePath, processed);
                 }
                 else
                 {
                     // we can just write the the file as-is to the cache file
                     var contents = await _fileSystem.ReadContentsAsync(sourceFile.Value);
-                    await _fileSystem.CacheFileSystem.WriteFileAsync(cacheFile, contents);
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(filePath, contents);
                 }
             }
 

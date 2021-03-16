@@ -13,61 +13,81 @@ namespace Smidge.Cache
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
         private readonly IHasher _hasher;
+        private readonly IFileProvider _fileProvider;
 
         public PhysicalFileCacheFileSystem(IFileProvider cacheFileProvider, IHasher hasher)
         {
-            FileProvider = cacheFileProvider;
+            _fileProvider = cacheFileProvider;
             _hasher = hasher;
         }
 
-        public IFileProvider FileProvider { get; }
-
-        public Task ClearCachedCompositeFile(IFileInfo file)
+        public IFileInfo GetRequiredFileInfo(string filePath)
         {
+            var fileInfo = _fileProvider.GetFileInfo(filePath);
+
+            if (!fileInfo.Exists)
+            {
+                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
+            }
+
+            return fileInfo;
+        }
+
+        private string GetCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+            => $"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}";
+
+        public Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+        {
+            var path = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            var file = _fileProvider.GetFileInfo(path);
+
             if (file.PhysicalPath == null)
                 throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
 
             if (file.IsDirectory)
                 throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
 
-            File.Delete(file.PhysicalPath);
+            if (file.Exists)
+            {
+                File.Delete(file.PhysicalPath);
+            }
+            
             return Task.CompletedTask;
         }
 
-        public Task WriteFileAsync(IFileInfo file, string contents)
+        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath)
         {
-            if (file.PhysicalPath == null)
-                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
+            filePath = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            return _fileProvider.GetFileInfo(filePath);
+        }
 
-            if (file.IsDirectory)
-                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+        public Task WriteFileAsync(string filePath, string contents)
+        {
+            if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+                throw new InvalidOperationException("The path supplied must contain a file extension.");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(file.PhysicalPath));
-            using (var writer = File.CreateText(file.PhysicalPath))
+            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            using (var writer = File.CreateText(filePath))
             {
                 writer.Write(contents);
             }
             return Task.CompletedTask;
         }
 
-        public async Task WriteFileAsync(IFileInfo file, Stream contents)
+        public async Task WriteFileAsync(string filePath, Stream contents)
         {
-            if (file.PhysicalPath == null)
-                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
+            if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+                throw new InvalidOperationException("The path supplied must contain a file extension.");
 
-            if (file.IsDirectory)
-                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(file.PhysicalPath));
-            using (var newFile = File.Create(file.PhysicalPath))
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            using (var newFile = File.Create(filePath))
             {
                 await contents.CopyToAsync(newFile);
             }
-        }
-
-        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
-        {
-            return FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}");
         }
 
         /// <summary>
@@ -78,7 +98,7 @@ namespace Smidge.Cache
         /// <param name="extension"></param>
         /// <param name="cacheBuster"></param>
         /// <returns></returns>
-        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster)
+        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath)
         {
             IFileInfo cacheFile;
             if (fileWatchEnabled)
@@ -92,13 +112,15 @@ namespace Smidge.Cache
                 var fileHash = _hasher.GetFileHash(file, string.Empty);
                 var timestampedHash = _hasher.GetFileHash(file, sourceFile(), extension);
 
-                cacheFile = FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}");
+                filePath = $"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}";
+                cacheFile = _fileProvider.GetFileInfo(filePath);
             }
             else
             {
                 var fileHash = _hasher.GetFileHash(file, extension);
 
-                cacheFile = FileProvider.GetFileInfo($"{cacheBuster.GetValue()}/{fileHash}");
+                filePath = $"{cacheBuster.GetValue()}/{fileHash}";
+                cacheFile = _fileProvider.GetFileInfo(filePath);
             }
 
             return cacheFile;

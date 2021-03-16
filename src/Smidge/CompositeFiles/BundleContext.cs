@@ -29,15 +29,15 @@ namespace Smidge.CompositeFiles
         {
         }
 
-        public BundleContext(IRequestModel bundleRequest, IFileInfo bundleCompositeFile)
+        public BundleContext(IRequestModel bundleRequest, string bundleCompositeFilePath)
         {
             BundleRequest = bundleRequest;
-            _bundleCompositeFile = bundleCompositeFile;
+            _bundleCompositeFilePath = bundleCompositeFilePath;
         }
 
         private readonly List<Func<string>> _appenders = new List<Func<string>>();
         private readonly List<Func<string>> _prependers = new List<Func<string>>();        
-        private readonly IFileInfo _bundleCompositeFile;
+        private readonly string _bundleCompositeFilePath;
 
         public IRequestModel BundleRequest { get; }
 
@@ -47,14 +47,14 @@ namespace Smidge.CompositeFiles
         public IDictionary<string, object> Items { get; private set; } = new Dictionary<string, object>();
 
         /// <summary>
-        /// Returns the FileInfo instance of the composite bundle file
+        /// Returns the path of the composite bundle file
         /// </summary>
-        public IFileInfo BundleCompositeFile
+        public string BundleCompositeFilePath
         {
             get
             {
-                if (_bundleCompositeFile == null) throw new NotSupportedException("No file available in an empty " + nameof(BundleContext));
-                return _bundleCompositeFile;
+                if (_bundleCompositeFilePath == null) throw new NotSupportedException("No file available in an empty " + nameof(BundleContext));
+                return _bundleCompositeFilePath;
             }
         }
 
@@ -71,13 +71,13 @@ namespace Smidge.CompositeFiles
 
         public void AddAppender(Func<string> appender)
         {
-            if (_bundleCompositeFile == null) return;
+            if (_bundleCompositeFilePath == null) return;
             _appenders.Add(appender);
         }
 
         public void AddPrepender(Func<string> prepender)
         {
-            if (_bundleCompositeFile == null) return;
+            if (_bundleCompositeFilePath == null) return;
             _prependers.Add(prepender);
         }
 

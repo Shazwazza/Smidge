@@ -29,7 +29,7 @@ namespace Smidge.Tests
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());

@@ -60,7 +60,7 @@ namespace Smidge
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
 #endif
                 var provider = fileProvider ?? hosting.WebRootFileProvider;
-                return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>());
+                return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
             });
             services.AddSingleton<ICacheFileSystem>(p =>
             {
@@ -230,11 +230,7 @@ namespace Smidge
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
-                var compFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compressionType, bundleName);
-                if (compFile.Exists)
-                {
-                    await fileSystem.CacheFileSystem.ClearCachedCompositeFile(compFile);
-                }
+                await fileSystem.CacheFileSystem.ClearCachedCompositeFileAsync(cacheBuster, compressionType, bundleName);
             }
         }
     }

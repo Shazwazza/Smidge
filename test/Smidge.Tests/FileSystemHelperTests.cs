@@ -14,7 +14,7 @@ namespace Smidge.Tests
 {
     public class FileSystemHelperTests
     {
-        private ISmidgeFileSystem Create(string url = "~/Js/Test1.js")
+        private ISmidgeFileSystem Create(IWebsiteInfo websiteInfo, string url = "~/Js/Test1.js")
         {
             var webRootPath = $"C:{Path.DirectorySeparatorChar}MySolution{Path.DirectorySeparatorChar}MyProject";
 
@@ -34,7 +34,8 @@ namespace Smidge.Tests
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new SmidgeFileSystem(
                 fileProvider.Object,
-                cacheProvider.Object);
+                cacheProvider.Object,
+                websiteInfo);
 
 
             return helper;
@@ -49,9 +50,9 @@ namespace Smidge.Tests
             websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
-            var helper = Create(url);
+            var helper = Create(websiteInfo.Object, url);
 
-            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.SourceFileProvider.GetRequiredFileInfo(url));
+            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetRequiredFileInfo(url));
 
             //    var result = helper.MapPath(url);
 
@@ -78,7 +79,8 @@ namespace Smidge.Tests
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new SmidgeFileSystem(
                 fileProvider.Object,
-                cacheProvider.Object);
+                cacheProvider.Object,
+                Mock.Of<IWebsiteInfo>());
 
             var result = helper.ReverseMapPath(subPath, file.Object);
 

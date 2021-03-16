@@ -7,31 +7,7 @@ namespace Smidge
 {
     public static class SmidgeFileSystemExtensions
     {
-        public static IFileInfo GetRequiredFileInfo(this IFileProvider fileProvider, IWebFile webfile)
-        {
-            var path = webfile.FilePath.TrimStart('~');
-            var fileInfo = fileProvider.GetFileInfo(path);
-
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {path})", fileInfo.PhysicalPath ?? fileInfo.Name);
-            }
-
-            return fileInfo;
-        }
-
-        public static IFileInfo GetRequiredFileInfo(this IFileProvider fileProvider, string filePath)
-        {
-            var path = filePath.TrimStart('~');
-            var fileInfo = fileProvider.GetFileInfo(path);
-
-            if (!fileInfo.Exists)
-            {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
-            }
-
-            return fileInfo;
-        }
+        
 
         /// <summary>
         /// Returns a file's hash

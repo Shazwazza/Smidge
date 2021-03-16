@@ -30,7 +30,7 @@ namespace Smidge.Tests
             var cacheProvider = new Mock<ICacheFileSystem>();
 
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -59,7 +59,7 @@ namespace Smidge.Tests
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object);          
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

@@ -51,7 +51,7 @@ namespace Smidge.FileProcessors
                 else
                 {
                     //it's internal (in theory)
-                    var filePath = _fileSystem.SourceFileProvider.GetRequiredFileInfo(path);
+                    var filePath = _fileSystem.GetRequiredFileInfo(path);
                     var content = await _fileSystem.ReadContentsAsync(filePath);
 
                     //This needs to be put back through the whole pre-processor pipeline before being added,

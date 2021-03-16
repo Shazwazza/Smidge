@@ -34,13 +34,13 @@ namespace Smidge.Controllers
         /// </summary>
         public bool IsReusable => true;
 
-        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, IFileProvider cacheFileProvider, ICacheBuster cacheBuster, string filesetKey, CompressionType type, string mime, 
+        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, ICacheBuster cacheBuster, string filesetKey, CompressionType type, string mime, 
             out FileResult result, out DateTime lastWriteTime)
         {
             result = null;
             lastWriteTime = DateTime.Now;
 
-            var cacheFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, type, filesetKey);
+            var cacheFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, type, filesetKey, out _);
             if (cacheFile.Exists)
             {
                 lastWriteTime = cacheFile.LastModified.DateTime;
@@ -103,7 +103,7 @@ namespace Smidge.Controllers
                 {
                     FileResult result;
                     DateTime lastWrite;
-                    if (TryGetCachedCompositeFileResult(_fileSystem, _fileSystem.CacheFileSystem.FileProvider, cacheBuster, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
+                    if (TryGetCachedCompositeFileResult(_fileSystem, cacheBuster, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
                     {
                         file.LastFileWriteTime = lastWrite;
                         context.Result = result;

@@ -11,7 +11,9 @@ namespace Smidge
     public interface ISmidgeFileSystem
     {
         ICacheFileSystem CacheFileSystem { get; }
-        IFileProvider SourceFileProvider { get; }
+        //IFileProvider SourceFileProvider { get; }
+        IFileInfo GetRequiredFileInfo(IWebFile webfile);
+        IFileInfo GetRequiredFileInfo(string filePath);
 
         //TODO: I don't think we need to even pass in the IFileProvider, the file system will already know about it
         //IFileInfo GetCachedCompositeFile(IFileProvider cacheFileProvider, ICacheBuster cacheBuster, CompressionType type, string filesetKey);

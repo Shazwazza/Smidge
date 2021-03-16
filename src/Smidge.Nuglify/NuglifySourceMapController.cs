@@ -27,7 +27,7 @@ namespace Smidge.Nuglify
                 return null;
             }
 
-            var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetFileInfo(bundle.GetSourceMapFilePath());
+            var sourceMapFile = _fileSystem.CacheFileSystem.GetRequiredFileInfo(bundle.GetSourceMapFilePath());
 
             if (sourceMapFile.Exists)
             {

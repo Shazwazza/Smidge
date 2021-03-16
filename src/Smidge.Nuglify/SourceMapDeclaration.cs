@@ -35,10 +35,10 @@ namespace Smidge.Nuglify
                     //now we need to save the map file so it can be retreived via the controller
 
                     //TODO: No idea if this is gonna work
-                    
+
                     //needs to be saved in the current cache bust folder
-                    var sourceMapFile = _fileSystem.CacheFileSystem.FileProvider.GetFileInfo(bundleContext.GetSourceMapFilePath());
-                    await _fileSystem.CacheFileSystem.WriteFileAsync(sourceMapFile, mapContent);
+                    string filePath = bundleContext.GetSourceMapFilePath();
+                    await _fileSystem.CacheFileSystem.WriteFileAsync(filePath, mapContent);
                     
                     var url = GetSourceMapUrl(
                         bundleContext.BundleRequest.FileKey,
