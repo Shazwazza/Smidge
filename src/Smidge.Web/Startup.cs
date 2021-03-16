@@ -13,6 +13,8 @@ using Smidge.FileProcessors;
 using Smidge.Nuglify;
 using Microsoft.Extensions.Hosting;
 using Smidge.InMemory;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Smidge.Web
 {
@@ -52,6 +54,7 @@ namespace Smidge.Web
                 .Build();        
 
         public IConfigurationRoot Configuration { get; }
+        private IWebHostEnvironment CurrentEnvironment { get; }
 
         /// <summary>
         /// Constructor sets up the configuration - for our example we'll load in the config from appsettings.json with
@@ -65,6 +68,7 @@ namespace Smidge.Web
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
             Configuration = builder.Build();
+            CurrentEnvironment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -72,7 +76,11 @@ namespace Smidge.Web
             services.AddMvc();
 
             // Or use services.AddSmidge() to test from smidge.json config.
-            services.AddSmidge(Configuration.GetSection("smidge"));
+            services.AddSmidge(
+                Configuration.GetSection("smidge"),
+                new CompositeFileProvider(
+                    CurrentEnvironment.WebRootFileProvider,
+                    new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge"))));
 
             // We could replace a processor in the default pipeline like this
             //services.Configure<SmidgeOptions>(opt =>
@@ -195,6 +203,8 @@ namespace Smidge.Web
                     //Here we can change the default pipeline to use Nuglify for this single bundle (we'll replace the default)
                     bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
                     "~/Css/Libs/font-awesome.css");
+
+                bundles.Create("test-bundle-10", WebFileType.Js, "~/test10.js");
             });
 
             app.UseSmidgeNuglify();
