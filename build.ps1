@@ -78,14 +78,14 @@ foreach($project in $root.ChildNodes) {
 
 	if([string]::IsNullOrEmpty($prerelease))
 	{
-		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion"
+		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion" -p:InformationalVersion="$projectVersion" -p:Version="$projectVersion" -p:FileVersion="$projectVersion"
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."
 		}
 	}
 	else {
-		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion-$prerelease" -p:FileVersion="$projectVersion-$prerelease"
+		& $DOTNET pack "$csproj" --configuration "$BuildConfig" --output "$ReleaseFolder" -p:PackageVersion="$projectVersion-$prerelease" -p:InformationalVersion="$projectVersion-$prerelease" -p:Version="$projectVersion" -p:FileVersion="$projectVersion"
 		if (-not $?)
 		{
 			throw "The dotnet pack process returned an error code."

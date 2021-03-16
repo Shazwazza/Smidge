@@ -88,9 +88,9 @@ namespace Smidge
                 if (smidgeConfiguration == null)
                 {
 #if NETCORE3_0                     
-                    return new SmidgeConfig(p.GetRequiredService<IWebHostEnvironment>());
+                    return new SmidgeConfig();
 #else
-                    return new SmidgeConfig(p.GetRequiredService<IHostingEnvironment>());
+                    return new SmidgeConfig();
 #endif
                 }
                 return new SmidgeConfig(smidgeConfiguration);

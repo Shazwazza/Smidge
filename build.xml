@@ -1,4 +1,5 @@
 <build>
-  <project id="Smidge" version="3.2.2" prerelease=""/>
-  <project id="Smidge.Nuglify" version="3.2.2" prerelease=""/>
+  <project id="Smidge" version="4.0.0" prerelease="beta001"/>
+  <project id="Smidge.Nuglify" version="4.0.0" prerelease="beta001"/>
+  <project id="Smidge.InMemory" version="4.0.0" prerelease="beta001"/>
 </build>

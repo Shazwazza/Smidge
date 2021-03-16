@@ -129,8 +129,7 @@ namespace Smidge.CompositeFiles
 
             result.Version = parts[parts.Length - 1].Substring(1);
             var ext = parts[parts.Length - 2];
-            WebFileType type;
-            if (!Enum.TryParse(ext, true, out type))
+            if (!Enum.TryParse(ext, true, out WebFileType type))
             {
                 //invalid
                 return null;

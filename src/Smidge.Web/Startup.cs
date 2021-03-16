@@ -107,27 +107,7 @@ namespace Smidge.Web
             //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }
 
-        /// <summary>
-        /// A callback used to modify the default pipeline to use Nuglify for JS processing
-        /// </summary>
-        /// <param name="fileType"></param>
-        /// <param name="processors"></param>
-        /// <returns></returns>
-        private static PreProcessPipeline GetDefaultPipelineFactory(WebFileType fileType, IReadOnlyCollection<IPreProcessor> processors)
-        {
-            //switch (fileType)
-            //{
-            //    case WebFileType.Js:
-            //        return new PreProcessPipeline(new IPreProcessor[]
-            //        {
-            //            processors.OfType<NuglifyJs>().First()
-            //        });
-            //}
-            //returning null will fallback to the logic defined in the registered PreProcessPipelineFactory
-            return null;
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())

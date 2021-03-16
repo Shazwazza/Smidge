@@ -11,9 +11,8 @@ namespace Smidge
         private readonly IWebsiteInfo _siteInfo;
 
         public RequestHelper(IWebsiteInfo siteInfo)
-        {            
-            if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
-            _siteInfo = siteInfo;
+        {
+            _siteInfo = siteInfo ?? throw new ArgumentNullException(nameof(siteInfo));
         }
 
         public bool IsExternalRequestPath(string path)

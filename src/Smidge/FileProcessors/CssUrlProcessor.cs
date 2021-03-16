@@ -15,8 +15,7 @@ namespace Smidge.FileProcessors
 
         public CssUrlProcessor(IWebsiteInfo siteInfo, IRequestHelper requestHelper)
         {
-            if (siteInfo == null) throw new ArgumentNullException(nameof(siteInfo));
-            _siteInfo = siteInfo;
+            _siteInfo = siteInfo ?? throw new ArgumentNullException(nameof(siteInfo));
             _requestHelper = requestHelper;
         }
 

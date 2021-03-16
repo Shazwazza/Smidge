@@ -23,9 +23,9 @@ namespace Smidge
         /// </summary>
         /// <param name="env"></param>
 #if NETCORE3_0
-        public SmidgeConfig(IWebHostEnvironment env)
+        public SmidgeConfig()
 #else
-        public SmidgeConfig(IHostingEnvironment env)
+        public SmidgeConfig()
 #endif
         {
             //  use smidge.json file if it exists for backwards compatibility.

@@ -95,7 +95,11 @@ namespace Smidge.InMemory
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
 
             var segments = PathUtils.SplitPathIntoSegments(filePath);
+#if NETCORE3_0
             var dir = string.Join('/', segments.Take(segments.Length - 1));
+#else
+            var dir = string.Join("/", segments.Take(segments.Length - 1));
+#endif
 
             var f = _directory.AddFile(dir, new StringFileInfo(contents, segments[segments.Length - 1]));
 
@@ -111,7 +115,12 @@ namespace Smidge.InMemory
             await contents.CopyToAsync(memStream);
 
             var segments = PathUtils.SplitPathIntoSegments(filePath);
+#if NETCORE3_0
             var dir = string.Join('/', segments.Take(segments.Length - 1));
+#else
+            var dir = string.Join("/", segments.Take(segments.Length - 1));
+#endif
+
 
             var f = _directory.AddFile(dir, new MemoryStreamFileInfo(memStream, segments[segments.Length - 1]));
         }
