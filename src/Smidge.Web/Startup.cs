@@ -12,6 +12,7 @@ using Smidge.Models;
 using Smidge.FileProcessors;
 using Smidge.Nuglify;
 using Microsoft.Extensions.Hosting;
+using Smidge.InMemory;
 
 namespace Smidge.Web
 {
@@ -91,6 +92,9 @@ namespace Smidge.Web
             });
 
             services.AddSmidgeNuglify();
+
+            // Replace
+            services.AddSingleton<ICacheFileSystem, MemoryCacheFileSystem>();
 
             //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }

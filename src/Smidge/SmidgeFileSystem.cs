@@ -139,7 +139,7 @@ namespace Smidge
         /// </returns>
         public bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback)
         {
-            var path = webFile.FilePath.TrimStart(new[] { '~' }).ToLowerInvariant();
+            var path = webFile.FilePath.TrimStart('~').ToLowerInvariant();
 
             //don't double watch if there's already a watcher for this file
             if (_fileWatchers.ContainsKey(path)) return false;

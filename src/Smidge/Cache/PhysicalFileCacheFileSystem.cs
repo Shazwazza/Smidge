@@ -22,31 +22,42 @@ namespace Smidge.Cache
 
         public IFileProvider FileProvider { get; }
 
-        public Task ClearFileAsync(IFileInfo file)
+        public Task ClearCachedCompositeFile(IFileInfo file)
         {
             if (file.PhysicalPath == null)
-                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider");
+                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
+
+            if (file.IsDirectory)
+                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
 
             File.Delete(file.PhysicalPath);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task WriteFileAsync(IFileInfo file, string contents)
         {
             if (file.PhysicalPath == null)
-                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider");
+                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
+
+            if (file.IsDirectory)
+                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+
             Directory.CreateDirectory(Path.GetDirectoryName(file.PhysicalPath));
             using (var writer = File.CreateText(file.PhysicalPath))
             {
                 writer.Write(contents);
             }
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public async Task WriteFileAsync(IFileInfo file, Stream contents)
         {
             if (file.PhysicalPath == null)
-                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider");
+                throw new InvalidOperationException("The IFileInfo object supplied is not compatible with this provider.");
+
+            if (file.IsDirectory)
+                throw new InvalidOperationException("The IFileInfo object supplied is a directory, not a file.");
+
             Directory.CreateDirectory(Path.GetDirectoryName(file.PhysicalPath));
             using (var newFile = File.Create(file.PhysicalPath))
             {

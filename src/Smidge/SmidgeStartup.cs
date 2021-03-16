@@ -66,7 +66,12 @@ namespace Smidge
             {
                 //The default cache folder is a physical folder
 
+#if NETCORE3_0                     
+                var hosting = p.GetRequiredService<IWebHostEnvironment>();
+#else
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
+#endif
+
                 var provider = fileProvider ?? hosting.WebRootFileProvider;                
                 var config = p.GetRequiredService<ISmidgeConfig>();
                 var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
@@ -228,7 +233,7 @@ namespace Smidge
                 var compFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compressionType, bundleName);
                 if (compFile.Exists)
                 {
-                    await fileSystem.CacheFileSystem.ClearFileAsync(compFile);
+                    await fileSystem.CacheFileSystem.ClearCachedCompositeFile(compFile);
                 }
             }
         }

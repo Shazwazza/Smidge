@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Smidge.InMemory\Smidge.InMemory.csproj" />
     <ProjectReference Include="..\Smidge\Smidge.csproj" />
     <ProjectReference Include="..\Smidge.Nuglify\Smidge.Nuglify.csproj" />
   </ItemGroup>

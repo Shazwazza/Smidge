@@ -9,7 +9,7 @@ namespace Smidge
     {
         public static IFileInfo GetRequiredFileInfo(this IFileProvider fileProvider, IWebFile webfile)
         {
-            var path = webfile.FilePath.TrimStart(new[] { '~' });
+            var path = webfile.FilePath.TrimStart('~');
             var fileInfo = fileProvider.GetFileInfo(path);
 
             if (!fileInfo.Exists)
@@ -22,7 +22,7 @@ namespace Smidge
 
         public static IFileInfo GetRequiredFileInfo(this IFileProvider fileProvider, string filePath)
         {
-            var path = filePath.TrimStart(new[] { '~' });
+            var path = filePath.TrimStart('~');
             var fileInfo = fileProvider.GetFileInfo(path);
 
             if (!fileInfo.Exists)
