@@ -35,8 +35,8 @@ namespace Smidge.CompositeFiles
             _bundleCompositeFilePath = bundleCompositeFilePath;
         }
 
-        private readonly List<Func<string>> _appenders = new List<Func<string>>();
-        private readonly List<Func<string>> _prependers = new List<Func<string>>();        
+        private readonly List<Func<Task<string>>> _appenders = new List<Func<Task<string>>>();
+        private readonly List<Func<Task<string>>> _prependers = new List<Func<Task<string>>>();        
         private readonly string _bundleCompositeFilePath;
 
         public IRequestModel BundleRequest { get; }
@@ -69,13 +69,13 @@ namespace Smidge.CompositeFiles
 
         public string FileExtension => BundleRequest?.Extension ?? string.Empty;
 
-        public void AddAppender(Func<string> appender)
+        public void AddAppender(Func<Task<string>> appender)
         {
             if (_bundleCompositeFilePath == null) return;
             _appenders.Add(appender);
         }
 
-        public void AddPrepender(Func<string> prepender)
+        public void AddPrepender(Func<Task<string>> prepender)
         {
             if (_bundleCompositeFilePath == null) return;
             _prependers.Add(prepender);
@@ -99,7 +99,8 @@ namespace Smidge.CompositeFiles
             //prependers
             foreach (var prepender in _prependers)
             {
-                var bytes = Encoding.UTF8.GetBytes(prepender());
+                var p = await prepender();
+                var bytes = Encoding.UTF8.GetBytes(p);
                 await ms.WriteAsync(bytes, 0, bytes.Length);
             }
 
@@ -113,7 +114,8 @@ namespace Smidge.CompositeFiles
             //prependers
             foreach (var appender in _appenders)
             {
-                var bytes = Encoding.UTF8.GetBytes(appender());
+                var a = await appender();
+                var bytes = Encoding.UTF8.GetBytes(a);
                 await ms.WriteAsync(bytes, 0, bytes.Length);
             }
 

@@ -66,6 +66,10 @@ namespace Smidge
                     result.Add(current);
                     current = new WebFileBatch();
                 }
+
+                // TODO: this should support Glob patterns, so this check would need to be a little different
+                // or the file system should just call GetPathsForFilesInFolder with a glob pattern and work with that.
+                // i.e. if the result is more than one, than it's treated here like a folder.
                 else if (_fileSystemHelper.IsFolder(f.FilePath))
                 {
                     //it's a folder so get all of it's individual files and process them 

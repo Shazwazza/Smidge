@@ -18,13 +18,13 @@ namespace Smidge.Nuglify
     {
         private readonly NuglifySettings _settings;
         private readonly ISourceMapDeclaration _sourceMapDeclaration;
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly ISmidgeFileSystem _fileSystem;
 
-        public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration, FileSystemHelper fileSystemHelper)
+        public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration, ISmidgeFileSystem fileSystem)
         {
             _settings = settings;
             _sourceMapDeclaration = sourceMapDeclaration;
-            _fileSystemHelper = fileSystemHelper;
+            _fileSystem = fileSystem;
         }
         
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
@@ -91,7 +91,7 @@ namespace Smidge.Nuglify
 
             if (nuglifyJsCodeSettings.SourceMapType != SourceMapType.None)
             {
-                AddSourceMapAppenderToContext(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
+                AddSourceMapAppenderToContextAsync(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
             }
 
             return next(fileProcessContext);
@@ -106,7 +106,7 @@ namespace Smidge.Nuglify
         /// </remarks>
         // TODO: WE need to MapPath the file path!
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
-            => Uglify.Js(fileProcessContext.FileContent, _fileSystemHelper.ConvertToFileProviderPath(fileProcessContext.WebFile.FilePath), codeSettings);
+            => Uglify.Js(fileProcessContext.FileContent, _fileSystem.ConvertToFileProviderPath(fileProcessContext.WebFile.FilePath), codeSettings);
 
         /// <summary>
         /// Adds a SourceMapAppender into the current bundle context if it doesn't already exist
@@ -114,7 +114,7 @@ namespace Smidge.Nuglify
         /// <param name="bundleContext"></param>
         /// <param name="sourceMapType"></param>
         /// <returns></returns>
-        private void AddSourceMapAppenderToContext(BundleContext bundleContext, SourceMapType sourceMapType)
+        private void AddSourceMapAppenderToContextAsync(BundleContext bundleContext, SourceMapType sourceMapType)
         {
             //if it already exist, then ignore
             var key = typeof(SourceMapDeclaration).Name;
@@ -126,11 +126,12 @@ namespace Smidge.Nuglify
             //not in the context so add a flag so it's not re-added
             bundleContext.Items[key] = "added";
 
-            bundleContext.AddAppender(() =>
+            bundleContext.AddAppender(async () =>
             {
                 var sourceMap = bundleContext.GetSourceMapFromContext(sourceMapType);
-                return _sourceMapDeclaration.GetDeclarationAsync(bundleContext, sourceMap).Result;
+                return await _sourceMapDeclaration.GetDeclarationAsync(bundleContext, sourceMap);
             });
+
         }
 
 

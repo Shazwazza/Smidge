@@ -65,8 +65,11 @@ namespace Smidge
                 {
                     file.Pipeline = pipeline;
                 }
-                
-                //We need to check if this path is a folder, then iterate the files
+
+                // We need to check if this path is a folder, then iterate the files
+                // TODO: this should support Glob patterns, so this check would need to be a little different
+                // or the file system should just call GetPathsForFilesInFolder with a glob pattern and work with that.
+                // i.e. if the result is more than one, than it's treated here like a folder.
                 if (_fileSystem.IsFolder(file.FilePath))
                 {
                     var filePaths = _fileSystem.GetPathsForFilesInFolder(file.FilePath);

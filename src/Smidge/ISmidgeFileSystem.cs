@@ -10,24 +10,52 @@ namespace Smidge
 {
     public interface ISmidgeFileSystem
     {
+        /// <summary>
+        /// Get the <see cref="ICacheFileSystem"/>
+        /// </summary>
         ICacheFileSystem CacheFileSystem { get; }
-        //IFileProvider SourceFileProvider { get; }
+
+        /// <summary>
+        /// Get a required <see cref="IFileInfo"/>
+        /// </summary>
+        /// <param name="webfile"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Throws an exception if the file doesn't exist
+        /// </remarks>
         IFileInfo GetRequiredFileInfo(IWebFile webfile);
+
+        /// <summary>
+        /// Get a required <see cref="IFileInfo"/>
+        /// </summary>
+        /// <param name="webfile"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Throws an exception if the file doesn't exist
+        /// </remarks>
         IFileInfo GetRequiredFileInfo(string filePath);
 
-        //TODO: I don't think we need to even pass in the IFileProvider, the file system will already know about it
-        //IFileInfo GetCachedCompositeFile(IFileProvider cacheFileProvider, ICacheBuster cacheBuster, CompressionType type, string filesetKey);
-        //IFileInfo GetCacheFile(IFileProvider cacheFileProvider, IWebFile file, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out Lazy<IFileInfo> fileInfo);
-
-        //string GetFileHash(IWebFile file, IFileInfo fileInfo, string extension);
-        //string GetFileHash(IWebFile file, string extension);
-        //IFileInfo GetFileInfo(IWebFile webfile);
-        //IFileInfo GetFileInfo(string filePath);
-
+        /// <summary>
+        /// Returns all full paths for files in the folder
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        // TODO: This should use Globbing patterns
         IEnumerable<string> GetPathsForFilesInFolder(string folderPath);
+        
+        // TODO: This won't be needed when we implement Globbing patterns
         bool IsFolder(string path);
+
+        /// <summary>
+        /// Reads the content of a file
+        /// </summary>
+        /// <param name="fileInfo"></param>
+        /// <returns></returns>
         Task<string> ReadContentsAsync(IFileInfo fileInfo);
+
+
         string ReverseMapPath(string subPath, IFileInfo fileInfo);
         bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback);
+        string ConvertToFileProviderPath(string path);
     }
 }
