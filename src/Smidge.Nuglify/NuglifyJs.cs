@@ -18,11 +18,13 @@ namespace Smidge.Nuglify
     {
         private readonly NuglifySettings _settings;
         private readonly ISourceMapDeclaration _sourceMapDeclaration;
+        private readonly FileSystemHelper _fileSystemHelper;
 
-        public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration)
+        public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration, FileSystemHelper fileSystemHelper)
         {
             _settings = settings;
             _sourceMapDeclaration = sourceMapDeclaration;
+            _fileSystemHelper = fileSystemHelper;
         }
         
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
@@ -103,7 +105,7 @@ namespace Smidge.Nuglify
         /// to the Nuglify process. For example, changing the FilePath used.
         /// </remarks>
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
-            => Uglify.Js(fileProcessContext.FileContent, fileProcessContext.WebFile.FilePath, codeSettings);
+            => Uglify.Js(fileProcessContext.FileContent, _fileSystemHelper.ConvertToFileProviderPath(fileProcessContext.WebFile.FilePath), codeSettings);
 
         /// <summary>
         /// Adds a SourceMapAppender into the current bundle context if it doesn't already exist
