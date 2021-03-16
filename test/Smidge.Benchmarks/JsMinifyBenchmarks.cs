@@ -91,7 +91,8 @@ namespace Smidge.Benchmarks
             _jsMin = new JsMinifier();
             _nuglify = new NuglifyJs(
                 new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()),
-                Mock.Of<ISourceMapDeclaration>());               
+                Mock.Of<ISourceMapDeclaration>(),
+                Mock.Of<IRequestHelper>());               
         }
 
         private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs)
