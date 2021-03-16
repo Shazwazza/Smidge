@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.Controllers;
@@ -23,6 +24,7 @@ using System.Runtime.CompilerServices;
 
 namespace Smidge
 {
+
     public static class SmidgeStartup
     {
         //For .net core 3.0, call this before AddControllers/AddControllersWithViews etc
@@ -30,9 +32,7 @@ namespace Smidge
         //to tell smidge to do so
 
 #if NETCORE3_0
-        public static IServiceCollection AddSmidge(this IServiceCollection services,
-            IConfiguration smidgeConfiguration = null,
-            IFileProvider fileProvider = null)
+        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null)
 #else
 
         public static IServiceCollection AddSmidge(this IServiceCollection services,
@@ -59,7 +59,8 @@ namespace Smidge
 #else
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
 #endif
-                var provider = fileProvider ?? hosting.WebRootFileProvider;
+                //resolve the ISmidgeFileProvider if there is one
+                var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
                 return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
             });
             services.AddSingleton<ICacheFileSystem>(p =>
@@ -71,8 +72,6 @@ namespace Smidge
 #else
                 var hosting = p.GetRequiredService<IHostingEnvironment>();
 #endif
-
-                var provider = fileProvider ?? hosting.WebRootFileProvider;                
                 var config = p.GetRequiredService<ISmidgeConfig>();
                 var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
 

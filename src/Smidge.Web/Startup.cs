@@ -54,7 +54,7 @@ namespace Smidge.Web
                 .Build();        
 
         public IConfigurationRoot Configuration { get; }
-        private IWebHostEnvironment CurrentEnvironment { get; }
+        public IWebHostEnvironment CurrentEnvironment { get; }
 
         /// <summary>
         /// Constructor sets up the configuration - for our example we'll load in the config from appsettings.json with
@@ -75,12 +75,17 @@ namespace Smidge.Web
         {
             services.AddMvc();
 
+            services.AddSingleton<ISmidgeFileProvider>(f =>
+            {
+                var hostEnv = f.GetRequiredService<IWebHostEnvironment>();
+
+                return new SmidgeFileProvider(
+                    hostEnv.WebRootFileProvider,
+                    new PhysicalFileProvider(Path.Combine(hostEnv.ContentRootPath, "Smidge", "Static")));
+            });
+
             // Or use services.AddSmidge() to test from smidge.json config.
-            services.AddSmidge(
-                Configuration.GetSection("smidge"),
-                new CompositeFileProvider(
-                    CurrentEnvironment.WebRootFileProvider,
-                    new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge", "Static"))));
+            services.AddSmidge(Configuration.GetSection("smidge"));
 
             // We could replace a processor in the default pipeline like this
             //services.Configure<SmidgeOptions>(opt =>
