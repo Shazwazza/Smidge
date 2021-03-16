@@ -2,14 +2,12 @@
 using Dazinator.Extensions.FileProviders.InMemory;
 using Dazinator.Extensions.FileProviders.InMemory.Directory;
 using Microsoft.Extensions.FileProviders;
-using Smidge;
 using Smidge.Cache;
 using Smidge.Hashing;
 using Smidge.Models;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Smidge.InMemory

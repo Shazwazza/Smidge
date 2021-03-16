@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Smidge
 {
+
     public static class StringExtensions
     {
 
@@ -44,7 +45,7 @@ namespace Smidge
             return input;
         }
 
-        internal static string ReplaceNonAlphanumericChars(this string input, char replacement)
+        public static string ReplaceNonAlphanumericChars(this string input, char replacement)
         {
             //any character that is not alphanumeric, convert to a hyphen
             var mName = input;

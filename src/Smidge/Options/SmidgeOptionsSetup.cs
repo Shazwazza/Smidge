@@ -28,6 +28,7 @@ namespace Smidge.Options
         {
             //create the default options
             options.UrlOptions = new UrlManagerOptions();
+            options.CacheOptions = new SmidgeCacheOptions();
             options.FileProcessingConventions = new FileProcessingConventionsCollection
             {
                 typeof(MinifiedFilePathConvention)

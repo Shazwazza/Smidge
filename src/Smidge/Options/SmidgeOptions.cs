@@ -41,5 +41,7 @@ namespace Smidge.Options
         /// This acts like a filter, the actual instances of IFileProcessingConvention will be created via IoC
         /// </remarks>
         public ICollection<Type> FileProcessingConventions { get; set; }
+
+        public SmidgeCacheOptions CacheOptions { get; set; }
     }
 }

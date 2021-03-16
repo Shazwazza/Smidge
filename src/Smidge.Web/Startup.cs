@@ -105,9 +105,7 @@ namespace Smidge.Web
             });
 
             services.AddSmidgeNuglify();
-
-            // Replace
-            services.AddSingleton<ICacheFileSystem, MemoryCacheFileSystem>();
+            services.AddSmidgeInMemory();
 
             //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }

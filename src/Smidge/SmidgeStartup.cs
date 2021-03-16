@@ -63,25 +63,7 @@ namespace Smidge
                 var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
                 return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
             });
-            services.AddSingleton<ICacheFileSystem>(p =>
-            {
-                //The default cache folder is a physical folder
-
-#if NETCORE3_0                     
-                var hosting = p.GetRequiredService<IWebHostEnvironment>();
-#else
-                var hosting = p.GetRequiredService<IHostingEnvironment>();
-#endif
-                var config = p.GetRequiredService<ISmidgeConfig>();
-                var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
-
-                //ensure it exists
-                Directory.CreateDirectory(cacheFolder);
-
-                var cacheFileProvider = new PhysicalFileProvider(cacheFolder);
-                
-                return new PhysicalFileCacheFileSystem(cacheFileProvider, p.GetRequiredService<IHasher>());
-            });
+            services.AddSingleton<ICacheFileSystem>(p => p.CreatePhysicalFileCacheFileSystem());            
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
