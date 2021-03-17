@@ -6,7 +6,7 @@ namespace Smidge.Cache
     /// <summary>
     /// Cache bust for every request
     /// </summary>
-    public class TimeStampCacheBuster : ICacheBuster
+    public class TimestampCacheBuster : ICacheBuster
     {
         public string GetValue()
         {
