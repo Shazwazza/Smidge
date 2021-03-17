@@ -134,7 +134,7 @@ namespace Smidge.InMemory
             var parts = filePath.Split('/');
             var fileName = string.Join('/', parts.Skip(1));
 #else
-            var parts = filePath.Split("/");
+            var parts = filePath.Split('/');
             var fileName = string.Join("/", parts.Skip(1));
 #endif
 

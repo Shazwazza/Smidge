@@ -19,8 +19,8 @@ namespace Smidge.InMemory
     /// </summary>
     public class ConfiguredCacheFileSystem : ICacheFileSystem
     {
-        private SmidgeOptions _options;
-        private ICacheFileSystem _wrapped;
+        private readonly SmidgeOptions _options;
+        private readonly ICacheFileSystem _wrapped;
 
         public ConfiguredCacheFileSystem(IOptions<SmidgeOptions> options, IServiceProvider services)
         {

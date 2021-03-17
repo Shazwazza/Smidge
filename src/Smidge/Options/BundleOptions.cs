@@ -38,6 +38,21 @@ namespace Smidge.Options
         }
 
         /// <summary>
+        /// Sets the default cache buster type
+        /// </summary>
+        /// <remarks>
+        /// This instance will be resolved from IoC at runtime
+        /// </remarks>
+        public void SetCacheBusterType(Type t)
+        {
+            if (!typeof(ICacheBuster).IsAssignableFrom(t))
+            {
+                throw new InvalidOperationException($"The type {t} is not of type {typeof(ICacheBuster)}");
+            }
+            _defaultCacheBuster = t;
+        }
+
+        /// <summary>
         /// Returns the default cache buster type
         /// </summary>
         /// <returns></returns>

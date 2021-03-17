@@ -35,11 +35,8 @@ namespace Smidge.Nuglify
         /// <param name="sourceSourceMapType"></param>
         public V3DeferredSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder, SourceMapType sourceSourceMapType)
         {
-            if (wrapped == null) throw new ArgumentNullException(nameof(wrapped));
-            if (mapBuilder == null) throw new ArgumentNullException(nameof(mapBuilder));
-
-            _wrapped = wrapped;
-            _mapBuilder = mapBuilder;
+            _wrapped = wrapped ?? throw new ArgumentNullException(nameof(wrapped));
+            _mapBuilder = mapBuilder ?? throw new ArgumentNullException(nameof(mapBuilder));
             SourceMapType = sourceSourceMapType;
         }
 
