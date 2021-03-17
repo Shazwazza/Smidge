@@ -1,4 +1,5 @@
 ﻿using Smidge.Cache;
+using System;
 
 namespace Smidge.Options
 {
@@ -18,6 +19,22 @@ namespace Smidge.Options
             where T: ICacheBuster
         {
             _options.SetCacheBusterType<T>();
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the default cache buster type
+        /// </summary>
+        /// <remarks>
+        /// This instance will be resolved from IoC at runtime
+        /// </remarks>
+        public BundleOptionsBuilder SetCacheBusterType(Type t)
+        {
+            if (!typeof(ICacheBuster).IsAssignableFrom(t))
+            {
+                throw new InvalidOperationException($"The type {t} is not of type {typeof(ICacheBuster)}");
+            }
+            _options.SetCacheBusterType(t);
             return this;
         }
 
