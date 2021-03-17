@@ -70,6 +70,11 @@ namespace Smidge.FileProcessors
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
 
+            if (cacheBuster == null)
+            {
+                throw new InvalidOperationException($"No cache buster by type {bundleOptions.GetCacheBusterType()} could be resolved, did you add it to the container?");
+            }
+
             //we're making this lazy since we don't always want to resolve it
             var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
 

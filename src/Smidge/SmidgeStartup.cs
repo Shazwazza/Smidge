@@ -79,6 +79,7 @@ namespace Smidge
 
             services.AddSingleton<ICacheBuster, ConfigCacheBuster>();
             services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
+            services.AddSingleton<ICacheBuster, TimeStampCacheBuster>();
             services.AddSingleton<CacheBusterResolver>();
 
             //These all execute as part of the request/scope            

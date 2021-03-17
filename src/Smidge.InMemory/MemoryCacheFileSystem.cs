@@ -99,8 +99,10 @@ namespace Smidge.InMemory
             var dir = string.Join("/", segments.Take(segments.Length - 1));
 #endif
 
-            var f = _directory.AddFile(dir, new StringFileInfo(contents, segments[segments.Length - 1]));
+            ClearStaleFiles(filePath);
 
+            var f = _directory.AddFile(dir, new StringFileInfo(contents, segments[segments.Length - 1]));
+            
             return Task.CompletedTask;
         }
 
@@ -119,8 +121,24 @@ namespace Smidge.InMemory
             var dir = string.Join("/", segments.Take(segments.Length - 1));
 #endif
 
+            ClearStaleFiles(filePath);
 
             var f = _directory.AddFile(dir, new MemoryStreamFileInfo(memStream, segments[segments.Length - 1]));
+        }
+
+        private void ClearStaleFiles(string filePath)
+        {
+            // trim the first part (cache buster value)
+            // and then clear all matching files for the last parts
+            var parts = filePath.Split('/');
+            var fileName = string.Join('/', parts.Skip(1));
+
+            // clean out stale references for this file name
+            var found = _directory.Search($"**/{fileName}");
+            foreach (var existing in found)
+            {
+                existing.Delete();
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Smidge.InMemory
         /// <returns></returns>
         public static IServiceCollection AddSmidgeInMemory(this IServiceCollection services, bool enable = true)
         {
-            services.AddTransient<ICacheFileSystem, ConfiguredCacheFileSystem>();
+            services.AddSingleton<ICacheFileSystem, ConfiguredCacheFileSystem>();
             if (enable)
             {
                 services.Configure<SmidgeOptions>(o =>
