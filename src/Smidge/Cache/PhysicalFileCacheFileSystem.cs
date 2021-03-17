@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 using Smidge.Hashing;
 using Smidge.Models;
 using System;
@@ -13,9 +14,11 @@ namespace Smidge.Cache
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
         private readonly IHasher _hasher;
-        private readonly IFileProvider _fileProvider;
+        private readonly PhysicalFileProvider _fileProvider;
 
-        public PhysicalFileCacheFileSystem(IFileProvider cacheFileProvider, IHasher hasher)
+        public PhysicalFileCacheFileSystem(
+            PhysicalFileProvider cacheFileProvider, 
+            IHasher hasher)
         {
             _fileProvider = cacheFileProvider;
             _hasher = hasher;
@@ -66,7 +69,7 @@ namespace Smidge.Cache
             if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
 
-            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+            filePath = GetFullFilePathForWriting(filePath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using (var writer = File.CreateText(filePath))
@@ -81,13 +84,18 @@ namespace Smidge.Cache
             if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
 
-            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+            filePath = GetFullFilePathForWriting(filePath);
 
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using (var newFile = File.Create(filePath))
             {
                 await contents.CopyToAsync(newFile);
             }
+        }
+
+        private string GetFullFilePathForWriting(string filePath)
+        {
+            return Path.Combine(_fileProvider.Root, filePath.Replace('/', Path.DirectorySeparatorChar));
         }
 
         /// <summary>
