@@ -130,8 +130,13 @@ namespace Smidge.InMemory
         {
             // trim the first part (cache buster value)
             // and then clear all matching files for the last parts
+#if NETCORE3_0
             var parts = filePath.Split('/');
             var fileName = string.Join('/', parts.Skip(1));
+#else
+            var parts = filePath.Split("/");
+            var fileName = string.Join("/", parts.Skip(1));
+#endif
 
             // clean out stale references for this file name
             var found = _directory.Search($"**/{fileName}");
