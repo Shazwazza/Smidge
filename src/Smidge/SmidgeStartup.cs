@@ -50,7 +50,7 @@ namespace Smidge
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
             services.AddSingleton<IHasher, Crc32Hasher>();
-            services.AddSingleton<IBundleManager, BundleManager>();            
+            services.AddSingleton<IBundleManager, BundleManager>();
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<ISmidgeFileSystem>(p =>
             {
@@ -63,7 +63,7 @@ namespace Smidge
                 var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
                 return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
             });
-            services.AddSingleton<ICacheFileSystem>(p => p.CreatePhysicalFileCacheFileSystem());            
+            services.AddSingleton<ICacheFileSystem>(p => p.CreatePhysicalFileCacheFileSystem());
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
@@ -79,7 +79,7 @@ namespace Smidge
 
             services.AddSingleton<ICacheBuster, ConfigCacheBuster>();
             services.AddSingleton<ICacheBuster, AppDomainLifetimeCacheBuster>();
-            services.AddSingleton<ICacheBuster, TimeStampCacheBuster>();
+            services.AddSingleton<ICacheBuster, TimestampCacheBuster>();
             services.AddSingleton<CacheBusterResolver>();
 
             //These all execute as part of the request/scope            
@@ -169,7 +169,7 @@ namespace Smidge
                 //TODO: Now that they are configured we need to wire up the file watching event handlers
                 // to the bundle manager, currently these are on the Bundle, but that is not good enough
                 // since we need the bundle name
-                foreach (var webFileType in new[] {WebFileType.Css, WebFileType.Js })
+                foreach (var webFileType in new[] { WebFileType.Css, WebFileType.Js })
                 {
                     var bundles = bundleManager.GetBundles(webFileType);
                     foreach (var bundle in bundles)
@@ -177,7 +177,7 @@ namespace Smidge
                         WireUpFileWatchEventHandlers(cacheBusterResolver, fileSystem, bundle);
                     }
                 }
-            }    
+            }
         }
 
         private static void WireUpFileWatchEventHandlers(CacheBusterResolver cacheBusterResolver, ISmidgeFileSystem fileSystem, Bundle bundle)
