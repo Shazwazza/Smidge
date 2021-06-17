@@ -91,6 +91,12 @@ namespace Smidge.Nuglify
 
             if (nuglifyJsCodeSettings.SourceMapType != SourceMapType.None)
             {
+                if (codeSettings.SymbolsMap != null)
+                {
+                    // tell the source map we have added a new line to the output (fixes offsets).
+                    codeSettings.SymbolsMap.NewLineInsertedInOutput();
+                }
+
                 AddSourceMapAppenderToContextAsync(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
             }
 
