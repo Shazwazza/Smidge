@@ -38,7 +38,7 @@ namespace Smidge.Nuglify
 
         public static string GetSourceMapFilePath(this BundleRequestModel bundleRequest)
         {
-            return $"{bundleRequest.CacheBuster.GetValue()}/{bundleRequest.FileKey}.s.map";
+            return $"{bundleRequest.ParsedPath?.Version ?? bundleRequest.CacheBuster.GetValue()}/{bundleRequest.FileKey}.s.map";
         }
 
     }
