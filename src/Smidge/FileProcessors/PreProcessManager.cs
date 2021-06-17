@@ -68,17 +68,12 @@ namespace Smidge.FileProcessors
 
             var fileWatchEnabled = bundleOptions?.FileWatchOptions.Enabled ?? false;
 
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
-
-            if (cacheBuster == null)
-            {
-                throw new InvalidOperationException($"No cache buster by type {bundleOptions.GetCacheBusterType()} could be resolved, did you add it to the container?");
-            }
+            var cacheBusterValue = bundleContext.CacheBusterValue;
 
             //we're making this lazy since we don't always want to resolve it
             var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
 
-            var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBuster, out var filePath);
+            var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBusterValue, out var filePath);
 
             //check if it's in cache
             if (cacheFile.Exists)

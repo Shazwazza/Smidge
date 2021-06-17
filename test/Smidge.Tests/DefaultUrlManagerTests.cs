@@ -29,7 +29,7 @@ namespace Smidge.Tests
 
             var result = manager.ParsePath(path);
 
-            Assert.Equal("1", result.Version);
+            Assert.Equal("1", result.CacheBusterValue);
             Assert.Equal(4, result.Names.Count());
             Assert.Equal(WebFileType.Js, result.WebType);
         }
@@ -50,7 +50,7 @@ namespace Smidge.Tests
                 hasher.Object,
                 urlHelper);
 
-            var url = creator.GetUrl("my-bundle", ".js", false, Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
+            var url = creator.GetUrl("my-bundle", ".js", false, "1");
 
             Assert.Equal("/sg/my-bundle.js.v1", url);
         }
@@ -72,8 +72,7 @@ namespace Smidge.Tests
                 urlHelper);
 
             var url = creator.GetUrls(
-                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
-                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
+                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
 
             Assert.Single(url);
             Assert.Equal("/sg/Test1.Test2.js.v1", url.First().Url);
@@ -97,8 +96,7 @@ namespace Smidge.Tests
                 urlHelper);
 
             var url = creator.GetUrls(
-                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js",
-                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1"));
+                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
 
             Assert.Equal(2, url.Count());
             Assert.Equal("/sg/Test1.js.v1", url.ElementAt(0).Url);
@@ -124,8 +122,7 @@ namespace Smidge.Tests
                 urlHelper);
 
             Assert.Throws<InvalidOperationException>(() => creator.GetUrls(
-                new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js",
-                Mock.Of<ICacheBuster>(buster => buster.GetValue() == "1")));
+                new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js", "1"));
 
         }
     }

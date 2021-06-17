@@ -36,12 +36,12 @@ namespace Smidge.Cache
             return fileInfo;
         }
 
-        private string GetCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
-            => $"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}";
+        private string GetCompositeFilePath(string cacheBusterValue, CompressionType type, string filesetKey)
+            => $"{cacheBusterValue}/{type}/{filesetKey + ".s"}";
 
-        public Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+        public Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey)
         {
-            var path = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            var path = GetCompositeFilePath(cacheBusterValue, type, filesetKey);
             var file = _fileProvider.GetFileInfo(path);
 
             if (file.PhysicalPath == null)
@@ -58,9 +58,9 @@ namespace Smidge.Cache
             return Task.CompletedTask;
         }
 
-        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath)
+        public IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, out string filePath)
         {
-            filePath = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            filePath = GetCompositeFilePath(cacheBusterValue, type, filesetKey);
             return _fileProvider.GetFileInfo(filePath);
         }
 
@@ -106,9 +106,10 @@ namespace Smidge.Cache
         /// <param name="extension"></param>
         /// <param name="cacheBuster"></param>
         /// <returns></returns>
-        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath)
+        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, out string filePath)
         {
             IFileInfo cacheFile;
+            
             if (fileWatchEnabled)
             {
                 //When file watching, the file path will be different since we'll hash twice:
@@ -120,14 +121,14 @@ namespace Smidge.Cache
                 var fileHash = _hasher.GetFileHash(file, string.Empty);
                 var timestampedHash = _hasher.GetFileHash(file, sourceFile(), extension);
 
-                filePath = $"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}";
+                filePath = $"{cacheBusterValue}/{fileHash}/{timestampedHash}";
                 cacheFile = _fileProvider.GetFileInfo(filePath);
             }
             else
             {
                 var fileHash = _hasher.GetFileHash(file, extension);
 
-                filePath = $"{cacheBuster.GetValue()}/{fileHash}";
+                filePath = $"{cacheBusterValue}/{fileHash}";
                 cacheFile = _fileProvider.GetFileInfo(filePath);
             }
 

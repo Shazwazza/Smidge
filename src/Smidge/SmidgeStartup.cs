@@ -207,12 +207,13 @@ namespace Smidge
         {
             var bundleOptions = e.File.BundleOptions;
             var cacheBuster = cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
 
             //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
             // invalidated/deleted/renamed
             foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
             {
-                await fileSystem.CacheFileSystem.ClearCachedCompositeFileAsync(cacheBuster, compressionType, bundleName);
+                await fileSystem.CacheFileSystem.ClearCachedCompositeFileAsync(cacheBusterValue, compressionType, bundleName);
             }
         }
     }

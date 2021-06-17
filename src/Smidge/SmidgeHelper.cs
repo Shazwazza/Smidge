@@ -201,8 +201,9 @@ namespace Smidge
             }
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
-            
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBuster);
+            var cacheBusterValue = cacheBuster.GetValue();
+
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
                 result.Add(url);
 
@@ -238,6 +239,7 @@ namespace Smidge
             var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
 
             foreach (var batch in fileBatches)
             {
@@ -254,7 +256,7 @@ namespace Smidge
                     var compositeUrls = _urlManager.GetUrls(
                         batch.Select(x => x.Hashed), 
                         fileType == WebFileType.Css ? ".css" : ".js",
-                        cacheBuster);
+                        cacheBusterValue);
 
                     foreach (var u in compositeUrls)
                     {
@@ -262,10 +264,10 @@ namespace Smidge
 
                         var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
 
-                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, compression, u.Key, out _);
+                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, compression, u.Key, out _);
                         if (!cacheFile.Exists)
                         {
-                            using (var bundleContext = BundleContext.CreateEmpty())
+                            using (var bundleContext = BundleContext.CreateEmpty(cacheBusterValue))
                             {
                                 //need to process/minify these files - need to use their original paths of course
                                 foreach (var file in batch.Select(x => x.Original))

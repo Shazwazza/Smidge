@@ -11,8 +11,13 @@ namespace Smidge.CompositeFiles
     public class ParsedUrlPath
     {
         public WebFileType WebType { get; set; }
+        
         public IEnumerable<string> Names { get; set; }
-        public string Version { get; set; }
+
+        /// <summary>
+        /// The cache buster value used when the URL was generated
+        /// </summary>
+        public string CacheBusterValue { get; set; }
 
         /// <summary>
         /// If the request is in debug mode

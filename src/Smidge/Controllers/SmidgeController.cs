@@ -71,8 +71,10 @@ namespace Smidge.Controllers
 
             var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
 
+            var cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
+
             //now we need to determine if this bundle has already been created
-            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(bundleModel.CacheBuster, bundleModel.Compression, bundleModel.FileKey, out var cacheFilePath);
+            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, bundleModel.Compression, bundleModel.FileKey, out var cacheFilePath);
             if (cacheFile.Exists)
             {
                 _logger.LogDebug($"Returning bundle '{bundleModel.FileKey}' from cache");
@@ -105,7 +107,7 @@ namespace Smidge.Controllers
                 return NotFound();
             }
 
-            using (var bundleContext = new BundleContext(bundleModel, cacheFilePath))
+            using (var bundleContext = new BundleContext(cacheBusterValue, bundleModel, cacheFilePath))
             {
                 var watch = new Stopwatch();
                 watch.Start();
@@ -123,7 +125,7 @@ namespace Smidge.Controllers
                     () => _fileSystem.GetRequiredFileInfo(x),
                     bundleOptions.FileWatchOptions.Enabled,
                     Path.GetExtension(x.FilePath),
-                    bundleModel.CacheBuster,
+                    cacheBusterValue,
                     out _));
 
                 using (var resultStream = await GetCombinedStreamAsync(fileInfos, bundleContext))
@@ -161,8 +163,9 @@ namespace Smidge.Controllers
             }
 
             var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
+            var cacheBusterValue = file.ParsedPath.CacheBusterValue;
 
-            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(file.CacheBuster, file.Compression, file.FileKey, out var cacheFilePath);
+            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, file.Compression, file.FileKey, out var cacheFilePath);
 
             if (cacheFile.Exists)
             {
@@ -179,11 +182,11 @@ namespace Smidge.Controllers
                 }
             }
 
-            using (var bundleContext = new BundleContext(file, cacheFilePath))
+            using (var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath))
             {
                 var files = file.ParsedPath.Names.Select(filePath =>
                     _fileSystem.CacheFileSystem.GetRequiredFileInfo(
-                        $"{file.ParsedPath.Version}/{filePath + file.Extension}"));
+                        $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}"));
 
                 using (var resultStream = await GetCombinedStreamAsync(files, bundleContext))
                 {

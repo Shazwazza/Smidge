@@ -12,7 +12,7 @@ namespace Smidge.Models
     /// </summary>
     public class BundleRequestModel : RequestModel
     {
-        public BundleRequestModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper, IBundleManager bundleManager, CacheBusterResolver cacheBusterResolver)
+        public BundleRequestModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper, IBundleManager bundleManager)
             : base("bundle", urlManager, accessor, requestHelper)
         {
             //TODO: Pretty sure if we want to control the caching of the file, we'll have to retrieve the bundle definition here
@@ -32,11 +32,8 @@ namespace Smidge.Models
                 throw new InvalidOperationException("No bundle found with key " + FileKey);
             }
             Bundle = bundle;
-
-            CacheBuster = cacheBusterResolver.GetCacheBuster(bundle.GetBundleOptions(bundleManager, Debug).GetCacheBusterType());                
         }
 
-        public override ICacheBuster CacheBuster { get; }
         public Bundle Bundle { get; }        
         public override string FileKey { get; }
     }

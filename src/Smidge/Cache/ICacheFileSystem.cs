@@ -13,9 +13,9 @@ namespace Smidge.Cache
     public interface ICacheFileSystem
     {
         IFileInfo GetRequiredFileInfo(string filePath);
-        Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey);
-        IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath);
-        IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath);
+        Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey);
+        IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, out string filePath);
+        IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, out string filePath);
         Task WriteFileAsync(string filePath, string contents);
         Task WriteFileAsync(string filePath, Stream contents);
     }

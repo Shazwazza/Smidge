@@ -45,11 +45,6 @@ namespace Smidge.Models
         }
 
         /// <summary>
-        /// The cache buster for the current file request
-        /// </summary>
-        public abstract ICacheBuster CacheBuster { get; }
-
-        /// <summary>
         /// The bundle definition name - this is either the bundle name when using named bundles or the composite file
         /// key generated when using composite files
         /// </summary>

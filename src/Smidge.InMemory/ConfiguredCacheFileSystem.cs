@@ -41,14 +41,14 @@ namespace Smidge.InMemory
             }
         }
 
-        public Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
-            => _wrapped.ClearCachedCompositeFileAsync(cacheBuster, type, filesetKey);
+        public Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey)
+            => _wrapped.ClearCachedCompositeFileAsync(cacheBusterValue, type, filesetKey);
 
-        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath)
-            => _wrapped.GetCachedCompositeFile(cacheBuster, type, filesetKey, out filePath);
+        public IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, out string filePath)
+            => _wrapped.GetCachedCompositeFile(cacheBusterValue, type, filesetKey, out filePath);
 
-        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath)
-            => _wrapped.GetCacheFile(file, sourceFile, fileWatchEnabled, extension, cacheBuster, out filePath);
+        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, out string filePath)
+            => _wrapped.GetCacheFile(file, sourceFile, fileWatchEnabled, extension, cacheBusterValue, out filePath);
 
         public IFileInfo GetRequiredFileInfo(string filePath)
             => _wrapped.GetRequiredFileInfo(filePath);
