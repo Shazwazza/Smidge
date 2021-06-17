@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.FileProviders;
-using Smidge.Cache;
 using Smidge.FileProcessors;
 using Smidge.Models;
 

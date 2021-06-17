@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Smidge.Models;
 
 namespace Smidge
@@ -94,7 +95,7 @@ namespace Smidge
         /// If IE 6 is detected, we will ignore compression as it's known that some versions of IE 6
         /// have issues with it.
         /// </summary>
-        public CompressionType GetClientCompression(IHeaderDictionary headers)
+        public CompressionType GetClientCompression(IDictionary<string, StringValues> headers)
         {
             var type = CompressionType.none;
             var agentHeader = (string)headers[HttpConstants.UserAgent];

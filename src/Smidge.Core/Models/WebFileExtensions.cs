@@ -4,12 +4,6 @@ namespace Smidge.Models
 {
     public static class WebFileExtensions
     {
-        [Obsolete("Use the Duplicate method instead")]
-        public static IWebFile Copy(this IWebFile orig, string newPath)
-        {
-            return orig.Duplicate(newPath);
-        }
-
         /// <summary>
         /// Creates a copy of the <see cref="IWebFile"/> with the new path
         /// </summary>

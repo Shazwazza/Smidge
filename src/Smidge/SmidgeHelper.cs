@@ -1,7 +1,6 @@
 ﻿using Smidge.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
-using Smidge.Options;
 
 namespace Smidge
 {

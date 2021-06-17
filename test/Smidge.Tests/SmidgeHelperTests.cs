@@ -56,10 +56,11 @@ namespace Smidge.Tests
             _processorFactory = new PreProcessPipelineFactory(new Lazy<IEnumerable<IPreProcessor>>(() => _preProcessors));
             _bundleManager = new BundleManager(_smidgeOptions.Object, Mock.Of<ILogger<BundleManager>>());
             _preProcessManager = new PreProcessManager(
-                _fileSystemHelper,
-                new CacheBusterResolver(Enumerable.Empty<ICacheBuster>()),
-                _bundleManager, Mock.Of<ILogger<PreProcessManager>>());
-            _fileSetGenerator = new BundleFileSetGenerator(_fileSystemHelper, _requestHelper, 
+                _fileSystemHelper,                
+                _bundleManager, 
+                Mock.Of<ILogger<PreProcessManager>>());
+            _fileSetGenerator = new BundleFileSetGenerator(
+                _fileSystemHelper, 
                 new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
         }
 

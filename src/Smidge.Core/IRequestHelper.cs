@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.Extensions.Primitives;
 using Smidge.Models;
+using System.Collections.Generic;
 
 namespace Smidge
 {
@@ -26,7 +27,7 @@ namespace Smidge
         /// Returns the compression type for the current request
         /// </summary>
         /// <returns></returns>
-        CompressionType GetClientCompression(IHeaderDictionary headers);
+        CompressionType GetClientCompression(IDictionary<string, StringValues> headers);
 
         bool IsExternalRequestPath(string path);
     }

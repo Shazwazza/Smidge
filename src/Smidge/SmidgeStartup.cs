@@ -7,17 +7,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
-using Smidge.Controllers;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.Models;
 using Smidge.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]

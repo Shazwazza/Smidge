@@ -4,7 +4,6 @@ using Smidge.Models;
 using System.Text;
 using System.Linq;
 using Microsoft.Extensions.Options;
-using Smidge.Cache;
 using Smidge.Options;
 using Smidge.Hashing;
 

@@ -1,6 +1,4 @@
-﻿using Smidge.Cache;
-
-namespace Smidge.Models
+﻿namespace Smidge.Models
 {
     public interface IRequestModel
     {

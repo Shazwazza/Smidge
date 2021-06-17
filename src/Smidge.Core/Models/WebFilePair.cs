@@ -1,7 +1,7 @@
 ﻿namespace Smidge.Models
 {
 
-    internal class WebFilePair
+    public sealed class WebFilePair
     {
         public WebFilePair(IWebFile original, IWebFile hashed)
         {

@@ -1,15 +1,13 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
+﻿using Microsoft.Extensions.FileProviders;
 using Smidge.Hashing;
 using Smidge.Models;
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Smidge.Cache
 {
-    
+
 
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
