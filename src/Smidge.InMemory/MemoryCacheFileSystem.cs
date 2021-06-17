@@ -93,11 +93,7 @@ namespace Smidge.InMemory
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
 
             var segments = PathUtils.SplitPathIntoSegments(filePath);
-#if NETCORE3_0
-            var dir = string.Join('/', segments.Take(segments.Length - 1));
-#else
             var dir = string.Join("/", segments.Take(segments.Length - 1));
-#endif
 
             ClearStaleFiles(filePath);
 
@@ -115,11 +111,7 @@ namespace Smidge.InMemory
             await contents.CopyToAsync(memStream);
 
             var segments = PathUtils.SplitPathIntoSegments(filePath);
-#if NETCORE3_0
-            var dir = string.Join('/', segments.Take(segments.Length - 1));
-#else
             var dir = string.Join("/", segments.Take(segments.Length - 1));
-#endif
 
             ClearStaleFiles(filePath);
 
@@ -130,13 +122,8 @@ namespace Smidge.InMemory
         {
             // trim the first part (cache buster value)
             // and then clear all matching files for the last parts
-#if NETCORE3_0
-            var parts = filePath.Split('/');
-            var fileName = string.Join('/', parts.Skip(1));
-#else
             var parts = filePath.Split('/');
             var fileName = string.Join("/", parts.Skip(1));
-#endif
 
             // clean out stale references for this file name
             var found = _directory.Search($"**/{fileName}");

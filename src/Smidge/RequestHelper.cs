@@ -44,17 +44,11 @@ namespace Smidge
             if (filePath == null) return null;
 
             var requestPath = file.RequestPath != null ? Content(file.RequestPath) : string.Empty;
-#if NETCORE3_0
+
             if (requestPath.EndsWith('/'))
             {
                 requestPath.TrimEnd('/');
             }
-#else
-            if (requestPath.EndsWith("/"))
-            {
-                requestPath.TrimEnd(new[] { '/' });
-            }
-#endif
 
             return string.Concat(requestPath, filePath);
         }

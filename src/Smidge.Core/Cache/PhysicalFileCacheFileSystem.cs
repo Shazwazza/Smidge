@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Smidge.Hashing;
 using Smidge.Models;
 using System;
@@ -7,10 +8,23 @@ using System.Threading.Tasks;
 
 namespace Smidge.Cache
 {
-
-
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
+        public static PhysicalFileCacheFileSystem CreatePhysicalFileCacheFileSystem(
+            IHasher hasher,
+            ISmidgeConfig config,
+            IHostEnvironment hosting)
+        {
+            var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
+
+            //ensure it exists
+            Directory.CreateDirectory(cacheFolder);
+
+            var cacheFileProvider = new PhysicalFileProvider(cacheFolder);
+
+            return new PhysicalFileCacheFileSystem(cacheFileProvider, hasher);
+        }
+
         private readonly IHasher _hasher;
         private readonly PhysicalFileProvider _fileProvider;
 

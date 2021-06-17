@@ -5,7 +5,7 @@
     <VersionPrefix>4.0.0</VersionPrefix>
     <Copyright>Copyright © Shannon Deminick 2021</Copyright>
     <Authors>Shannon Deminick</Authors>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <AssemblyName>Smidge.Nuglify</AssemblyName>
     <PackageId>Smidge.Nuglify</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;nuglify;uglify;aspnetcore</PackageTags>
@@ -19,16 +19,13 @@
     <StartupObject />
     <IsPackable>true</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Smidge\Smidge.csproj" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Nuglify" Version="1.13.8" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Smidge\Smidge.csproj" />
   </ItemGroup>
 </Project>

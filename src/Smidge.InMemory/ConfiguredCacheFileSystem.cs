@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Smidge.Cache;
 using Smidge.Hashing;
@@ -25,19 +26,19 @@ namespace Smidge.InMemory
         public ConfiguredCacheFileSystem(IOptions<SmidgeOptions> options, IServiceProvider services)
         {
             _options = options.Value;
+
             var hasher = services.GetRequiredService<IHasher>();
-#if NETCORE3_0
-            var hosting = services.GetRequiredService<IWebHostEnvironment>();
-#else
-            var hosting = services.GetRequiredService<IHostingEnvironment>();
-#endif
+
             if (_options.CacheOptions.UseInMemoryCache)
             {
                 _wrapped = new MemoryCacheFileSystem(hasher);
             }
             else
             {
-                _wrapped = services.CreatePhysicalFileCacheFileSystem();
+                _wrapped = PhysicalFileCacheFileSystem.CreatePhysicalFileCacheFileSystem(
+                    hasher,
+                    services.GetRequiredService<ISmidgeConfig>(),
+                    services.GetRequiredService<IHostEnvironment>());
             }
         }
 

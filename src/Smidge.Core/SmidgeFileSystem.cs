@@ -72,11 +72,7 @@ namespace Smidge
                 return true;
             }
 
-#if NETCORE3_0
-            if (path.EndsWith('/'))
-#else
             if (path.EndsWith("/"))
-#endif
             {
                 return true;
             }
@@ -132,11 +128,7 @@ namespace Smidge
         {
             var reversed = subPath.Replace('\\', '/');
 
-#if NETCORE3_0
-            if (!reversed.StartsWith('/'))
-#else
             if (!reversed.StartsWith("/"))
-#endif
             {
                 reversed = $"/{reversed}";
             }
@@ -208,11 +200,7 @@ namespace Smidge
         /// </remarks>
         public string ConvertToFileProviderPath(string path)
         {
-#if NETCORE3_0
-            if (path.StartsWith('~'))
-#else
             if (path.StartsWith("~"))
-#endif
             {
                 return path.TrimStart('~');
             }
