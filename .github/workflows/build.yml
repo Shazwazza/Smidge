@@ -59,9 +59,9 @@ jobs:
         name: smidge-test-results
         path:  ${{ github.workspace }}/_TestResults/tests.trx
 
+    # This will do a rebuild
     - name: Pack
-      if: success()
-      # This will do a rebuild
+      if: success()      
       run: |
         dotnet pack ${{ env.Solution_File }} \
           --configuration ${{ env.Configuration }} \
