@@ -14,7 +14,7 @@
     <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" />
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Smidge.Core\Smidge.Core.csproj" />

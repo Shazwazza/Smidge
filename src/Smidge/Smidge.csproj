@@ -11,7 +11,7 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" />
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
   </ItemGroup>
   
   <ItemGroup>

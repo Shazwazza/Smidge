@@ -17,7 +17,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" />
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Smidge\Smidge.csproj" />
