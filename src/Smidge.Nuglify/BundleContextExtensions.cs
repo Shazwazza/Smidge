@@ -31,14 +31,14 @@ namespace Smidge.Nuglify
             return inlineSourceMap;
         }
 
-        public static string GetSourceMapFilePath(this BundleContext bundleContext)
+        public static string GetSourceMapFilePath(this BundleContext bundleContext, string cacheBusterValue)
         {
-            return $"{bundleContext.BundleRequest.CacheBuster.GetValue()}/{Path.GetFileName(bundleContext.BundleCompositeFilePath)}.map";
+            return $"{cacheBusterValue}/{Path.GetFileName(bundleContext.BundleCompositeFilePath)}.map";
         }
 
         public static string GetSourceMapFilePath(this BundleRequestModel bundleRequest)
         {
-            return $"{bundleRequest.ParsedPath?.Version ?? bundleRequest.CacheBuster.GetValue()}/{bundleRequest.FileKey}.s.map";
+            return $"{bundleRequest.ParsedPath.CacheBusterValue}/{bundleRequest.FileKey}.s.map";
         }
 
     }

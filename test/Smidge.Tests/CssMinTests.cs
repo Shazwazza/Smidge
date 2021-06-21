@@ -21,7 +21,7 @@ article a:hover {
       color: inherit; }";
 
             var minifier = new CssMinifier();
-            using (var bc = BundleContext.CreateEmpty())
+            using (var bc = BundleContext.CreateEmpty("1"))
             {
                 var fileProcessContext = new FileProcessContext(css, Mock.Of<IWebFile>(), bc);
                 await minifier.ProcessAsync(fileProcessContext, ctx => Task.FromResult(0));
@@ -44,7 +44,7 @@ article a:hover {
 }";
 
             var minifier = new CssMinifier();
-            using (var bc = BundleContext.CreateEmpty())
+            using (var bc = BundleContext.CreateEmpty("1"))
             {
                 var fileProcessContext = new FileProcessContext(cssWithImage, Mock.Of<IWebFile>(), bc);
                 await minifier.ProcessAsync(fileProcessContext, ctx => Task.FromResult(0));
@@ -67,7 +67,7 @@ table {font-family: Arial;   }
 ";
 
             var minifier = new CssMinifier();
-            using (var bc = BundleContext.CreateEmpty())
+            using (var bc = BundleContext.CreateEmpty("1"))
             {
                 var fileProcessContext = new FileProcessContext(css, Mock.Of<IWebFile>(), bc);
                 await minifier.ProcessAsync(fileProcessContext, ctx => Task.FromResult(0));
@@ -123,7 +123,7 @@ audio:not([controls]) {
 }";
 
             var minifier = new CssMinifier();
-            using (var bc = BundleContext.CreateEmpty())
+            using (var bc = BundleContext.CreateEmpty("1"))
             {
                 var fileProcessContext = new FileProcessContext(css, Mock.Of<IWebFile>(), bc);
                 await minifier.ProcessAsync(fileProcessContext, ctx => Task.FromResult(0));

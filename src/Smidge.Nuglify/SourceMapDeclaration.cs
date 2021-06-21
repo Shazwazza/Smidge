@@ -34,17 +34,16 @@ namespace Smidge.Nuglify
                     var mapContent = sourceMap.SourceMapOutput;
                     //now we need to save the map file so it can be retreived via the controller
 
-                    //TODO: No idea if this is gonna work
-
                     //needs to be saved in the current cache bust folder
-                    string filePath = bundleContext.GetSourceMapFilePath();
+                    var cacheBusterValue = bundleContext.CacheBusterValue;
+                    string filePath = bundleContext.GetSourceMapFilePath(cacheBusterValue);
                     await _fileSystem.CacheFileSystem.WriteFileAsync(filePath, mapContent);
                     
                     var url = GetSourceMapUrl(
                         bundleContext.BundleRequest.FileKey,
                         bundleContext.BundleRequest.Extension,
                         bundleContext.BundleRequest.Debug,
-                        bundleContext.BundleRequest.CacheBuster);
+                        cacheBusterValue);
 
                     return sourceMap.GetExternalFileSourceMapMarkup(url);
                 case SourceMapType.Inline:
@@ -55,9 +54,12 @@ namespace Smidge.Nuglify
             }
         }
 
-        private string GetSourceMapUrl(string bundleName, string fileExtension, bool debug, ICacheBuster cacheBuster)
+        private string GetSourceMapUrl(string bundleName, string fileExtension, bool debug, string cacheBusterValue)
         {
-            if (cacheBuster == null) throw new ArgumentNullException(nameof(cacheBuster));
+            if (string.IsNullOrWhiteSpace(cacheBusterValue))
+            {
+                throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
+            }
 
             const string handler = "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(
@@ -67,7 +69,7 @@ namespace Smidge.Nuglify
                     Uri.EscapeUriString(bundleName),
                     fileExtension,
                     debug ? 'd' : 'v',
-                    cacheBuster.GetValue()));
+                    cacheBusterValue));
 
         }
     }

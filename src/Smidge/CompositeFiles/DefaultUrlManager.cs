@@ -23,9 +23,12 @@ namespace Smidge.CompositeFiles
             _options = options.Value.UrlOptions;
         }
 
-        public string GetUrl(string bundleName, string fileExtension, bool debug, ICacheBuster cacheBuster)
+        public string GetUrl(string bundleName, string fileExtension, bool debug, string cacheBusterValue)
         {
-            if (cacheBuster == null) throw new ArgumentNullException(nameof(cacheBuster));
+            if (string.IsNullOrWhiteSpace(cacheBusterValue))
+            {
+                throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
+            }
 
             const string handler = "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(
@@ -35,13 +38,16 @@ namespace Smidge.CompositeFiles
                     Uri.EscapeUriString(bundleName),
                     fileExtension,
                     debug ? 'd' : 'v',
-                    cacheBuster.GetValue()));
+                    cacheBusterValue));
 
         }
 
-        public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension, ICacheBuster cacheBuster)
+        public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension, string cacheBusterValue)
         {
-            if (cacheBuster == null) throw new ArgumentNullException(nameof(cacheBuster));
+            if (string.IsNullOrWhiteSpace(cacheBusterValue))
+            {
+                throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
+            }
 
             var files = new List<FileSetUrl>();
             var currBuilder = new StringBuilder();
@@ -60,7 +66,7 @@ namespace Smidge.CompositeFiles
                 if ((delimitedBuilder.Length
                      + _options.CompositeFilePath.Length
                      + fileExtension.Length
-                     + cacheBuster.GetValue().Length
+                     + cacheBusterValue.Length
                      //this number deals with slashes, etc...
                      + 10)
                     >= (_options.MaxUrlLength))
@@ -76,7 +82,7 @@ namespace Smidge.CompositeFiles
                     files.Add(new FileSetUrl
                     {
                         Key = _hasher.Hash(output),
-                        Url = GetCompositeUrl(output, fileExtension, cacheBuster)
+                        Url = GetCompositeUrl(output, fileExtension, cacheBusterValue)
                     });
                     //create some new output
                     currBuilder = new StringBuilder();
@@ -99,7 +105,7 @@ namespace Smidge.CompositeFiles
                 files.Add(new FileSetUrl
                 {
                     Key = _hasher.Hash(output),
-                    Url = GetCompositeUrl(output, fileExtension, cacheBuster)
+                    Url = GetCompositeUrl(output, fileExtension, cacheBusterValue)
                 });
             }
 
@@ -127,7 +133,7 @@ namespace Smidge.CompositeFiles
             }
             result.Debug = prefix == 'd';
 
-            result.Version = parts[parts.Length - 1].Substring(1);
+            result.CacheBusterValue = parts[parts.Length - 1].Substring(1);
             var ext = parts[parts.Length - 2];
             if (!Enum.TryParse(ext, true, out WebFileType type))
             {
@@ -141,7 +147,7 @@ namespace Smidge.CompositeFiles
             return result;
         }
 
-        private string GetCompositeUrl(string fileKey, string fileExtension, ICacheBuster cacheBuster)
+        private string GetCompositeUrl(string fileKey, string fileExtension, string cacheBusterValue)
         {
             //Create a delimited URL query string
 
@@ -152,7 +158,7 @@ namespace Smidge.CompositeFiles
                     _options.CompositeFilePath,
                     Uri.EscapeUriString(fileKey),
                     fileExtension,
-                    cacheBuster.GetValue()));
+                    cacheBusterValue));
         }
     }
 }

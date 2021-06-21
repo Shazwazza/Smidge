@@ -20,17 +20,20 @@ namespace Smidge.CompositeFiles
         /// Creates an empty <see cref="BundleContext"/> which does not track prependers or appenders
         /// </summary>
         /// <returns></returns>
-        public static BundleContext CreateEmpty()
+        public static BundleContext CreateEmpty(string cacheBusterValue)
         {
-            return new BundleContext();
+            return new BundleContext(cacheBusterValue);
         }
 
-        private BundleContext()
+        private BundleContext(string cacheBusterValue)
         {
+            CacheBusterValue = cacheBusterValue;
         }
 
-        public BundleContext(IRequestModel bundleRequest, string bundleCompositeFilePath)
+        public BundleContext(string cacheBusterValue, IRequestModel bundleRequest, string bundleCompositeFilePath)
         {
+            // TODO: Should the cache buster even be on the request model?
+            CacheBusterValue = cacheBusterValue; // BundleRequest.CacheBuster.GetValue();
             BundleRequest = bundleRequest;
             _bundleCompositeFilePath = bundleCompositeFilePath;
         }
@@ -68,6 +71,8 @@ namespace Smidge.CompositeFiles
         public string BundleName => BundleRequest?.FileKey ?? "generated_" + Guid.NewGuid();
 
         public string FileExtension => BundleRequest?.Extension ?? string.Empty;
+
+        public string CacheBusterValue { get; }
 
         public void AddAppender(Func<Task<string>> appender)
         {

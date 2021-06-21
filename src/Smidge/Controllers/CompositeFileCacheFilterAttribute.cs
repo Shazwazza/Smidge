@@ -34,13 +34,13 @@ namespace Smidge.Controllers
         /// </summary>
         public bool IsReusable => true;
 
-        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, ICacheBuster cacheBuster, string filesetKey, CompressionType type, string mime, 
+        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, string cacheBusterValue, string filesetKey, CompressionType type, string mime,
             out FileResult result, out DateTime lastWriteTime)
         {
             result = null;
             lastWriteTime = DateTime.Now;
 
-            var cacheFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBuster, type, filesetKey, out _);
+            var cacheFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, type, filesetKey, out _);
             if (cacheFile.Exists)
             {
                 lastWriteTime = cacheFile.LastModified.DateTime;
@@ -82,28 +82,14 @@ namespace Smidge.Controllers
             public void OnActionExecuting(ActionExecutingContext context)
             {
                 if (!context.ActionArguments.Any()) return;
-                var bundleFile = context.ActionArguments.First().Value as BundleRequestModel;
-                ICacheBuster cacheBuster;
-                RequestModel file = null;
-                BundleOptions bundleOptions;
-                if (bundleFile != null)
-                {
-                    bundleOptions = bundleFile.Bundle.GetBundleOptions(_bundleManager, bundleFile.Debug);              
-                }
-                else
-                {
-                    //the default for any dynamically (non bundle) file is the default bundle options in production
-                    bundleOptions = _bundleManager.GetDefaultBundleOptions(false);                    
-                    file = context.ActionArguments.First().Value as RequestModel;
-                }
-
-                cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
+                var firstArg = context.ActionArguments.First().Value;
+                RequestModel file = firstArg as RequestModel;
 
                 if (file != null)
                 {
-                    FileResult result;
-                    DateTime lastWrite;
-                    if (TryGetCachedCompositeFileResult(_fileSystem, cacheBuster, file.FileKey, file.Compression, file.Mime, out result, out lastWrite))
+                    var cacheBusterValue = file.ParsedPath.CacheBusterValue;
+
+                    if (TryGetCachedCompositeFileResult(_fileSystem, cacheBusterValue, file.FileKey, file.Compression, file.Mime, out FileResult result, out DateTime lastWrite))
                     {
                         file.LastFileWriteTime = lastWrite;
                         context.Result = result;

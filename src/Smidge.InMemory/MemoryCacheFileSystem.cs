@@ -37,12 +37,12 @@ namespace Smidge.InMemory
             return fileInfo;
         }
 
-        private string GetCompositeFilePath(ICacheBuster cacheBuster, CompressionType type, string filesetKey) 
-            => $"{cacheBuster.GetValue()}/{type.ToString()}/{filesetKey + ".s"}";
+        private string GetCompositeFilePath(string cacheBusterValue, CompressionType type, string filesetKey) 
+            => $"{cacheBusterValue}/{type}/{filesetKey + ".s"}";
 
-        public Task ClearCachedCompositeFileAsync(ICacheBuster cacheBuster, CompressionType type, string filesetKey)
+        public Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey)
         {
-            var path = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            var path = GetCompositeFilePath(cacheBusterValue, type, filesetKey);
 
             var f = _directory.GetFile(path);
             if (f != null && !f.FileInfo.IsDirectory && f.FileInfo.Exists)
@@ -53,13 +53,13 @@ namespace Smidge.InMemory
             return Task.CompletedTask;
         }
 
-        public IFileInfo GetCachedCompositeFile(ICacheBuster cacheBuster, CompressionType type, string filesetKey, out string filePath)
+        public IFileInfo GetCachedCompositeFile(string cacheBusterValue, CompressionType type, string filesetKey, out string filePath)
         {
-            filePath = GetCompositeFilePath(cacheBuster, type, filesetKey);
+            filePath = GetCompositeFilePath(cacheBusterValue, type, filesetKey);
             return _fileProvider.GetFileInfo(filePath);
         }
 
-        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, ICacheBuster cacheBuster, out string filePath)
+        public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, out string filePath)
         {
             IFileInfo cacheFile;
             if (fileWatchEnabled)
@@ -73,14 +73,14 @@ namespace Smidge.InMemory
                 var fileHash = _hasher.GetFileHash(file, string.Empty);
                 var timestampedHash = _hasher.GetFileHash(file, sourceFile(), extension);
 
-                filePath = $"{cacheBuster.GetValue()}/{fileHash}/{timestampedHash}";
+                filePath = $"{cacheBusterValue}/{fileHash}/{timestampedHash}";
                 cacheFile = _fileProvider.GetFileInfo(filePath);
             }
             else
             {
                 var fileHash = _hasher.GetFileHash(file, extension);
 
-                filePath = $"{cacheBuster.GetValue()}/{fileHash}";
+                filePath = $"{cacheBusterValue}/{fileHash}";
                 cacheFile = _fileProvider.GetFileInfo(filePath);
             }
 
