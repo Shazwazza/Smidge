@@ -5,6 +5,7 @@
     <AssemblyName>Smidge.Benchmarks</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Smidge.Benchmarks</PackageId>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

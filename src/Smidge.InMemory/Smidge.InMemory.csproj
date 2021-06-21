@@ -2,25 +2,19 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge.InMemory</AssemblyTitle>
     <Description>An in-memory caching provider for Smidge</Description>
-    <VersionPrefix>4.0.0</VersionPrefix>
-    <Copyright>Copyright © Shannon Deminick 2021</Copyright>
-    <Authors>Shannon Deminick</Authors>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>Smidge.InMemory</AssemblyName>
     <PackageId>Smidge.InMemory</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;aspnetcore</PackageTags>
-    <PackageProjectUrl>https://github.com/Shazwazza/Smidge/</PackageProjectUrl>
-    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/Shazwazza/Smidge/master/assets/logo-nuget.png</PackageIconUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>
-    <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Smidge.Core\Smidge.Core.csproj" />

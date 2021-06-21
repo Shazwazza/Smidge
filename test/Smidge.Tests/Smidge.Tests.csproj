@@ -4,6 +4,7 @@
     <TargetFrameworks>net5.0</TargetFrameworks>
     <AssemblyName>Smidge.Tests</AssemblyName>
     <PackageId>Smidge.Tests</PackageId>
+    <IsPackable>false</IsPackable>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
 

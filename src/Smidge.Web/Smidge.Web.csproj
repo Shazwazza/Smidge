@@ -6,6 +6,7 @@
     <AssemblyName>Smidge.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>Smidge.Web</PackageId>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
