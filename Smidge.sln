@@ -14,9 +14,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appveyor.yml = appveyor.yml
 		build.ps1 = build.ps1
 		build.xml = build.xml
+		.github\workflows\build.yml = .github\workflows\build.yml
+		GitVersion.yml = GitVersion.yml
 		LICENSE = LICENSE
 		Nuget.config = Nuget.config
 		README.md = README.md
+		.github\workflows\test-report.yml = .github\workflows\test-report.yml
 		tests.ps1 = tests.ps1
 	EndProjectSection
 EndProject
@@ -32,7 +35,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Benchmarks", "test\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.InMemory", "src\Smidge.InMemory\Smidge.InMemory.csproj", "{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smidge.Core", "src\Smidge.Core\Smidge.Core.csproj", "{B19C5049-69BA-4581-918F-6C2B4961E326}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Core", "src\Smidge.Core\Smidge.Core.csproj", "{B19C5049-69BA-4581-918F-6C2B4961E326}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
