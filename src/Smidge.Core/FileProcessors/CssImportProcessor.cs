@@ -40,7 +40,7 @@ namespace Smidge.FileProcessors
                 var path = _requestHelper.Content(absolute);
 
                 //is it external?
-                if (path.Contains(Constants.SchemeDelimiter))
+                if (path.Contains(SmidgeConstants.SchemeDelimiter))
                 {
                     // This should never happend
                 }

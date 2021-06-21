@@ -50,7 +50,7 @@ namespace Smidge
                 var webPath = _requestHelper.Content(f);
 
                 //if this is an external path then we need to split and start new
-                if (webPath.Contains(Constants.SchemeDelimiter))
+                if (webPath.Contains(SmidgeConstants.SchemeDelimiter))
                 {
                     if (current.Any())
                     {

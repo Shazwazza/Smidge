@@ -46,7 +46,7 @@ namespace Smidge.FileProcessors
         private async Task ProcessFile(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             //If Its external throw an exception this is not allowed. 
-            if (file.FilePath.Contains(Constants.SchemeDelimiter))
+            if (file.FilePath.Contains(SmidgeConstants.SchemeDelimiter))
             {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
             };
