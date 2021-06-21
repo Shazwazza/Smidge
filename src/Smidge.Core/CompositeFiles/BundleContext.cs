@@ -93,7 +93,8 @@ namespace Smidge.CompositeFiles
         /// </remarks>
         public async Task<Stream> GetCombinedStreamAsync(IEnumerable<Stream> inputs, string delimeter)
         {
-            //TODO: Should we use a buffer pool here?
+            // TODO: Should we use a buffer pool here?
+            // TODO: We should be using Span<T> for reading strings, streams aren't really doing us many favors here
 
             var d = Encoding.UTF8.GetBytes(delimeter);
 

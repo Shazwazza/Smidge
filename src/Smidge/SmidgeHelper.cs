@@ -186,7 +186,10 @@ namespace Smidge
 
             //get the bundle options from the bundle if they have been set otherwise with the defaults
             var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
-                
+
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
+
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
@@ -194,16 +197,15 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _requestHelper.Content(d)));
+                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug, cacheBusterValue)));
                 return result;
             }
 
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
-            var cacheBusterValue = cacheBuster.GetValue();
-
             var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
+            {
                 result.Add(url);
+            }
 
             return result;
         }
@@ -226,18 +228,18 @@ namespace Smidge
             
             var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
+
             if (debug)
             {
-                return orderedFiles.Select(x => _requestHelper.Content(x));
+                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), debug, cacheBusterValue));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
                 
             //Get the file collection used to create the composite URLs and the external requests
             var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
-
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
-            var cacheBusterValue = cacheBuster.GetValue();
 
             foreach (var batch in fileBatches)
             {

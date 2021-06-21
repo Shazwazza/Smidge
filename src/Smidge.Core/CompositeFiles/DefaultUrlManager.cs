@@ -22,6 +22,17 @@ namespace Smidge.CompositeFiles
             _options = options.Value.UrlOptions;
         }
 
+        public string AppendCacheBuster(string url, bool debug, string cacheBusterValue)
+        {
+            var qs = (debug ? "d=" : "v=") + cacheBusterValue;
+
+            var parts = url.Split(new[] { '?' }, StringSplitOptions.RemoveEmptyEntries);
+            var query = parts.Length > 1 ? parts[1] : null;
+            var charToAppend = query != null ? "&" : "?";
+            url = url + charToAppend + qs;
+            return url;
+        }
+
         public string GetUrl(string bundleName, string fileExtension, bool debug, string cacheBusterValue)
         {
             if (string.IsNullOrWhiteSpace(cacheBusterValue))
