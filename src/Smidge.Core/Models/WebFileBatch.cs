@@ -7,7 +7,7 @@ namespace Smidge.Models
     /// <summary>
     /// A batch/collection of web files that can contain one or more local files or a single external file
     /// </summary>
-    internal class WebFileBatch : IEnumerable<WebFilePair>
+    public sealed class WebFileBatch : IEnumerable<WebFilePair>
     {
         public WebFileBatch()
         {

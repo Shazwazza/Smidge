@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Threading.Tasks;
-using Smidge.Models;
 
 namespace Smidge.FileProcessors
 {

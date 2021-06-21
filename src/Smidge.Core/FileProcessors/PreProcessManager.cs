@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.Models;
 using Smidge.Options;
@@ -19,14 +17,12 @@ namespace Smidge.FileProcessors
     public sealed class PreProcessManager
     {
         private readonly ISmidgeFileSystem _fileSystem;
-        private readonly CacheBusterResolver _cacheBusterResolver;
         private readonly IBundleManager _bundleManager;
         private readonly ILogger<PreProcessManager> _logger;
 
-        public PreProcessManager(ISmidgeFileSystem fileSystem, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
+        public PreProcessManager(ISmidgeFileSystem fileSystem, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
         {
             _fileSystem = fileSystem;
-            _cacheBusterResolver = cacheBusterResolver;
             _bundleManager = bundleManager;
             _logger = logger;
         }

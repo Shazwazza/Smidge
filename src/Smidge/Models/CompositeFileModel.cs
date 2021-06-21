@@ -1,6 +1,5 @@
 ﻿using Smidge.CompositeFiles;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Smidge.Cache;
 using Smidge.Hashing;
 
 namespace Smidge.Models

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Smidge.Models;
 using Smidge.Options;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Smidge.FileProcessors;
 

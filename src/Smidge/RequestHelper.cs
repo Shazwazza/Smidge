@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Smidge.Models;
 
 namespace Smidge
@@ -43,17 +44,11 @@ namespace Smidge
             if (filePath == null) return null;
 
             var requestPath = file.RequestPath != null ? Content(file.RequestPath) : string.Empty;
-#if NETCORE3_0
+
             if (requestPath.EndsWith('/'))
             {
                 requestPath.TrimEnd('/');
             }
-#else
-            if (requestPath.EndsWith("/"))
-            {
-                requestPath.TrimEnd(new[] { '/' });
-            }
-#endif
 
             return string.Concat(requestPath, filePath);
         }
@@ -94,7 +89,7 @@ namespace Smidge
         /// If IE 6 is detected, we will ignore compression as it's known that some versions of IE 6
         /// have issues with it.
         /// </summary>
-        public CompressionType GetClientCompression(IHeaderDictionary headers)
+        public CompressionType GetClientCompression(IDictionary<string, StringValues> headers)
         {
             var type = CompressionType.none;
             var agentHeader = (string)headers[HttpConstants.UserAgent];

@@ -34,7 +34,8 @@ namespace Smidge.Tests
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
 
-            var generator = new BundleFileSetGenerator(fileSystemHelper, urlHelper,
+            var generator = new BundleFileSetGenerator(
+                fileSystemHelper, 
                 new FileProcessingConventions(smidgeOptions.Object, Enumerable.Empty<IFileProcessingConvention>()));
             
             var result = generator.GetOrderedFileSet(new IWebFile[] {

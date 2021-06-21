@@ -1,30 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
-        <AssemblyName>Smidge.Benchmarks</AssemblyName>
-        <OutputType>Exe</OutputType>
-        <PackageId>Smidge.Benchmarks</PackageId>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net5.0</TargetFrameworks>
+    <AssemblyName>Smidge.Benchmarks</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>Smidge.Benchmarks</PackageId>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="jQuery.js" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="jQuery.js" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
-        <ProjectReference Include="..\..\src\Smidge.Nuglify\Smidge.Nuglify.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
+    <ProjectReference Include="..\..\src\Smidge.Nuglify\Smidge.Nuglify.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
-        <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.12.1" />
-        <PackageReference Include="Moq" Version="4.16.1" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.12.1" />
+    <PackageReference Include="Moq" Version="4.16.1" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Properties\" />
-    </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
 
 
 </Project>

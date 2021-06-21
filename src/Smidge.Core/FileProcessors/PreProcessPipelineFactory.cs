@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Smidge.Models;
 using System.Linq;
-using Smidge.Options;
 using System.Collections.Concurrent;
 
 namespace Smidge.FileProcessors

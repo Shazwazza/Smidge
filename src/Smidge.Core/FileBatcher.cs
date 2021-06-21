@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Smidge.Models;
-using System;
+﻿using Smidge.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
 using Smidge.Hashing;
 
 namespace Smidge
@@ -14,7 +11,7 @@ namespace Smidge
     /// Puts a collection of web files into appropriate batches - based on internal vs external dependencies or for other
     /// reasons to split files into batches (i.e. different html attributes)
     /// </summary>
-    internal class FileBatcher
+    public sealed class FileBatcher
     {
         private readonly ISmidgeFileSystem _fileSystemHelper;
         private readonly IRequestHelper _requestHelper;
@@ -44,7 +41,7 @@ namespace Smidge
         /// an external dependency or a dependency that requires a different rendering output, it will close the current collection and 
         /// start another one. Each of these collections will be rendered individually.
         /// </remarks>
-        internal IEnumerable<WebFileBatch> GetCompositeFileCollectionForUrlGeneration(IEnumerable<IWebFile> files)
+        public IEnumerable<WebFileBatch> GetCompositeFileCollectionForUrlGeneration(IEnumerable<IWebFile> files)
         {
             var current = new WebFileBatch();
             var result = new List<WebFileBatch>();

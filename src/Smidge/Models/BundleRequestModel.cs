@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Smidge.Cache;
 
 namespace Smidge.Models
 {

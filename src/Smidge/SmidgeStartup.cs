@@ -6,18 +6,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
-using Smidge.Controllers;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.Models;
 using Smidge.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
@@ -31,14 +29,7 @@ namespace Smidge
         //If you call it after, then if AddControllersAsServices was used before you need
         //to tell smidge to do so
 
-#if NETCORE3_0
         public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null)
-#else
-
-        public static IServiceCollection AddSmidge(this IServiceCollection services,
-            IConfiguration smidgeConfiguration = null,
-            IFileProvider fileProvider = null)
-#endif
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -54,25 +45,23 @@ namespace Smidge
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<ISmidgeFileSystem>(p =>
             {
-#if NETCORE3_0                     
                 var hosting = p.GetRequiredService<IWebHostEnvironment>();
-#else
-                var hosting = p.GetRequiredService<IHostingEnvironment>();
-#endif
+
                 //resolve the ISmidgeFileProvider if there is one
                 var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
                 return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
             });
-            services.AddSingleton<ICacheFileSystem>(p => p.CreatePhysicalFileCacheFileSystem());
+            
+            services.AddSingleton<ICacheFileSystem>(p => PhysicalFileCacheFileSystem.CreatePhysicalFileCacheFileSystem(
+                p.GetRequiredService<IHasher>(),
+                p.GetRequiredService<ISmidgeConfig>(),
+                p.GetRequiredService<IHostEnvironment>()));
+
             services.AddSingleton<ISmidgeConfig>((p) =>
             {
                 if (smidgeConfiguration == null)
                 {
-#if NETCORE3_0                     
                     return new SmidgeConfig();
-#else
-                    return new SmidgeConfig();
-#endif
                 }
                 return new SmidgeConfig(smidgeConfiguration);
             });
@@ -113,15 +102,11 @@ namespace Smidge
 
 
 
-#if NETCORE3_0
         public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null, bool useEndpointRouting = true)
-#else
-        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
-#endif
         {
             //Creates custom routes 
             var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
-#if NETCORE3_0
+
             //NOTE: It's no longer polite to just call UseMVC as it enables things that the developer may 
             //not need and the dev must disable EndpointRouting - so we let the dev decide.
             //with core 3.0 you have to explicitly disable EndpointRouting se we default to on here 
@@ -142,7 +127,7 @@ namespace Smidge
             }
             else
             {
-#endif
+
                 app.UseMvc(routes =>
                 {
                     routes.MapRoute(
@@ -155,9 +140,8 @@ namespace Smidge
                         options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                         new { controller = "Smidge", action = "Bundle" });
                 });
-#if NETCORE3_0
             }
-#endif
+
             if (configureBundles != null)
             {
                 var bundleManager = app.ApplicationServices.GetRequiredService<IBundleManager>();

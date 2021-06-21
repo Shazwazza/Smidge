@@ -32,6 +32,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.Benchmarks", "test\S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Smidge.InMemory", "src\Smidge.InMemory\Smidge.InMemory.csproj", "{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smidge.Core", "src\Smidge.Core\Smidge.Core.csproj", "{B19C5049-69BA-4581-918F-6C2B4961E326}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B19C5049-69BA-4581-918F-6C2B4961E326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B19C5049-69BA-4581-918F-6C2B4961E326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B19C5049-69BA-4581-918F-6C2B4961E326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B19C5049-69BA-4581-918F-6C2B4961E326}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +79,7 @@ Global
 		{8CBB999A-D071-4B95-B973-E1ECB8661333} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
 		{8AA76B60-A92C-41C8-A045-06433E33C40C} = {46C13455-622B-44B6-A129-F96EADAD24C8}
 		{96EF3FF6-BD73-4495-B9C7-2A6C1C7B50CF} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
+		{B19C5049-69BA-4581-918F-6C2B4961E326} = {A5154E3B-762A-4720-A947-C7A3EA25835A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A0EB5714-BE56-4F17-B40A-8E8FADFDF503}

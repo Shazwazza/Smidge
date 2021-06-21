@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Smidge.FileProcessors;
 using Smidge.Models;
 using Smidge.Options;
@@ -16,19 +14,15 @@ namespace Smidge
     {
         private readonly FileProcessingConventions _conventions;
         private readonly ISmidgeFileSystem _fileSystem;
-        private readonly IRequestHelper _requestHelper;
         
         public BundleFileSetGenerator(
             ISmidgeFileSystem fileSystem,
-            IRequestHelper requestHelper,
             FileProcessingConventions conventions)
         {
             if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
-            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
             if (conventions == null) throw new ArgumentNullException(nameof(conventions));     
             _conventions = conventions;
             _fileSystem = fileSystem;
-            _requestHelper = requestHelper;
         }
 
         /// <summary>

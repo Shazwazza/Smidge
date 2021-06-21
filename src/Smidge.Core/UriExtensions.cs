@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using Microsoft.AspNetCore.Http.Extensions;
-using Smidge.Models;
+﻿using System;
 
 namespace Smidge
 {
