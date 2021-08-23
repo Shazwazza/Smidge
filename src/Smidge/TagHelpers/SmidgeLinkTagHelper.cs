@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.TagHelpers;
 
 namespace Smidge.TagHelpers
 {
-    [HtmlTargetElement("link", Attributes = "href")]
+    [HtmlTargetElement("link", Attributes = "href", TagStructure = TagStructure.WithoutEndTag)]
     public class SmidgeLinkTagHelper : TagHelper
     {
         private readonly SmidgeHelper _smidgeHelper;
