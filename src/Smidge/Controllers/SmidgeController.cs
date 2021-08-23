@@ -11,6 +11,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Smidge.FileProcessors;
 using Smidge.Cache;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Smidge.Controllers
 {
@@ -22,6 +23,7 @@ namespace Smidge.Controllers
     [AddExpiryHeaders(Order = 1)]
     [CheckNotModified(Order = 2)]
     [CompositeFileCacheFilter(Order = 3)]
+    [AllowAnonymous]
     public class SmidgeController : Controller
     {
         private readonly ISmidgeFileSystem _fileSystem;
