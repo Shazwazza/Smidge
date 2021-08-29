@@ -135,7 +135,7 @@ namespace Smidge.Controllers
                     //compress the response (if enabled)
                     var compressedStream = await Compressor.CompressAsync(
                         //do not compress anything if it's not enabled in the bundle options
-                        bundleOptions.CompressResult ? bundleModel.Compression : CompressionType.none,
+                        bundleOptions.CompressResult ? bundleModel.Compression : CompressionType.None,
                         resultStream);
 
                     //save the resulting compressed file, if compression is not enabled it will just save the non compressed format

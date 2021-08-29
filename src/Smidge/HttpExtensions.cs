@@ -22,8 +22,7 @@ namespace Smidge
             {
                 foreach (var segment in ifNoneMatch)
                 {
-                    if (segment.Equals("*", StringComparison.Ordinal)
-                        || segment.Equals(etag, StringComparison.Ordinal))
+                    if (segment.Equals("*", StringComparison.Ordinal) || segment.Equals(etag, StringComparison.Ordinal))
                     {
                         return false;
                     }
@@ -71,8 +70,7 @@ namespace Smidge
 
         public static void AddCacheControlResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
-            response.Headers[HttpConstants.CacheControl] = string.Format("public, max-age={0}, s-maxage={0}",
-                TimeSpan.FromHours(cacheHours) .TotalSeconds);
+            response.Headers[HttpConstants.CacheControl] = string.Format("public, max-age={0}, s-maxage={0}", TimeSpan.FromHours(cacheHours) .TotalSeconds);
         }
 
         public static void AddETagResponseHeader(this HttpResponse response, string etag)
@@ -82,15 +80,26 @@ namespace Smidge
 
         public static void AddCompressionResponseHeader(this HttpResponse response, CompressionType cType)
         {
-            if (cType == CompressionType.deflate)
+            switch (cType)
             {
-                response.Headers[HttpConstants.ContentEncoding] = "deflate";
-                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
-            }
-            else if (cType == CompressionType.gzip)
-            {
-                response.Headers[HttpConstants.ContentEncoding] = "gzip";
-                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
+                case CompressionType.Brotli:
+                {
+                    response.Headers[HttpConstants.ContentEncoding] = "br";
+                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
+                    break;
+                }
+                case CompressionType.GZip:
+                {
+                    response.Headers[HttpConstants.ContentEncoding] = "gzip";
+                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
+                    break;
+                }
+                case CompressionType.Deflate:
+                {
+                    response.Headers[HttpConstants.ContentEncoding] = "deflate";
+                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
+                    break;
+                }
             }
         }
     }

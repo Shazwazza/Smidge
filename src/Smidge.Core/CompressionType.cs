@@ -4,6 +4,9 @@ namespace Smidge
 {
     public enum CompressionType
     {
-        deflate, gzip, none
+        Deflate, 
+        GZip, 
+        Brotli, 
+        None
     }
 }
