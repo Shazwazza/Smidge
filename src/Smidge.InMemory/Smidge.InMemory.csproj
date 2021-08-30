@@ -2,7 +2,6 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge.InMemory</AssemblyTitle>
     <Description>An in-memory caching provider for Smidge</Description>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>Smidge.InMemory</AssemblyName>
     <PackageId>Smidge.InMemory</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;aspnetcore</PackageTags>

@@ -195,7 +195,7 @@ namespace Smidge
 
             //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
             // invalidated/deleted/renamed
-            foreach (var compressionType in new[] { CompressionType.deflate, CompressionType.gzip, CompressionType.none })
+            foreach (var compressionType in new[] { CompressionType.Brotli, CompressionType.GZip, CompressionType.Deflate, CompressionType.None })
             {
                 await fileSystem.CacheFileSystem.ClearCachedCompositeFileAsync(cacheBusterValue, compressionType, bundleName);
             }

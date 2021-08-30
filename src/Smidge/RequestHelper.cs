@@ -91,7 +91,7 @@ namespace Smidge
         /// </summary>
         public CompressionType GetClientCompression(IDictionary<string, StringValues> headers)
         {
-            var type = CompressionType.none;
+            var type = CompressionType.None;
             var agentHeader = (string)headers[HttpConstants.UserAgent];
             if (agentHeader != null && agentHeader.Contains("MSIE 6"))
             {
@@ -102,20 +102,24 @@ namespace Smidge
 
             if (!string.IsNullOrEmpty(acceptEncoding))
             {
-                string[] supported = acceptEncoding.Split(',');
-                //get the first type that we support
-                for (var i = 0; i < supported.Length; i++)
+                string[] acceptedEncodings = acceptEncoding.Split(',');
+
+                // Prefer in order: Brotli, GZip, Deflate.
+                // https://www.iana.org/assignments/http-parameters/http-parameters.xml#http-content-coding-registry
+                for (var i = 0; i < acceptedEncodings.Length; i++)
                 {
-                    if (supported[i].Contains("deflate"))
-                    {
-                        type = CompressionType.deflate;
-                        break;
-                    }
-                    else if (supported[i].Contains("gzip")) //sometimes it could be x-gzip!
-                    {
-                        type = CompressionType.gzip;
-                        break;
-                    }
+                    var encoding = acceptedEncodings[i].Trim();
+
+                    // Brotli is typically last in the accept encoding header.
+                    if (encoding.Equals("br", StringComparison.OrdinalIgnoreCase))
+                        return CompressionType.Brotli;
+                    
+                    // Not pack200-gzip.
+                    if (encoding.Equals("gzip", StringComparison.OrdinalIgnoreCase) || encoding.Equals("x-gzip", StringComparison.OrdinalIgnoreCase))
+                        type = CompressionType.GZip;
+
+                    if (type != CompressionType.GZip && encoding.Equals("deflate", StringComparison.OrdinalIgnoreCase))
+                        type = CompressionType.Deflate;
                 }
             }
 

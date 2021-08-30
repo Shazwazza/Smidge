@@ -17,16 +17,20 @@ namespace Smidge.CompositeFiles
             {
                 Stream compressedStream = null;
 
-                if (type == CompressionType.deflate)
+                if (type == CompressionType.Deflate)
                 {
-                    compressedStream = new DeflateStream(ms, CompressionMode.Compress);
+                    compressedStream = new DeflateStream(ms, CompressionLevel.Optimal);
                 }
-                else if (type == CompressionType.gzip)
+                else if (type == CompressionType.GZip)
                 {
-                    compressedStream = new GZipStream(ms, CompressionMode.Compress);
+                    compressedStream = new GZipStream(ms, CompressionLevel.Optimal);
+                }
+                else if (type == CompressionType.Brotli)
+                {
+                    compressedStream = new BrotliStream(ms, CompressionLevel.Optimal);
                 }
 
-                if (type != CompressionType.none)
+                if (type != CompressionType.None)
                 {
                     using (compressedStream)
                     {
@@ -46,6 +50,4 @@ namespace Smidge.CompositeFiles
             }
         }
     }
-
-    
 }

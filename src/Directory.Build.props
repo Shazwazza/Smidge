@@ -22,5 +22,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <VersionPrefix>4.0.0</VersionPrefix>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
+  </PropertyGroup>
 </Project>

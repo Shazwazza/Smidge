@@ -2,7 +2,6 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge</AssemblyTitle>
     <Description>A lightweight library for runtime CSS and JavaScript file management, minification, combination &amp; compression</Description>
-    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <AssemblyName>Smidge</AssemblyName>
     <PackageId>Smidge</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;aspnetcore</PackageTags>
