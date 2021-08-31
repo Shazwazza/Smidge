@@ -49,7 +49,7 @@ namespace Smidge
         /// <returns></returns>
         public IEnumerable<IWebFile> GetOrderedFileSet(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
         {
-            var customOrdered = new List<IWebFile>(1);
+            var customOrdered = new List<IWebFile>();
             var defaultOrdered = new OrderedSet<IWebFile>(WebFilePairEqualityComparer.Instance);
             
             foreach (var file in files)
