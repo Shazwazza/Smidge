@@ -80,26 +80,10 @@ namespace Smidge
 
         public static void AddCompressionResponseHeader(this HttpResponse response, CompressionType cType)
         {
-            switch (cType)
+            if (cType != CompressionType.None)
             {
-                case CompressionType.Brotli:
-                {
-                    response.Headers[HttpConstants.ContentEncoding] = "br";
-                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
-                    break;
-                }
-                case CompressionType.GZip:
-                {
-                    response.Headers[HttpConstants.ContentEncoding] = "gzip";
-                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
-                    break;
-                }
-                case CompressionType.Deflate:
-                {
-                    response.Headers[HttpConstants.ContentEncoding] = "deflate";
-                    response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
-                    break;
-                }
+                response.Headers[HttpConstants.ContentEncoding] = cType.ToString();
+                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
             }
         }
     }

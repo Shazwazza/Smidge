@@ -110,16 +110,24 @@ namespace Smidge
                 {
                     var encoding = acceptedEncodings[i].Trim();
 
+                    CompressionType parsed = CompressionType.Parse(encoding);
+
                     // Brotli is typically last in the accept encoding header.
-                    if (encoding.Equals("br", StringComparison.OrdinalIgnoreCase))
+                    if (parsed == CompressionType.Brotli)
+                    {
                         return CompressionType.Brotli;
+                    }
                     
                     // Not pack200-gzip.
-                    if (encoding.Equals("gzip", StringComparison.OrdinalIgnoreCase) || encoding.Equals("x-gzip", StringComparison.OrdinalIgnoreCase))
+                    if (parsed == CompressionType.GZip)
+                    {
                         type = CompressionType.GZip;
-
-                    if (type != CompressionType.GZip && encoding.Equals("deflate", StringComparison.OrdinalIgnoreCase))
+                    }
+                        
+                    if (type != CompressionType.GZip && parsed == CompressionType.Deflate)
+                    {
                         type = CompressionType.Deflate;
+                    }   
                 }
             }
 

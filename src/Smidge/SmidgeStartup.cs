@@ -193,9 +193,9 @@ namespace Smidge
             var cacheBuster = cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             var cacheBusterValue = cacheBuster.GetValue();
 
-            //this file is part of this bundle, so the persisted processed/combined/compressed  will need to be 
+            //this file is part of this bundle, so the persisted processed/combined/compressed will need to be 
             // invalidated/deleted/renamed
-            foreach (var compressionType in new[] { CompressionType.Brotli, CompressionType.GZip, CompressionType.Deflate, CompressionType.None })
+            foreach (var compressionType in CompressionType.All)
             {
                 await fileSystem.CacheFileSystem.ClearCachedCompositeFileAsync(cacheBusterValue, compressionType, bundleName);
             }
