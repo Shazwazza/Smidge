@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Smidge.Core;
 using Smidge.FileProcessors;
 using Smidge.Models;
 using Smidge.Options;
@@ -19,10 +20,8 @@ namespace Smidge
             ISmidgeFileSystem fileSystem,
             FileProcessingConventions conventions)
         {
-            if (fileSystem == null) throw new ArgumentNullException(nameof(fileSystem));
-            if (conventions == null) throw new ArgumentNullException(nameof(conventions));     
-            _conventions = conventions;
-            _fileSystem = fileSystem;
+            _conventions = conventions ?? throw new ArgumentNullException(nameof(conventions));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         /// <summary>
@@ -50,15 +49,14 @@ namespace Smidge
         /// <returns></returns>
         public IEnumerable<IWebFile> GetOrderedFileSet(IEnumerable<IWebFile> files, PreProcessPipeline pipeline)
         {
-            var customOrdered = new HashSet<IWebFile>(WebFilePairEqualityComparer.Instance);
-            var defaultOrdered = new HashSet<IWebFile>(WebFilePairEqualityComparer.Instance);
+            var customOrdered = new List<IWebFile>(1);
+            var defaultOrdered = new OrderedSet<IWebFile>(WebFilePairEqualityComparer.Instance);
+            
             foreach (var file in files)
             {
                 ValidateFile(file);
-                if (file.Pipeline == null)
-                {
-                    file.Pipeline = pipeline;
-                }
+
+                file.Pipeline ??= pipeline;
 
                 // We need to check if this path is a folder, then iterate the files
                 // TODO: this should support Glob patterns, so this check would need to be a little different
@@ -67,66 +65,68 @@ namespace Smidge
                 if (_fileSystem.IsFolder(file.FilePath))
                 {
                     var filePaths = _fileSystem.GetPathsForFilesInFolder(file.FilePath);
+
                     foreach (var f in filePaths)
                     {
-                        if (file.Order > 0)
+                        var item = new WebFile
                         {
-                            customOrdered.Add(new WebFile
-                            {
-                                FilePath = f,
-                                DependencyType = file.DependencyType,
-                                Pipeline = file.Pipeline,
-                                Order = file.Order
-                            });
-                        }
-                        else
+                            FilePath = f,
+                            DependencyType = file.DependencyType,
+                            Pipeline = file.Pipeline,
+                            Order = file.Order
+                        };
+
+                        if (ApplyConventions(item) is { } webFile)
                         {
-                            defaultOrdered.Add(new WebFile
+                            if (file.Order > 0)
                             {
-                                FilePath = f,
-                                DependencyType = file.DependencyType,
-                                Pipeline = file.Pipeline,
-                                Order = file.Order
-                            });
+                                customOrdered.Add(webFile);
+                            }
+                            else
+                            {
+                                defaultOrdered.Add(webFile);
+                            }
                         }
                     }
                 }
                 else
                 {
-                    if (file.Order > 0)
+                    if (ApplyConventions(file) is { } webFile)
                     {
-                        customOrdered.Add(file);
-                    }
-                    else
-                    {
-                        defaultOrdered.Add(file);
+                        if (file.Order > 0)
+                        {
+                            customOrdered.Add(webFile);
+                        }
+                        else
+                        {
+                            defaultOrdered.Add(webFile);
+                        }
                     }
                 }
             }
 
-            //add the custom ordered to the end of the list
+            // Add the custom ordered to the end of the list
             foreach(var f in customOrdered.OrderBy(x => x.Order))
             {
                 defaultOrdered.Add(f);
             }
-
-            //apply conventions 
-            return defaultOrdered.Select(ApplyConventions).Where(x => x != null);
+            
+            return defaultOrdered;
         }
 
-        private IWebFile ApplyConventions(IWebFile curr)
+        private IWebFile ApplyConventions(IWebFile file)
         {
             //Here we can apply some rules about the pipeline based on conventions.
             // For example, if the file name ends with .min.js we don't want to have JsMin execute,
             // there could be others of course and this should be configurable.
             foreach (var convention in _conventions.Values)
             {
-                if (curr != null)
+                if (file != null)
                 {
-                    curr = convention.Apply(curr);
+                    file = convention.Apply(file);
                 }
             }
-            return curr;
+            return file;
         }
 
         private void ValidateFile(IWebFile file)
@@ -135,7 +135,6 @@ namespace Smidge
             {
                 throw new NotSupportedException("The Order of a web file cannot be less than zero");
             }
-            
         }
     }
 }
