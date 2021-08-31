@@ -24,10 +24,10 @@
         // This is here just to test what hapens when files don't exist
         SmidgeHelper
             .CreateJsBundle("no-files")
-            .RequiresJs("~/Js/not-found*js");
+            .RequiresJs("~/Js/not-found/*.js");
 
-        SmidgeHelper.RequiresJs("~/Js/Folder*js");
-        SmidgeHelper.RequiresCss("~/Css/Folder*css");
+        SmidgeHelper.RequiresJs("~/Js/Folder/*.js");
+        SmidgeHelper.RequiresCss("~/Css/Folder/*.css");
     }
 
     <script src="inline-js-bundle" type="text/javascript"></script>

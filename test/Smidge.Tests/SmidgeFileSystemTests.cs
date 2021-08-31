@@ -1,18 +1,14 @@
-﻿using System;
-using Microsoft.AspNetCore.Hosting;
-
+using System;
 using Moq;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
-using Smidge.Hashing;
 using Smidge.Cache;
-using System.Threading.Tasks;
 
 namespace Smidge.Tests
 {
-    public class FileSystemHelperTests
+    public class SmidgeFileSystemTests
     {
         private ISmidgeFileSystem Create(IWebsiteInfo websiteInfo, string url = "~/Js/Test1.js")
         {
@@ -20,12 +16,13 @@ namespace Smidge.Tests
 
             var cacheProvider = new Mock<ICacheFileSystem>();
             var fileProvider = new Mock<IFileProvider>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
             var file = new Mock<IFileInfo>();
             string filePath = Path.Combine(webRootPath, $"Js{Path.DirectorySeparatorChar}Test1.js");
 
             file.Setup(x => x.Exists).Returns(false);
             file.Setup(x => x.IsDirectory).Returns(false);
-            file.Setup(x => x.Name).Returns(System.IO.Path.GetFileName(url));
+            file.Setup(x => x.Name).Returns(Path.GetFileName(url));
             file.Setup(x => x.PhysicalPath).Returns(filePath);
 
             fileProvider.Setup(x => x.GetFileInfo(It.IsAny<string>())).Returns(file.Object);
@@ -34,11 +31,35 @@ namespace Smidge.Tests
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new SmidgeFileSystem(
                 fileProvider.Object,
+                fileProviderFilter,
                 cacheProvider.Object,
                 websiteInfo);
 
 
             return helper;
+        }
+
+        [Theory]
+        [InlineData("~/test/file.css", "test/file.css", null)]
+        [InlineData("/", "", null)]
+        [InlineData("/test/file.css", "test/file.css", null)]
+        [InlineData("/sub-site/test/file.css", "test/file.css", "sub-site")]
+        [InlineData("/sub/site/test/file.css", "test/file.css", "sub/site")]
+        [InlineData("test/file.css", "test/file.css", null)]
+        [InlineData("file.css", "file.css", null)]
+        [InlineData("~/file.css", "file.css", null)]
+        public void ConvertToFileProviderPath(string from, string to, string pathBase)
+        {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            if (pathBase != null)
+            {
+                websiteInfo.Setup(x => x.GetBasePath()).Returns(pathBase);
+            }
+            var fs = Create(websiteInfo.Object);
+
+            var result = fs.ConvertToFileProviderPath(from);
+
+            Assert.Equal(to, result);
         }
 
         [Fact]
@@ -69,16 +90,18 @@ namespace Smidge.Tests
             var file = new Mock<IFileInfo>();
             file.Setup(x => x.Exists).Returns(true);
             file.Setup(x => x.IsDirectory).Returns(false);
-            file.Setup(x => x.Name).Returns(System.IO.Path.GetFileName(filePath));
+            file.Setup(x => x.Name).Returns(Path.GetFileName(filePath));
             file.Setup(x => x.PhysicalPath).Returns(filePath);
 
             var urlHelper = new Mock<IUrlHelper>();
             var cacheProvider = new Mock<ICacheFileSystem>();
             var fileProvider = new Mock<IFileProvider>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
 
             urlHelper.Setup(x => x.Content(It.IsAny<string>())).Returns<string>(s => s);
             var helper = new SmidgeFileSystem(
                 fileProvider.Object,
+                fileProviderFilter,
                 cacheProvider.Object,
                 Mock.Of<IWebsiteInfo>());
 

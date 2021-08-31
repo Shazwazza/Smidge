@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -28,9 +28,10 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
 
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -58,8 +59,9 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());          
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

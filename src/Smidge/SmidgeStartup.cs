@@ -41,6 +41,7 @@ namespace Smidge
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();
             services.AddSingleton<IHasher, Crc32Hasher>();
+            services.AddSingleton<IFileProviderFilter, DefaultFileProviderFilter>();
             services.AddSingleton<IBundleManager, BundleManager>();
             services.AddSingleton<PreProcessPipelineFactory>();
             services.AddSingleton<ISmidgeFileSystem>(p =>
@@ -49,7 +50,11 @@ namespace Smidge
 
                 //resolve the ISmidgeFileProvider if there is one
                 var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
-                return new SmidgeFileSystem(provider, p.GetRequiredService<ICacheFileSystem>(), p.GetRequiredService<IWebsiteInfo>());
+                return new SmidgeFileSystem(
+                    provider,
+                    p.GetRequiredService<IFileProviderFilter>(),
+                    p.GetRequiredService<ICacheFileSystem>(),
+                    p.GetRequiredService<IWebsiteInfo>());
             });
             
             services.AddSingleton<ICacheFileSystem>(p => PhysicalFileCacheFileSystem.CreatePhysicalFileCacheFileSystem(

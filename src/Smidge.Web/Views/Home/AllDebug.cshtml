@@ -22,8 +22,8 @@
             .CreateCssBundle("inline-css-bundle")
             .RequiresCss("~/Css/test1.css", "~/Css/test2.css");
 
-        SmidgeHelper.RequiresJs("~/Js/Folder*js");
-        SmidgeHelper.RequiresCss("~/Css/Folder*css");
+        SmidgeHelper.RequiresJs("~/Js/Folder/*.js");
+        SmidgeHelper.RequiresCss("~/Css/Folder/*.css");
     }
 
     <script src="inline-js-bundle" type="text/javascript" debug="true"></script>

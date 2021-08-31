@@ -1,17 +1,16 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Smidge.Models;
 using Smidge.Options;
 using Smidge.Cache;
+using System.Linq;
 
 namespace Smidge
 {
-
     /// <summary>
     /// Singleton class that exposes methods for dealing with the file system
     /// </summary>
@@ -21,14 +20,20 @@ namespace Smidge
         private readonly ConcurrentDictionary<string, IDisposable> _fileWatchers = new ConcurrentDictionary<string, IDisposable>();
         private readonly IWebsiteInfo _siteInfo;
         private readonly IFileProvider _sourceFileProvider;
+        private readonly IFileProviderFilter _fileProviderFilter;
 
-        public SmidgeFileSystem(IFileProvider sourceFileProvider, ICacheFileSystem cacheFileProvider, IWebsiteInfo siteInfo)
+        public SmidgeFileSystem(
+            IFileProvider sourceFileProvider,
+            IFileProviderFilter fileProviderFilter,
+            ICacheFileSystem cacheFileProvider,
+            IWebsiteInfo siteInfo)
         {
             _sourceFileProvider = sourceFileProvider;
+            _fileProviderFilter = fileProviderFilter;
             CacheFileSystem = cacheFileProvider;
             _siteInfo = siteInfo;
         }
-        
+
         public ICacheFileSystem CacheFileSystem { get; }
 
         public IFileInfo GetRequiredFileInfo(IWebFile webfile)
@@ -57,66 +62,21 @@ namespace Smidge
             return fileInfo;
         }
 
-        /// <summary>
-        /// Rudimentary check to see if the path is a folder
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public bool IsFolder(string path)
+        /// <inheritdoc />
+        public IEnumerable<string> GetMatchingFiles(string filePattern)
         {
-            var fileInfo = _sourceFileProvider.GetFileInfo(ConvertToFileProviderPath(path));
-            if (fileInfo == null) return false;
-
-            if (fileInfo.IsDirectory)
+            var ext = Path.GetExtension(filePattern);
+            if (string.IsNullOrWhiteSpace(ext))
             {
-                return true;
+                // if there's no extention we can assume it's a directory, so normalize
+                filePattern = $"{filePattern}/*.*";
             }
 
-            if (path.EndsWith("/"))
-            {
-                return true;
-            }
-
-            //the last part doesn't contain a '.'
-            var parts = path.Split('/');
-            var lastPart = parts[parts.Length - 1];
-            if (!lastPart.Contains('.'))
-            {
-                return true;
-            }
-
-            //This is used when specifying extensions in a folder
-            if (lastPart.Contains('*'))
-            {
-                return true;
-            }
-
-            return false;
+            // normalize for virtual paths
+            filePattern = ConvertToFileProviderPath(filePattern);
+            return _fileProviderFilter.GetMatchingFiles(_sourceFileProvider, filePattern)
+                .Select(x => $"~/{x}"); // back to virtual path
         }
-
-        public IEnumerable<string> GetPathsForFilesInFolder(string folderPath)
-        {
-            //parse out the folder if it contains an asterisk
-            var parts = folderPath.Split('*');
-            var folderPart = parts[0];
-            var extensionFilter = parts.Length > 1 ? parts[1] : null;
-            var fileProviderFolderPath = ConvertToFileProviderPath(folderPart);
-            var folderContents = _sourceFileProvider.GetDirectoryContents(fileProviderFolderPath);
-
-            if (folderContents.Exists)
-            {
-
-                var files = string.IsNullOrWhiteSpace(extensionFilter)
-                    ? folderContents
-                    : folderContents.Where(
-                        (a) => !a.IsDirectory && a.Exists && Path.GetExtension(a.Name) == string.Format(".{0}", extensionFilter));
-                return files.Select(x => ReverseMapPath(fileProviderFolderPath, x));
-            }
-
-            return Enumerable.Empty<string>();
-        }
-
-
 
         /// <summary>
         /// A rudimentary reverse map path function
@@ -171,7 +131,8 @@ namespace Smidge
             var path = ConvertToFileProviderPath(webFile.FilePath).ToLowerInvariant();
 
             //don't double watch if there's already a watcher for this file
-            if (_fileWatchers.ContainsKey(path)) return false;
+            if (_fileWatchers.ContainsKey(path))
+                return false;
 
             var watchedFile = new WatchedFile(webFile, fileInfo, bundleOptions);
 
@@ -200,24 +161,30 @@ namespace Smidge
         /// </remarks>
         public string ConvertToFileProviderPath(string path)
         {
-            if (path.StartsWith("~"))
+            if (path.StartsWith('~'))
             {
-                return path.TrimStart('~');
+                return path.TrimStart('~', '/');
             }
 
+            if (path.StartsWith('/'))
+            {
+                path = path.TrimStart('/');
+            }
 
-            string pathBase = _siteInfo.GetBasePath();
+            string pathBase = _siteInfo.GetBasePath()?.TrimStart('/');
             if (pathBase == null)
             {
                 pathBase = string.Empty;
             }
 
             if (pathBase.Length > 0 && path.StartsWith(pathBase))
-                return path.Substring(pathBase.Length);
+            {
+                path = path.Substring(pathBase.Length);
+            }
 
-            return path;
+            return path.TrimStart('/');
         }
 
-        
+
     }
 }

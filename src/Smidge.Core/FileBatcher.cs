@@ -1,4 +1,4 @@
-﻿using Smidge.Models;
+using Smidge.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Smidge.Hashing;
@@ -62,27 +62,16 @@ namespace Smidge
                     //add it to the result and split again - each batch can only contain a single external request
                     result.Add(current);
                     current = new WebFileBatch();
+                    continue;
                 }
 
-                // TODO: this should support Glob patterns, so this check would need to be a little different
-                // or the file system should just call GetPathsForFilesInFolder with a glob pattern and work with that.
-                // i.e. if the result is more than one, than it's treated here like a folder.
-                else if (_fileSystemHelper.IsFolder(f.FilePath))
+                var filePaths = _fileSystemHelper.GetMatchingFiles(f.FilePath);
+                foreach (var p in filePaths)
                 {
-                    //it's a folder so get all of it's individual files and process them 
-                    var filePaths = _fileSystemHelper.GetPathsForFilesInFolder(f.FilePath);
-                    foreach (var p in filePaths)
-                    {
-                        var subFile = f.Duplicate(_requestHelper.Content(p));
-                        var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
-                        hashedFile.Pipeline = f.Pipeline;
-                        current.AddInternal(subFile, hashedFile);
-                    }
-                }
-                else
-                {
-                    var hashedFile = f.Duplicate(_hasher.Hash(f.FilePath));
-                    current.AddInternal(f.Duplicate(f.FilePath), hashedFile);
+                    var subFile = f.Duplicate(_requestHelper.Content(p));
+                    var hashedFile = subFile.Duplicate(_hasher.Hash(subFile.FilePath));
+                    hashedFile.Pipeline = f.Pipeline;
+                    current.AddInternal(subFile, hashedFile);
                 }
             }
 

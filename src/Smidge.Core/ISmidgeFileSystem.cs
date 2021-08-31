@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
@@ -36,16 +36,12 @@ namespace Smidge
         IFileInfo GetRequiredFileInfo(string filePath);
 
         /// <summary>
-        /// Returns all full paths for files in the folder
+        /// Returns virtual paths for all files matching the pattern.
         /// </summary>
         /// <param name="folderPath"></param>
         /// <returns></returns>
-        // TODO: This should use Globbing patterns
-        IEnumerable<string> GetPathsForFilesInFolder(string folderPath);
+        IEnumerable<string> GetMatchingFiles(string filePattern);
         
-        // TODO: This won't be needed when we implement Globbing patterns
-        bool IsFolder(string path);
-
         /// <summary>
         /// Reads the content of a file
         /// </summary>

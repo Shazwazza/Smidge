@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.AspNetCore.Hosting;
 
 using Moq;
@@ -28,8 +28,9 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
@@ -57,8 +58,9 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
@@ -70,28 +72,28 @@ namespace Smidge.Tests
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_2.js" && f.Order == 1),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_3.js")
-            }, pipeline);
+            }, pipeline).ToList();
 
-            Assert.Equal(1, result.ElementAt(2).Order);
+            Assert.Equal(1, result[2].Order);
 
             result = generator.GetOrderedFileSet(new IWebFile[] {
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js" && f.Order == 2),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_2.js" && f.Order == 1),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_3.js")
-            }, pipeline);
+            }, pipeline).ToList();
             
-            Assert.Equal(1, result.ElementAt(1).Order);
-            Assert.Equal(2, result.ElementAt(2).Order);
-            
+            Assert.Equal(1, result[1].Order);
+            Assert.Equal(2, result[2].Order);
+
             result = generator.GetOrderedFileSet(new IWebFile[] {
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_2.js"),
                 Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_3.js")
-            }, pipeline);
+            }, pipeline).ToList();
             
-            Assert.Equal("~/test/test.js", result.ElementAt(0).FilePath);
-            Assert.Equal("~/test/test_2.js", result.ElementAt(1).FilePath);
-            Assert.Equal("~/test/test_3.js", result.ElementAt(2).FilePath);
+            Assert.Equal("~/test/test.js", result[0].FilePath);
+            Assert.Equal("~/test/test_2.js", result[1].FilePath);
+            Assert.Equal("~/test/test_3.js", result[2].FilePath);
         }
     }
 }

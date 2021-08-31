@@ -74,7 +74,7 @@ services.UseSmidge(bundles =>
 {
    //Defining using file/folder paths:
    
-   bundles.CreateJs("test-bundle-2", "~/Js/Bundle2", "~/Js/OtherFolder*js");
+   bundles.CreateJs("test-bundle-2", "~/Js/Bundle2", "~/Js/OtherFolder/*.js");
    
    //Or defining using JavaScriptFile's or CssFile's
    //this allows you to custom the pipeline per file

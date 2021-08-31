@@ -67,6 +67,7 @@ div {display: block;}".Replace("\r\n", string.Empty).Replace("\n", string.Empty)
         {
             var fileSystem = new SmidgeFileSystem(
                 Mock.Of<IFileProvider>(),
+                Mock.Of<IFileProviderFilter>(),
                 Mock.Of<ICacheFileSystem>(),
                 Mock.Of<IWebsiteInfo>());
             return fileSystem;
