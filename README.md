@@ -1,5 +1,5 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/y2c08r2wsqsliq7o?svg=true)](https://ci.appveyor.com/project/Shandem/smidge)
-![CI](https://github.com/Shazwazza/Smidge/workflows/CI/badge.svg)
+[![CI](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml)
+[![Smidge Build](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml)
 
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
