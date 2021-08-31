@@ -40,14 +40,14 @@ namespace Smidge.Tests
         }
 
         [Theory]
-        [InlineData("~/test/file.css", "test/file.css", null)]
-        [InlineData("/", "", null)]
-        [InlineData("/test/file.css", "test/file.css", null)]
-        [InlineData("/sub-site/test/file.css", "test/file.css", "sub-site")]
-        [InlineData("/sub/site/test/file.css", "test/file.css", "sub/site")]
-        [InlineData("test/file.css", "test/file.css", null)]
-        [InlineData("file.css", "file.css", null)]
-        [InlineData("~/file.css", "file.css", null)]
+        [InlineData("~/test/file.css", "/test/file.css", null)]
+        [InlineData("/", "/", null)]
+        [InlineData("/test/file.css", "/test/file.css", null)]
+        [InlineData("/sub-site/test/file.css", "/test/file.css", "sub-site")]
+        [InlineData("/sub/site/test/file.css", "/test/file.css", "sub/site")]
+        [InlineData("test/file.css", "/test/file.css", null)]
+        [InlineData("file.css", "/file.css", null)]
+        [InlineData("~/file.css", "/file.css", null)]
         public void ConvertToFileProviderPath(string from, string to, string pathBase)
         {
             var websiteInfo = new Mock<IWebsiteInfo>();

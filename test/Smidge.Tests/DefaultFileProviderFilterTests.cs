@@ -9,8 +9,8 @@ namespace Smidge.Tests
     public class DefaultFileProviderFilterTests
     {
         [Theory]
-        [InlineData("**/*.js")]
-        [InlineData("**/*.*")]
+        [InlineData("/**/*.js")]
+        [InlineData("/**/*.*")]
         public void Matches_Files_In_Recursive_Folders(string pattern)
         {
             var root = new InMemoryDirectory();
@@ -38,19 +38,19 @@ namespace Smidge.Tests
         }
 
         [Theory]
-        [InlineData("**/*.js", 2)]
-        [InlineData("dir1/*.js", 2)]
-        [InlineData("**/*.*", 5)]
-        [InlineData("dir1/*.*", 5)]
-        [InlineData("**/*.css", 3)]
-        [InlineData("dir1/*.css", 3)]
-        [InlineData("*.css", 0)]
-        [InlineData("*.*", 0)]
-        [InlineData("dir2/*.css", 0)]
-        [InlineData("*/*.css", 3)]
-        [InlineData("*/*.js", 2)]
-        [InlineData("jquery-1.12.2.js", 1)]
-        [InlineData("dir1", 5)]
+        [InlineData("/**/*.js", 2)]
+        [InlineData("/dir1/*.js", 2)]
+        [InlineData("/**/*.*", 5)]
+        [InlineData("/dir1/*.*", 5)]
+        [InlineData("/**/*.css", 3)]
+        [InlineData("/dir1/*.css", 3)]
+        [InlineData("/*.css", 0)]
+        [InlineData("/*.*", 0)]
+        [InlineData("/dir2/*.css", 0)]
+        [InlineData("/*/*.css", 3)]
+        [InlineData("/*/*.js", 2)]
+        [InlineData("/jquery-1.12.2.js", 1)]
+        [InlineData("/dir1", 5)]
         public void Matches_Files_In_Folders(string pattern, int count)
         {
             var root = new InMemoryDirectory();            

@@ -75,7 +75,7 @@ namespace Smidge
             // normalize for virtual paths
             filePattern = ConvertToFileProviderPath(filePattern);
             return _fileProviderFilter.GetMatchingFiles(_sourceFileProvider, filePattern)
-                .Select(x => $"~/{x}"); // back to virtual path
+                .Select(x => $"~{x}"); // back to virtual path
         }
 
         /// <summary>
@@ -153,7 +153,9 @@ namespace Smidge
         /// Formats a file path into a compatible path for use with the file provider
         /// </summary>
         /// <param name="path"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// A path compatible with IFileProvider which must start with a forward slash.
+        /// </returns>
         /// <remarks>
         /// This will handle virtual paths like ~/myfile.js
         /// This will handle absolute paths like /myfile.js
@@ -163,7 +165,7 @@ namespace Smidge
         {
             if (path.StartsWith('~'))
             {
-                return path.TrimStart('~', '/');
+                return path.TrimStart('~');
             }
 
             if (path.StartsWith('/'))
@@ -182,7 +184,7 @@ namespace Smidge
                 path = path.Substring(pathBase.Length);
             }
 
-            return path.TrimStart('/');
+            return path.EnsureStartsWith('/');
         }
 
 

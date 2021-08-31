@@ -33,7 +33,7 @@ namespace Smidge
 
             if (_rootFileInfo == null)
             {
-                _rootFileInfo = fileProvider.GetFileInfo(string.Empty);
+                _rootFileInfo = fileProvider.GetFileInfo("/");
             }
 
             // If the file provider contains a single physical file provider
