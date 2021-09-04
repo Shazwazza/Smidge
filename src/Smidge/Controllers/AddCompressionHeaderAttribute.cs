@@ -6,12 +6,11 @@ using Smidge.Models;
 
 namespace Smidge.Controllers
 {
-
     /// <summary>
     /// Adds the compression headers
     /// </summary>
     public sealed class AddCompressionHeaderAttribute : Attribute, IFilterFactory, IOrderedFilter
-    {        
+    {
         /// <summary>Creates an instance of the executable filter.</summary>
         /// <param name="serviceProvider">The request <see cref="T:System.IServiceProvider" />.</param>
         /// <returns>An instance of the executable filter.</returns>
@@ -21,11 +20,7 @@ namespace Smidge.Controllers
                 serviceProvider.GetRequiredService<IRequestHelper>(),
                 serviceProvider.GetRequiredService<IBundleManager>());
         }
-        
-        /// <summary>
-        /// Gets a value that indicates if the result of <see cref="M:Microsoft.AspNetCore.Mvc.Filters.IFilterFactory.CreateInstance(System.IServiceProvider)" />
-        /// can be reused across requests.
-        /// </summary>
+
         public bool IsReusable => true;
 
         public int Order { get; set; }
@@ -37,22 +32,18 @@ namespace Smidge.Controllers
 
             public AddCompressionFilter(IRequestHelper requestHelper, IBundleManager bundleManager)
             {
-                if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-                if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
-                _requestHelper = requestHelper;
-                _bundleManager = bundleManager;
+                _requestHelper = requestHelper ?? throw new ArgumentNullException(nameof(requestHelper));
+                _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
             }
 
             public void OnActionExecuting(ActionExecutingContext context)
             {
-                if (!context.ActionArguments.Any()) return;
+                if (context.ActionArguments.Count == 0)
+                    return;
 
                 //put the model in the context, we'll resolve that after it's executed
-                var file = context.ActionArguments.First().Value as RequestModel;
-                if (file != null)
-                {
+                if (context.ActionArguments.First().Value is RequestModel file)
                     context.HttpContext.Items[nameof(AddCompressionHeaderAttribute)] = file;
-                }
             }
 
             /// <summary>
@@ -64,31 +55,21 @@ namespace Smidge.Controllers
                 if (context.Exception != null) return;
 
                 //get the model from the items
-                if (!context.HttpContext.Items.ContainsKey(nameof(AddCompressionHeaderAttribute))) return;
-                var file = context.HttpContext.Items[nameof(AddCompressionHeaderAttribute)] as RequestModel;
-                if (file == null) return;
-
-                var enableCompression = true;
-
-                //check if it's a bundle (not composite file)
-                var bundleRequest = file as BundleRequestModel;
-                if (bundleRequest != null)
+                if (context.HttpContext.Items.TryGetValue(nameof(AddCompressionHeaderAttribute), out var requestModel) && requestModel is RequestModel file)
                 {
-                    Bundle b;
-                    if (_bundleManager.TryGetValue(bundleRequest.FileKey, out b))
+                    var enableCompression = true;
+
+                    //check if it's a bundle (not composite file)
+                    if (file is BundleRequestModel bundleRequest && _bundleManager.TryGetValue(bundleRequest.FileKey, out var bundle))
                     {
-                        var bundleOptions = b.GetBundleOptions(_bundleManager, bundleRequest.Debug);
+                        var bundleOptions = bundle.GetBundleOptions(_bundleManager, bundleRequest.Debug);
                         enableCompression = bundleOptions.CompressResult;
                     }
-                }
 
-                if (enableCompression)
-                {
-                    context.HttpContext.Response.AddCompressionResponseHeader(
-                       _requestHelper.GetClientCompression(context.HttpContext.Request.Headers));
-                }                
+                    if (enableCompression)
+                        context.HttpContext.Response.AddCompressionResponseHeader(_requestHelper.GetClientCompression(context.HttpContext.Request.Headers));
+                }
             }
         }
     }
-
 }

@@ -240,9 +240,5 @@ namespace Smidge.Controllers
                 }
             }
         }
-
-
     }
-
-
 }
