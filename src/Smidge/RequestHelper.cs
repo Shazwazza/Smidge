@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Smidge.Models;
 
 namespace Smidge
@@ -92,13 +93,13 @@ namespace Smidge
         public CompressionType GetClientCompression(IDictionary<string, StringValues> headers)
         {
             var type = CompressionType.None;
-            var agentHeader = (string)headers[HttpConstants.UserAgent];
+            var agentHeader = (string)headers[HeaderNames.UserAgent];
             if (agentHeader != null && agentHeader.Contains("MSIE 6"))
             {
                 return type;
             }
 
-            string acceptEncoding = headers[HttpConstants.AcceptEncoding];
+            string acceptEncoding = headers[HeaderNames.AcceptEncoding];
 
             if (!string.IsNullOrEmpty(acceptEncoding))
             {
