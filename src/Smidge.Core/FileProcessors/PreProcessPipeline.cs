@@ -66,6 +66,4 @@ namespace Smidge.FileProcessors
             return new PreProcessPipeline(new List<IPreProcessor>(Processors));
         }
     }
-
-    
 }

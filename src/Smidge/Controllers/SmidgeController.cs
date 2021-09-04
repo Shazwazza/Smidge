@@ -30,7 +30,7 @@ namespace Smidge.Controllers
         private readonly IBundleManager _bundleManager;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
         private readonly PreProcessPipelineFactory _processorFactory;
-        private readonly PreProcessManager _preProcessManager;
+        private readonly IPreProcessManager _preProcessManager;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Smidge.Controllers
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory,
-            PreProcessManager preProcessManager,
+            IPreProcessManager preProcessManager,
             ILogger<SmidgeController> logger)
         {
             _fileSystem = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));

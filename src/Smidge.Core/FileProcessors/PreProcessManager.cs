@@ -14,11 +14,12 @@ namespace Smidge.FileProcessors
     /// <summary>
     /// This performs the pre-processing on an <see cref="IWebFile"/> based on it's pipeline and writes the processed output to file cache
     /// </summary>
-    public sealed class PreProcessManager
+    public class PreProcessManager : IPreProcessManager
     {
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly ILogger<PreProcessManager> _logger;
+        private readonly SemaphoreSlim _processFileSemaphore = new SemaphoreSlim(1, 1);
 
         public PreProcessManager(ISmidgeFileSystem fileSystem, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
         {
@@ -27,18 +28,11 @@ namespace Smidge.FileProcessors
             _logger = logger;
         }
 
-        /// <summary>
-        /// This will first check if the file is in cache and if not it will 
-        /// run all pre-processors assigned to the file and store the output in a persisted file cache.
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="bundleOptions"></param>
-        /// <param name="bundleContext"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
             if (file == null) throw new ArgumentNullException(nameof(file));
-            if (file.Pipeline == null) throw new ArgumentNullException(string.Format("{0}.Pipeline", nameof(file)));
+            if (file.Pipeline == null) throw new ArgumentNullException($"{nameof(file)}.Pipeline");
 
             await ProcessFile(file, _bundleManager.GetAvailableOrDefaultBundleOptions(bundleOptions, false), bundleContext);
         }
@@ -51,7 +45,16 @@ namespace Smidge.FileProcessors
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
             };
 
-            await ProcessFileImpl(file, bundleOptions, bundleContext);
+            await _processFileSemaphore.WaitAsync();
+
+            try
+            {
+                await ProcessFileImpl(file, bundleOptions, bundleContext);
+            }
+            finally
+            {
+                _processFileSemaphore.Release();
+            }
         }
 
         private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
@@ -112,7 +115,7 @@ namespace Smidge.FileProcessors
         /// Executed when a processed file is modified
         /// </summary>
         /// <param name="file"></param>
-        private void FileModified(WatchedFile file)
+        private static void FileModified(WatchedFile file)
         {
             //Raise the event on the file watch options
             file.BundleOptions.FileWatchOptions.Changed(new FileWatchEventArgs(file));
