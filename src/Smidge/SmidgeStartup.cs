@@ -36,7 +36,7 @@ namespace Smidge
 
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
-            services.AddSingleton<PreProcessManager>();
+            services.AddSingleton<IPreProcessManager, PreProcessManager>();
             services.AddSingleton<IRequestHelper, RequestHelper>();
             services.AddSingleton<IWebsiteInfo, AutoWebsiteInfo>();
             services.AddSingleton<IBundleFileSetGenerator, BundleFileSetGenerator>();

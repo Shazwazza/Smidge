@@ -19,7 +19,7 @@ namespace Smidge
     public class SmidgeHelper : ISmidgeRequire
     {
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
-        private readonly PreProcessManager _preProcessManager;
+        private readonly IPreProcessManager _preProcessManager;
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
@@ -48,7 +48,7 @@ namespace Smidge
         public SmidgeHelper(
             IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
-            PreProcessManager preProcessManager,
+            IPreProcessManager preProcessManager,
             ISmidgeFileSystem fileSystem,
             IHasher hasher,
             IBundleManager bundleManager,
