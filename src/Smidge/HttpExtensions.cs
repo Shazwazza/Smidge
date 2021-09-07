@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Smidge.Models;
 using System;
 using System.Globalization;
+using Microsoft.Net.Http.Headers;
 
 namespace Smidge
 {
@@ -17,7 +18,7 @@ namespace Smidge
         /// </remarks>
         public static bool HasETagBeenModified(this HttpRequest request, string etag)
         {
-            var ifNoneMatch = request.Headers.GetCommaSeparatedValues(HttpConstants.IfNoneMatch);
+            var ifNoneMatch = request.Headers.GetCommaSeparatedValues(HeaderNames.IfNoneMatch);
             if (ifNoneMatch != null)
             {
                 foreach (var segment in ifNoneMatch)
@@ -42,13 +43,11 @@ namespace Smidge
         /// </remarks>
         public static bool HasRequestBeenModifiedSince(this HttpRequest request, DateTime utcLastModified)
         {
-            string ifModifiedSinceString = request.Headers[HttpConstants.IfModifiedSince];
-            DateTime ifModifiedSince;
-            if (TryParseHttpDate(ifModifiedSinceString, out ifModifiedSince))
-            {
-                bool modified = ifModifiedSince < utcLastModified;
-                return modified;
-            }
+            string ifModifiedSinceString = request.Headers[HeaderNames.IfModifiedSince];
+            if (TryParseHttpDate(ifModifiedSinceString, out DateTime ifModifiedSince))
+                return ifModifiedSince < utcLastModified;
+
+
             return true;
         }
 
@@ -59,33 +58,32 @@ namespace Smidge
 
         public static void AddLastModifiedResponseHeader(this HttpResponse response, RequestModel model)
         {
-            response.Headers[HttpConstants.LastModified] = model.LastFileWriteTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
+            response.Headers[HeaderNames.LastModified] = model.LastFileWriteTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
         }
 
         public static void AddExpiresResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
             var dateTime = DateTime.Now.AddHours(cacheHours);
-            response.Headers[HttpConstants.Expires] = dateTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
+            response.Headers[HeaderNames.Expires] = dateTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
         }
 
         public static void AddCacheControlResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
-            response.Headers[HttpConstants.CacheControl] = string.Format("public, max-age={0}, s-maxage={0}", TimeSpan.FromHours(cacheHours) .TotalSeconds);
+            response.Headers[HeaderNames.CacheControl] = string.Format("public, max-age={0}, s-maxage={0}", TimeSpan.FromHours(cacheHours) .TotalSeconds);
         }
 
         public static void AddETagResponseHeader(this HttpResponse response, string etag)
         {
-            response.Headers[HttpConstants.ETag] = string.Format("\"{0}\"", etag);
+            response.Headers[HeaderNames.ETag] = $"\"{etag}\"";
         }
 
         public static void AddCompressionResponseHeader(this HttpResponse response, CompressionType cType)
         {
             if (cType != CompressionType.None)
             {
-                response.Headers[HttpConstants.ContentEncoding] = cType.ToString();
-                response.Headers[HttpConstants.Vary] = HttpConstants.AcceptEncoding;
+                response.Headers[HeaderNames.ContentEncoding] = cType.ToString();
+                response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
             }
         }
     }
-
 }
