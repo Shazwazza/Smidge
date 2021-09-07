@@ -4,9 +4,6 @@ using Smidge.Models;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Smidge.Cache;
-using Microsoft.Extensions.FileProviders;
-using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -18,24 +15,17 @@ namespace Smidge.Controllers
     /// </summary>
     public sealed class CompositeFileCacheFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        public int Order { get; set; }
-
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return new CacheFilter(
-                serviceProvider.GetRequiredService<ISmidgeFileSystem>(),
-                serviceProvider.GetRequiredService<CacheBusterResolver>(),
-                serviceProvider.GetRequiredService<IBundleManager>());
+                serviceProvider.GetRequiredService<ISmidgeFileSystem>());
         }
 
-        /// <summary>
-        /// Gets a value that indicates if the result of <see cref="M:Microsoft.AspNetCore.Mvc.Filters.IFilterFactory.CreateInstance(System.IServiceProvider)" />
-        /// can be reused across requests.
-        /// </summary>
         public bool IsReusable => true;
 
-        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, string cacheBusterValue, string filesetKey, CompressionType type, string mime,
-            out FileResult result, out DateTime lastWriteTime)
+        public int Order { get; set; }
+
+        internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, string cacheBusterValue, string filesetKey, CompressionType type, string mime, out FileResult result, out DateTime lastWriteTime)
         {
             result = null;
             lastWriteTime = DateTime.Now;
@@ -52,12 +42,10 @@ namespace Smidge.Controllers
                     result = new PhysicalFileResult(cacheFile.PhysicalPath, mime);
                     return true;
                 }
-                else
-                {
-                    //deliver the file via stream
-                    result = new FileStreamResult(cacheFile.CreateReadStream(), mime);
-                    return true;
-                }
+
+                //deliver the file via stream
+                result = new FileStreamResult(cacheFile.CreateReadStream(), mime);
+                return true;
             }
 
             return false;
@@ -69,23 +57,18 @@ namespace Smidge.Controllers
         private class CacheFilter : IActionFilter
         {
             private readonly ISmidgeFileSystem _fileSystem;
-            private readonly CacheBusterResolver _cacheBusterResolver;
-            private readonly IBundleManager _bundleManager;
 
-            public CacheFilter(ISmidgeFileSystem fileSystem, CacheBusterResolver cacheBusterResolver, IBundleManager bundleManager)
+            public CacheFilter(ISmidgeFileSystem fileSystem)
             {
                 _fileSystem = fileSystem;
-                _cacheBusterResolver = cacheBusterResolver;
-                _bundleManager = bundleManager;
             }
 
             public void OnActionExecuting(ActionExecutingContext context)
             {
-                if (!context.ActionArguments.Any()) return;
-                var firstArg = context.ActionArguments.First().Value;
-                RequestModel file = firstArg as RequestModel;
+                if (context.ActionArguments.Count == 0) return;
 
-                if (file != null)
+                var firstArg = context.ActionArguments.First().Value;
+                if (firstArg is RequestModel file)
                 {
                     var cacheBusterValue = file.ParsedPath.CacheBusterValue;
 
@@ -98,9 +81,7 @@ namespace Smidge.Controllers
             }
 
             public void OnActionExecuted(ActionExecutedContext context)
-            {
-            }
+            { }
         }
-
     }
 }
