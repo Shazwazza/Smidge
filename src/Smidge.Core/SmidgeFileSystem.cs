@@ -65,6 +65,9 @@ namespace Smidge
         /// <inheritdoc />
         public IEnumerable<string> GetMatchingFiles(string filePattern)
         {
+            if (filePattern.Contains(SmidgeConstants.SchemeDelimiter))
+                return new []{ filePattern };
+
             var ext = Path.GetExtension(filePattern);
             if (string.IsNullOrWhiteSpace(ext))
             {
