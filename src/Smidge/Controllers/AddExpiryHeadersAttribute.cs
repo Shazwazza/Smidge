@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -45,23 +46,29 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
-                if (context.Exception != null) return;
+                if (context.Exception != null)
+                    return;
 
                 //get the model from the items
-                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object requestFile) || requestFile is not RequestModel file) return;
+                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object fileObject) || fileObject is not RequestModel file)
+                    return;
 
                 var enableETag = true;
                 var cacheControlMaxAge = 10 * 24; //10 days
 
+                BundleOptions bundleOptions;
+
                 if (_bundleManager.TryGetValue(file.FileKey, out Bundle b))
                 {
-                    var bundleOptions = b.GetBundleOptions(_bundleManager, file.Debug);
-                    enableETag = bundleOptions.CacheControlOptions.EnableETag;
-                    cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
+                    bundleOptions = b.GetBundleOptions(_bundleManager, file.Debug);
                 }
                 else
                 {
-                    var bundleOptions = file.Debug ? _bundleManager.DefaultBundleOptions.DebugOptions : _bundleManager.DefaultBundleOptions.ProductionOptions;
+                    bundleOptions = file.Debug ? _bundleManager.DefaultBundleOptions.DebugOptions : _bundleManager.DefaultBundleOptions.ProductionOptions;
+                }
+
+                if (bundleOptions != null)
+                {
                     enableETag = bundleOptions.CacheControlOptions.EnableETag;
                     cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
                 }
