@@ -85,7 +85,6 @@ namespace Smidge.Controllers
                     context.HttpContext.Response.AddLastModifiedResponseHeader(file);
                     context.HttpContext.Response.AddExpiresResponseHeader(cacheControlMaxAge);
                 }
-
             }
         }
     }
