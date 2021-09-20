@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -12,15 +13,10 @@ namespace Smidge.Controllers
     /// </summary>
     public sealed class AddExpiryHeadersAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-        {
-            return new AddExpiryHeaderFilter(
-                serviceProvider.GetRequiredService<IHasher>(),
-                serviceProvider.GetRequiredService<IBundleManager>());
-        }
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => new AddExpiryHeaderFilter(serviceProvider.GetRequiredService<IHasher>(), serviceProvider.GetRequiredService<IBundleManager>());
 
         public bool IsReusable => true;
-        
+
         public int Order { get; set; }
 
         public sealed class AddExpiryHeaderFilter : IActionFilter
@@ -50,34 +46,44 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
-                if (context.Exception != null) return;
+                if (context.Exception != null)
+                    return;
 
                 //get the model from the items
-                if (context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out var requestModel) && requestModel is RequestModel file)
+                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object fileObject) || fileObject is not RequestModel file)
+                    return;
+
+                var enableETag = true;
+                var cacheControlMaxAge = 10 * 24; //10 days
+
+                BundleOptions bundleOptions;
+
+                if (_bundleManager.TryGetValue(file.FileKey, out Bundle b))
                 {
-                    var enableETag = true;
-                    var cacheControlMaxAge = 10 * 24; //10 days
+                    bundleOptions = b.GetBundleOptions(_bundleManager, file.Debug);
+                }
+                else
+                {
+                    bundleOptions = file.Debug ? _bundleManager.DefaultBundleOptions.DebugOptions : _bundleManager.DefaultBundleOptions.ProductionOptions;
+                }
 
-                    //check if it's a bundle (not composite file)
-                    if (file is BundleRequestModel bundleRequest && _bundleManager.TryGetValue(bundleRequest.FileKey, out var bundle))
-                    {
-                        var bundleOptions = bundle.GetBundleOptions(_bundleManager, bundleRequest.Debug);
-                        enableETag = bundleOptions.CacheControlOptions.EnableETag;
-                        cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
-                    }
+                if (bundleOptions != null)
+                {
+                    enableETag = bundleOptions.CacheControlOptions.EnableETag;
+                    cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
+                }
 
-                    if (enableETag)
-                    {
-                        var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
-                        context.HttpContext.Response.AddETagResponseHeader(etag);
-                    }
+                if (enableETag)
+                {
+                    var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
+                    context.HttpContext.Response.AddETagResponseHeader(etag);
+                }
 
-                    if (cacheControlMaxAge > 0)
-                    {
-                        context.HttpContext.Response.AddCacheControlResponseHeader(cacheControlMaxAge);
-                        context.HttpContext.Response.AddLastModifiedResponseHeader(file);
-                        context.HttpContext.Response.AddExpiresResponseHeader(cacheControlMaxAge);
-                    }
+                if (cacheControlMaxAge > 0)
+                {
+                    context.HttpContext.Response.AddCacheControlResponseHeader(cacheControlMaxAge);
+                    context.HttpContext.Response.AddLastModifiedResponseHeader(file);
+                    context.HttpContext.Response.AddExpiresResponseHeader(cacheControlMaxAge);
                 }
             }
         }
