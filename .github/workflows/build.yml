@@ -3,11 +3,18 @@ name: Smidge Build
 on:
   workflow_dispatch:
   push:
-    branches:    
-      - 'release/4.0.0'
+    branches:
+      - master
+      - develop
+      - 'release/*'
+    tags:
+      - 'v*'
+
   pull_request:
     branches:
-      - 'release/4.0.0'
+      - master
+      - develop
+      - 'release/*'
 
 jobs:
   build:
@@ -18,7 +25,7 @@ jobs:
       Solution_File: Smidge.sln
       Test_Proj: test/Smidge.Tests/Smidge.Tests.csproj
       Configuration: Release
-      
+
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -30,12 +37,12 @@ jobs:
         $Copyright = "Copyright " + [char]0x00A9 + " Shannon Deminick " + (Get-Date).year
         echo ("Copyright=" + $Copyright) >> $Env:GITHUB_ENV
       shell: pwsh
-      
+
     - name: Setup .NET Core SDK 5.0.x
       uses: actions/setup-dotnet@v1.7.2
       with:
         dotnet-version: 5.0.x
-    
+
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v0.9.9
       with:
@@ -43,13 +50,13 @@ jobs:
 
     - name: Determine Version
       uses: gittools/actions/gitversion/execute@v0.9.9
-    
+
     - name: Install dependencies
       run: dotnet restore ${{ env.Solution_File }}
-    
+
     - name: Build
       run: dotnet build ${{ env.Solution_File }} --configuration ${{ env.Configuration }} --no-restore
-    
+
     - name: Test
       run: dotnet test "${{ env.Test_Proj }}" --no-build --verbosity normal --results-directory ${{ github.workspace }}/_TestResults  --logger "trx;logfilename=tests.trx"
 
@@ -61,7 +68,7 @@ jobs:
 
     # This will do a rebuild
     - name: Pack
-      if: success()      
+      if: success()
       run: |
         dotnet pack ${{ env.Solution_File }} \
           --configuration ${{ env.Configuration }} \
