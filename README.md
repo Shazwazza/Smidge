@@ -1,4 +1,3 @@
-[![CI](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml)
 [![Smidge Build](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml)
 
 ![Smidge](assets/logosmall.png?raw=true) Smidge
