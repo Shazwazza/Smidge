@@ -1,7 +1,6 @@
 ﻿using Smidge.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +10,6 @@ using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
-using Smidge.Options;
 
 namespace Smidge
 {
@@ -21,8 +19,8 @@ namespace Smidge
     public class SmidgeHelper : ISmidgeRequire
     {
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
-        private readonly PreProcessManager _preProcessManager;
-        private readonly FileSystemHelper _fileSystemHelper;
+        private readonly IPreProcessManager _preProcessManager;
+        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly FileBatcher _fileBatcher;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
@@ -39,7 +37,7 @@ namespace Smidge
         /// <param name="fileSetGenerator"></param>
         /// <param name="dynamicallyRegisteredWebFiles"></param>
         /// <param name="preProcessManager"></param>
-        /// <param name="fileSystemHelper"></param>
+        /// <param name="fileSystem"></param>
         /// <param name="hasher"></param>
         /// <param name="bundleManager"></param>
         /// <param name="processorFactory"></param>
@@ -50,8 +48,8 @@ namespace Smidge
         public SmidgeHelper(
             IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
-            PreProcessManager preProcessManager,
-            FileSystemHelper fileSystemHelper,
+            IPreProcessManager preProcessManager,
+            ISmidgeFileSystem fileSystem,
             IHasher hasher,
             IBundleManager bundleManager,
             PreProcessPipelineFactory processorFactory,
@@ -60,27 +58,17 @@ namespace Smidge
             IHttpContextAccessor httpContextAccessor,
             CacheBusterResolver cacheBusterResolver)
         {
-            if (fileSetGenerator == null) throw new ArgumentNullException(nameof(fileSetGenerator));
-            if (dynamicallyRegisteredWebFiles == null) throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
-            if (preProcessManager == null) throw new ArgumentNullException(nameof(preProcessManager));
-            if (fileSystemHelper == null) throw new ArgumentNullException(nameof(fileSystemHelper));
-            if (bundleManager == null) throw new ArgumentNullException(nameof(bundleManager));
-            if (processorFactory == null) throw new ArgumentNullException(nameof(processorFactory));
-            if (urlManager == null) throw new ArgumentNullException(nameof(urlManager));
-            if (requestHelper == null) throw new ArgumentNullException(nameof(requestHelper));
-            if (httpContextAccessor == null) throw new ArgumentNullException(nameof(httpContextAccessor));
-            if (cacheBusterResolver == null) throw new ArgumentNullException(nameof(cacheBusterResolver));
-            _fileSetGenerator = fileSetGenerator;
-            _processorFactory = processorFactory;
-            _urlManager = urlManager;
-            _requestHelper = requestHelper;
-            _httpContextAccessor = httpContextAccessor;
-            _cacheBusterResolver = cacheBusterResolver;
-            _bundleManager = bundleManager;
-            _preProcessManager = preProcessManager;
-            _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles;
-            _fileSystemHelper = fileSystemHelper;
-            _fileBatcher = new FileBatcher(_fileSystemHelper, _requestHelper, hasher);
+            _fileSetGenerator = fileSetGenerator ?? throw new ArgumentNullException(nameof(fileSetGenerator));
+            _processorFactory = processorFactory ?? throw new ArgumentNullException(nameof(processorFactory));
+            _urlManager = urlManager ?? throw new ArgumentNullException(nameof(urlManager));
+            _requestHelper = requestHelper ?? throw new ArgumentNullException(nameof(requestHelper));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+            _cacheBusterResolver = cacheBusterResolver ?? throw new ArgumentNullException(nameof(cacheBusterResolver));
+            _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
+            _preProcessManager = preProcessManager ?? throw new ArgumentNullException(nameof(preProcessManager));
+            _dynamicallyRegisteredWebFiles = dynamicallyRegisteredWebFiles ?? throw new ArgumentNullException(nameof(dynamicallyRegisteredWebFiles));
+            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _fileBatcher = new FileBatcher(_fileSystem, _requestHelper, hasher);
         }
 
         public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
@@ -198,7 +186,10 @@ namespace Smidge
 
             //get the bundle options from the bundle if they have been set otherwise with the defaults
             var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
-                
+
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
+
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
             {                
@@ -206,15 +197,15 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _requestHelper.Content(d.FilePath)));
+                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug, cacheBusterValue)));
                 return result;
             }
 
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
-            
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBuster);
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
+            {
                 result.Add(url);
+            }
 
             return result;
         }
@@ -237,17 +228,18 @@ namespace Smidge
             
             var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+            var cacheBusterValue = cacheBuster.GetValue();
+
             if (debug)
             {
-                return orderedFiles.Select(x => _requestHelper.Content(x.FilePath));
+                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), debug, cacheBusterValue));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
                 
             //Get the file collection used to create the composite URLs and the external requests
             var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
-
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
 
             foreach (var batch in fileBatches)
             {
@@ -264,15 +256,18 @@ namespace Smidge
                     var compositeUrls = _urlManager.GetUrls(
                         batch.Select(x => x.Hashed), 
                         fileType == WebFileType.Css ? ".css" : ".js",
-                        cacheBuster);
+                        cacheBusterValue);
 
                     foreach (var u in compositeUrls)
                     {
                         //now we need to determine if these files have already been minified
-                        var compositeFilePath = _fileSystemHelper.GetCurrentCompositeFilePath(cacheBuster, compression, u.Key);
-                        if (!File.Exists(compositeFilePath))
+
+                        var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
+
+                        var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, compression, u.Key, out _);
+                        if (!cacheFile.Exists)
                         {
-                            using (var bundleContext = BundleContext.CreateEmpty())
+                            using (var bundleContext = BundleContext.CreateEmpty(cacheBusterValue))
                             {
                                 //need to process/minify these files - need to use their original paths of course
                                 foreach (var file in batch.Select(x => x.Original))

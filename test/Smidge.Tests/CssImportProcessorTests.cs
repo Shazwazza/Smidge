@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Moq;
+using Smidge.Cache;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using System;
@@ -58,14 +59,18 @@ div {display: block;}".Replace("\r\n", string.Empty).Replace("\n", string.Empty)
         private CssImportProcessor GetCssImportProcessor()
         {
             var websiteInfo = GetWebsiteInfo();
-            var cssImportProcessor = new CssImportProcessor(GetFileSystemHelper(websiteInfo), websiteInfo, new RequestHelper(websiteInfo));
+            var cssImportProcessor = new CssImportProcessor(GetFileSystem(), websiteInfo, new RequestHelper(websiteInfo));
             return cssImportProcessor;
         }
 
-        private FileSystemHelper GetFileSystemHelper(IWebsiteInfo websiteInfo)
+        private ISmidgeFileSystem GetFileSystem()
         {
-            var fileSystemHelper = new FileSystemHelper(Mock.Of<IHostingEnvironment>(), Mock.Of<ISmidgeConfig>(), Mock.Of<IFileProvider>(), Mock.Of<IHasher>(), websiteInfo);
-            return fileSystemHelper;
+            var fileSystem = new SmidgeFileSystem(
+                Mock.Of<IFileProvider>(),
+                Mock.Of<IFileProviderFilter>(),
+                Mock.Of<ICacheFileSystem>(),
+                Mock.Of<IWebsiteInfo>());
+            return fileSystem;
         }
 
         private IWebsiteInfo GetWebsiteInfo()

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
@@ -12,9 +12,33 @@ using Smidge.Models;
 using Smidge.FileProcessors;
 using Smidge.Nuglify;
 using Microsoft.Extensions.Hosting;
+using Smidge.InMemory;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace Smidge.Web
 {
+    //public class DotlessPreProcessor : IPreProcessor
+    //{
+    //    private readonly IHostingEnvironment _hostingEnvironment;
+
+    //    public DotlessPreProcessor(IHostingEnvironment hostingEnvironment)
+    //    {
+    //        _hostingEnvironment = hostingEnvironment;
+    //    }
+
+    //    public async Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
+    //    {
+    //        if (Path.GetExtension(fileProcessContext.WebFile.FilePath) == ".less")
+    //        {
+    //            var result = dotless.Core.Less.Parse(fileProcessContext.FileContent);
+    //            fileProcessContext.Update(result);
+    //        }
+
+    //        await next(fileProcessContext);
+    //    }
+    //}
+
     public class Startup
     {
 
@@ -30,6 +54,7 @@ namespace Smidge.Web
                 .Build();        
 
         public IConfigurationRoot Configuration { get; }
+        public IWebHostEnvironment CurrentEnvironment { get; }
 
         /// <summary>
         /// Constructor sets up the configuration - for our example we'll load in the config from appsettings.json with
@@ -43,11 +68,21 @@ namespace Smidge.Web
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
             Configuration = builder.Build();
+            CurrentEnvironment = env;
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddSingleton<ISmidgeFileProvider>(f =>
+            {
+                var hostEnv = f.GetRequiredService<IWebHostEnvironment>();
+
+                return new SmidgeFileProvider(
+                    hostEnv.WebRootFileProvider,
+                    new PhysicalFileProvider(Path.Combine(hostEnv.ContentRootPath, "Smidge", "Static")));
+            });
 
             // Or use services.AddSmidge() to test from smidge.json config.
             services.AddSmidge(Configuration.GetSection("smidge"));
@@ -70,29 +105,12 @@ namespace Smidge.Web
             });
 
             services.AddSmidgeNuglify();
+            services.AddSmidgeInMemory();
+
+            //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
         }
 
-        /// <summary>
-        /// A callback used to modify the default pipeline to use Nuglify for JS processing
-        /// </summary>
-        /// <param name="fileType"></param>
-        /// <param name="processors"></param>
-        /// <returns></returns>
-        private static PreProcessPipeline GetDefaultPipelineFactory(WebFileType fileType, IReadOnlyCollection<IPreProcessor> processors)
-        {
-            //switch (fileType)
-            //{
-            //    case WebFileType.Js:
-            //        return new PreProcessPipeline(new IPreProcessor[]
-            //        {
-            //            processors.OfType<NuglifyJs>().First()
-            //        });
-            //}
-            //returning null will fallback to the logic defined in the registered PreProcessPipelineFactory
-            return null;
-        }
-
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Add the following to the request pipeline only in development environment.
             if (env.IsDevelopment())
@@ -107,6 +125,13 @@ namespace Smidge.Web
             }
 
             app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(CurrentEnvironment.ContentRootPath, "Smidge", "Static")),
+                RequestPath = "/smidge-static"
+            });
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
@@ -119,6 +144,16 @@ namespace Smidge.Web
             app.UseSmidge(bundles =>
             {
                 //Create pre-defined bundles
+
+                //var lessPipeline = bundles.PipelineFactory.DefaultCss();
+                //lessPipeline.Processors.Insert(0, bundles.PipelineFactory.Resolve<DotlessPreProcessor>());
+                //bundles.CreateCss(
+                //    "less-test",
+                //    lessPipeline,
+                //    "~/Css/test.less")
+                //    .WithEnvironmentOptions(BundleEnvironmentOptions.Create()
+                //        .ForDebug(builder => builder.EnableCompositeProcessing().SetCacheBusterType<AppDomainLifetimeCacheBuster>())
+                //        .Build());
 
                 bundles.Create("test-bundle-1",                    
                     new JavaScriptFile("~/Js/Bundle1/a1.js"),
@@ -158,6 +193,11 @@ namespace Smidge.Web
                     //Here we can change the default pipeline to use Nuglify for this single bundle (we'll replace the default)
                     bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
                     "~/Css/Libs/font-awesome.css");
+
+                bundles.Create("test-bundle-10", new JavaScriptFile("~/test10.js")
+                {
+                    RequestPath = "/smidge-static"
+                });
             });
 
             app.UseSmidgeNuglify();

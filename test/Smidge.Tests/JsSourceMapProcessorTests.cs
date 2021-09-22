@@ -22,7 +22,7 @@ namespace Smidge.Tests
  asdf asdf asd fasdf";
 
             var removeMaps = GetJsSourceMapProcessor();
-            using (var bc = BundleContext.CreateEmpty())
+            using (var bc = BundleContext.CreateEmpty("1"))
             {
                 var fileProcessContext = new FileProcessContext(js, new JavaScriptFile("js/test.js"), bc);
                 await removeMaps.ProcessAsync(fileProcessContext, ctx => Task.FromResult(0));

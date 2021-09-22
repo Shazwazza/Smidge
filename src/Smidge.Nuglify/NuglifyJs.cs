@@ -91,7 +91,13 @@ namespace Smidge.Nuglify
 
             if (nuglifyJsCodeSettings.SourceMapType != SourceMapType.None)
             {
-                AddSourceMapAppenderToContext(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
+                if (codeSettings.SymbolsMap != null)
+                {
+                    // tell the source map we have added a new line to the output (fixes offsets).
+                    codeSettings.SymbolsMap.NewLineInsertedInOutput();
+                }
+
+                AddSourceMapAppenderToContextAsync(fileProcessContext.BundleContext, nuglifyJsCodeSettings.SourceMapType);
             }
 
             return next(fileProcessContext);
@@ -104,8 +110,9 @@ namespace Smidge.Nuglify
         /// This is virtual allowing developers to override this in cases where customizations may need to be done 
         /// to the Nuglify process. For example, changing the FilePath used.
         /// </remarks>
+        // TODO: WE need to MapPath the file path!
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CodeSettings codeSettings)
-            => Uglify.Js(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile.FilePath), codeSettings);
+            => Uglify.Js(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile), codeSettings);
 
         /// <summary>
         /// Adds a SourceMapAppender into the current bundle context if it doesn't already exist
@@ -113,7 +120,7 @@ namespace Smidge.Nuglify
         /// <param name="bundleContext"></param>
         /// <param name="sourceMapType"></param>
         /// <returns></returns>
-        private void AddSourceMapAppenderToContext(BundleContext bundleContext, SourceMapType sourceMapType)
+        private void AddSourceMapAppenderToContextAsync(BundleContext bundleContext, SourceMapType sourceMapType)
         {
             //if it already exist, then ignore
             var key = typeof(SourceMapDeclaration).Name;
@@ -125,11 +132,12 @@ namespace Smidge.Nuglify
             //not in the context so add a flag so it's not re-added
             bundleContext.Items[key] = "added";
 
-            bundleContext.AddAppender(() =>
+            bundleContext.AddAppender(async () =>
             {
                 var sourceMap = bundleContext.GetSourceMapFromContext(sourceMapType);
-                return _sourceMapDeclaration.GetDeclaration(bundleContext, sourceMap);
+                return await _sourceMapDeclaration.GetDeclarationAsync(bundleContext, sourceMap);
             });
+
         }
 
 

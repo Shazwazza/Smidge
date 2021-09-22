@@ -2,34 +2,23 @@
   <PropertyGroup>
     <AssemblyTitle>Smidge.Nuglify</AssemblyTitle>
     <Description>A Nuglify engine for Smidge</Description>
-    <VersionPrefix>3.2.2</VersionPrefix>
-    <Copyright>Copyright © Shannon Deminick 2021</Copyright>
-    <Authors>Shannon Deminick</Authors>
-    <TargetFrameworks>netcoreapp3.0;netstandard2.0</TargetFrameworks>
     <AssemblyName>Smidge.Nuglify</AssemblyName>
     <PackageId>Smidge.Nuglify</PackageId>
     <PackageTags>css;javascript;minify;compression;combination;nuglify;uglify;aspnetcore</PackageTags>
-    <PackageProjectUrl>https://github.com/Shazwazza/Smidge/</PackageProjectUrl>
-    <PackageLicenseUrl>http://opensource.org/licenses/MIT</PackageLicenseUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/Shazwazza/Smidge/master/assets/logo-nuget.png</PackageIconUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>git://github.com/Shazwazza/Smidge/</RepositoryUrl>
-    <ApplicationIcon />
     <OutputType>Library</OutputType>
     <StartupObject />
     <IsPackable>true</IsPackable>
-    <Version>3.2.0</Version>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Smidge\Smidge.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Nuglify" Version="1.9.9" />
+    <PackageReference Include="Nuglify" Version="1.13.12" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Smidge\Smidge.csproj" />
   </ItemGroup>
 </Project>

@@ -1,27 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netcoreapp2.0</TargetFramework>
-        <AssemblyName>Smidge.Tests</AssemblyName>
-        <PackageId>Smidge.Tests</PackageId>
-        <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net5.0</TargetFrameworks>
+    <AssemblyName>Smidge.Tests</AssemblyName>
+    <PackageId>Smidge.Tests</PackageId>
+    <IsPackable>false</IsPackable>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="xunit" Version="2.3.0-beta4-build3742" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-beta4-build3742" />        
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0" />        
-        <PackageReference Include="Moq" Version="4.7.99" />
-        <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
-        <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.0-beta4-build3742" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
+    <PackageReference Include="NUglify" Version="1.13.12" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Include="Moq" Version="4.16.1" />
+    <PackageReference Include="System.Diagnostics.TraceSource" Version="4.3.0" />
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.0-beta4-build3742" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
-    </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
 
 </Project>

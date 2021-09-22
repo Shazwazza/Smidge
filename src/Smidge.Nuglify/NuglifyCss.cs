@@ -47,6 +47,6 @@ namespace Smidge.Nuglify
         /// to the Nuglify process. For example, changing the FilePath used.
         /// </remarks>
         protected virtual UglifyResult NuglifyProcess(FileProcessContext fileProcessContext, CssSettings cssSettings)
-            => Uglify.Css(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile.FilePath), cssSettings);
+            => Uglify.Css(fileProcessContext.FileContent, _requestHelper.Content(fileProcessContext.WebFile), cssSettings);
     }
 }

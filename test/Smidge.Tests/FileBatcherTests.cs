@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 using Smidge.Hashing;
+using Smidge.Cache;
 
 namespace Smidge.Tests
 {
@@ -26,11 +27,11 @@ namespace Smidge.Tests
             var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var config = Mock.Of<ISmidgeConfig>();
             var hasher = Mock.Of<IHasher>();
-            var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher, websiteInfo.Object);
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -57,11 +58,10 @@ namespace Smidge.Tests
             var urlHelper = new RequestHelper(websiteInfo.Object);
 
             var fileProvider = new Mock<IFileProvider>();
-
-            var config = Mock.Of<ISmidgeConfig>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
             var hasher = Mock.Of<IHasher>();
-            var hostingEnv = Mock.Of<IHostingEnvironment>();
-            var fileSystemHelper = new FileSystemHelper(hostingEnv, config, fileProvider.Object, hasher, websiteInfo.Object);          
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();

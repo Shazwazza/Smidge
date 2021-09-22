@@ -1,7 +1,7 @@
 name: 'Test Report'
 on:
   workflow_run:
-    workflows: ['Examine Build']                     # runs after CI workflow
+    workflows: ['Smidge Build']                     # runs after CI workflow
     types:
       - completed
 jobs:
@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: dorny/test-reporter@v1.4.2
       with:
-        artifact: examine-test-results    # artifact name
+        artifact: smidge-test-results    # artifact name
         name: Publish Tests               # Name of the check run which will be created
         path: '*.trx'                     # Path to test results (inside artifact .zip)
         reporter: dotnet-trx              # Format of test results

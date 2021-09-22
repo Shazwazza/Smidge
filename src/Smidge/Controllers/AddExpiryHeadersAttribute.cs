@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -12,18 +13,11 @@ namespace Smidge.Controllers
     /// </summary>
     public sealed class AddExpiryHeadersAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
-        {
-            return new AddExpiryHeaderFilter(
-                serviceProvider.GetRequiredService<IHasher>(),
-                serviceProvider.GetRequiredService<IBundleManager>());
-        }
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => new AddExpiryHeaderFilter(serviceProvider.GetRequiredService<IHasher>(), serviceProvider.GetRequiredService<IBundleManager>());
 
-        /// <summary>
-        /// Gets a value that indicates if the result of <see cref="M:Microsoft.AspNetCore.Mvc.Filters.IFilterFactory.CreateInstance(System.IServiceProvider)" />
-        /// can be reused across requests.
-        /// </summary>
         public bool IsReusable => true;
+
+        public int Order { get; set; }
 
         public sealed class AddExpiryHeaderFilter : IActionFilter
         {
@@ -38,14 +32,12 @@ namespace Smidge.Controllers
 
             public void OnActionExecuting(ActionExecutingContext context)
             {
-                if (!context.ActionArguments.Any()) return;
+                if (context.ActionArguments.Count == 0)
+                    return;
 
                 //put the model in the context, we'll resolve that after it's executed
-                var file = context.ActionArguments.First().Value as RequestModel;
-                if (file != null)
-                {
+                if (context.ActionArguments.First().Value is RequestModel file)
                     context.HttpContext.Items[nameof(AddExpiryHeadersAttribute)] = file;
-                }
             }
 
             /// <summary>
@@ -54,27 +46,31 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
-                if (context.Exception != null) return;
+                if (context.Exception != null)
+                    return;
 
                 //get the model from the items
-                if (!context.HttpContext.Items.ContainsKey(nameof(AddExpiryHeadersAttribute))) return;
-                var file = context.HttpContext.Items[nameof(AddExpiryHeadersAttribute)] as RequestModel;
-                if (file == null) return;
+                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object fileObject) || fileObject is not RequestModel file)
+                    return;
 
                 var enableETag = true;
-                var cacheControlMaxAge = 10*24; //10 days
+                var cacheControlMaxAge = 10 * 24; //10 days
 
-                //check if it's a bundle (not composite file)
-                var bundleRequest = file as BundleRequestModel;
-                if (bundleRequest != null)
+                BundleOptions bundleOptions;
+
+                if (_bundleManager.TryGetValue(file.FileKey, out Bundle b))
                 {
-                    Bundle b;
-                    if (_bundleManager.TryGetValue(bundleRequest.FileKey, out b))
-                    {
-                        var bundleOptions = b.GetBundleOptions(_bundleManager, bundleRequest.Debug);
-                        enableETag = bundleOptions.CacheControlOptions.EnableETag;
-                        cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
-                    }
+                    bundleOptions = b.GetBundleOptions(_bundleManager, file.Debug);
+                }
+                else
+                {
+                    bundleOptions = file.Debug ? _bundleManager.DefaultBundleOptions.DebugOptions : _bundleManager.DefaultBundleOptions.ProductionOptions;
+                }
+
+                if (bundleOptions != null)
+                {
+                    enableETag = bundleOptions.CacheControlOptions.EnableETag;
+                    cacheControlMaxAge = bundleOptions.CacheControlOptions.CacheControlMaxAge;
                 }
 
                 if (enableETag)
@@ -91,7 +87,5 @@ namespace Smidge.Controllers
                 }
             }
         }
-
-        public int Order { get; set; }
     }
 }

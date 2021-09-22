@@ -1,6 +1,8 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 using NUglify.JavaScript;
 using Smidge.CompositeFiles;
+using Smidge.Models;
 
 namespace Smidge.Nuglify
 {
@@ -27,6 +29,16 @@ namespace Smidge.Nuglify
             var inlineSourceMap = new V3DeferredSourceMap((V3SourceMap)SourceMapFactory.Create(sourceMapWriter, V3SourceMap.ImplementationName), sb, sourceMapType);
             bundleContext.Items[key] = inlineSourceMap;
             return inlineSourceMap;
+        }
+
+        public static string GetSourceMapFilePath(this BundleContext bundleContext, string cacheBusterValue)
+        {
+            return $"{cacheBusterValue}/{Path.GetFileName(bundleContext.BundleCompositeFilePath)}.map";
+        }
+
+        public static string GetSourceMapFilePath(this BundleRequestModel bundleRequest)
+        {
+            return $"{bundleRequest.ParsedPath.CacheBusterValue}/{bundleRequest.FileKey}.s.map";
         }
 
     }

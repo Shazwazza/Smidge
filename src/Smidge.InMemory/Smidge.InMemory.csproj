@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyTitle>Smidge.InMemory</AssemblyTitle>
+    <Description>An in-memory caching provider for Smidge</Description>
+    <AssemblyName>Smidge.InMemory</AssemblyName>
+    <PackageId>Smidge.InMemory</PackageId>
+    <PackageTags>css;javascript;minify;compression;combination;aspnetcore</PackageTags>
+    <OutputType>Library</OutputType>
+    <StartupObject />
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
+    <!-- Due to a security issue we need an explicit ref https://github.com/dotnet/announcements/issues/178 -->
+    <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Smidge.Core\Smidge.Core.csproj" />
+  </ItemGroup>
+</Project>
