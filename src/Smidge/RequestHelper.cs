@@ -94,17 +94,17 @@ namespace Smidge
         {
             var type = CompressionType.None;
 
-            if (headers.TryGetValue(HeaderNames.UserAgent, out StringValues userAgentHeader) && userAgentHeader.ToString().Contains("MSIE 6"))
+            if (headers.TryGetValue(HeaderNames.UserAgent, out StringValues userAgent) && userAgent.ToString().Contains("MSIE 6"))
                 return type;
 
 
-            if (headers.TryGetValue(HeaderNames.AcceptEncoding, out StringValues acceptEncodingValues))
+            if (headers.TryGetValue(HeaderNames.AcceptEncoding, out StringValues acceptEncoding))
             {
                 // Prefer in order: Brotli, GZip, Deflate.
                 // https://www.iana.org/assignments/http-parameters/http-parameters.xml#http-content-coding-registry
-                for (var i = 0; i < acceptEncodingValues.Count; i++)
+                for (var i = 0; i < acceptEncoding.Count; i++)
                 {
-                    var encoding = acceptEncodingValues[i].Trim();
+                    var encoding = acceptEncoding[i].Trim();
 
                     CompressionType parsed = CompressionType.Parse(encoding);
 
