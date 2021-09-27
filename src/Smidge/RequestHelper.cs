@@ -94,10 +94,6 @@ namespace Smidge
         {
             var type = CompressionType.None;
 
-            if (headers.TryGetValue(HeaderNames.UserAgent, out StringValues userAgent) && userAgent.ToString().Contains("MSIE 6"))
-                return type;
-
-
             if (headers.TryGetValue(HeaderNames.AcceptEncoding, out StringValues acceptEncoding))
             {
                 // Prefer in order: Brotli, GZip, Deflate.
