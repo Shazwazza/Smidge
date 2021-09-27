@@ -1,4 +1,3 @@
-[![CI](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/ci.yml)
 [![Smidge Build](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml)
 
 ![Smidge](assets/logosmall.png?raw=true) Smidge
@@ -13,6 +12,7 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 
 
 ## News
+* [4.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v4.0.0)
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
 * [2.0.0 is out!](https://shazwazza.com/post/smidge-plus-nuglify-bundling-minification-and-source-maps/)
 * [Alpha 2.0 is out!](http://shazwazza.com/post/smidge-20-alpha-is-out/)
@@ -143,7 +143,7 @@ I haven't had time to document all of the features and extensibility points just
 
 ## Copyright & Licence
 
-&copy; 2019 by Shannon Deminick
+&copy; 2021 by Shannon Deminick
 
 This is free software and is licensed under the [MIT License](http://opensource.org/licenses/MIT)
 
