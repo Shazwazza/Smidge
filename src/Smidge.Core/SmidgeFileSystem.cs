@@ -78,7 +78,7 @@ namespace Smidge
             // normalize for virtual paths
             filePattern = ConvertToFileProviderPath(filePattern);
             return _fileProviderFilter.GetMatchingFiles(_sourceFileProvider, filePattern)
-                .Select(x => $"~{x}"); // back to virtual path
+                .Select(x => x.StartsWith('/') ? $"~{x}" : $"~/{x}"); // back to virtual path
         }
 
         /// <summary>
