@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
@@ -93,23 +93,14 @@ namespace Smidge
         public CompressionType GetClientCompression(IDictionary<string, StringValues> headers)
         {
             var type = CompressionType.None;
-            var agentHeader = (string)headers[HeaderNames.UserAgent];
-            if (agentHeader != null && agentHeader.Contains("MSIE 6"))
+
+            if (headers.TryGetValue(HeaderNames.AcceptEncoding, out StringValues acceptEncoding))
             {
-                return type;
-            }
-
-            string acceptEncoding = headers[HeaderNames.AcceptEncoding];
-
-            if (!string.IsNullOrEmpty(acceptEncoding))
-            {
-                string[] acceptedEncodings = acceptEncoding.Split(',');
-
                 // Prefer in order: Brotli, GZip, Deflate.
                 // https://www.iana.org/assignments/http-parameters/http-parameters.xml#http-content-coding-registry
-                for (var i = 0; i < acceptedEncodings.Length; i++)
+                for (var i = 0; i < acceptEncoding.Count; i++)
                 {
-                    var encoding = acceptedEncodings[i].Trim();
+                    var encoding = acceptEncoding[i].Trim();
 
                     CompressionType parsed = CompressionType.Parse(encoding);
 
@@ -118,17 +109,17 @@ namespace Smidge
                     {
                         return CompressionType.Brotli;
                     }
-                    
+
                     // Not pack200-gzip.
                     if (parsed == CompressionType.GZip)
                     {
                         type = CompressionType.GZip;
                     }
-                        
+
                     if (type != CompressionType.GZip && parsed == CompressionType.Deflate)
                     {
                         type = CompressionType.Deflate;
-                    }   
+                    }
                 }
             }
 
