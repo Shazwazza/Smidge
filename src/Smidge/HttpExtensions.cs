@@ -63,8 +63,8 @@ namespace Smidge
 
         public static void AddExpiresResponseHeader(this HttpResponse response, int cacheHours = 10)
         {
-            var dateTime = DateTime.Now.AddHours(cacheHours);
-            response.Headers[HeaderNames.Expires] = dateTime.ToUniversalTime().ToString(HttpConstants.HttpDateFormat);
+            var dateTime = DateTime.UtcNow.AddHours(cacheHours);
+            response.Headers[HeaderNames.Expires] = dateTime.ToString(HttpConstants.HttpDateFormat);
         }
 
         public static void AddCacheControlResponseHeader(this HttpResponse response, int cacheHours = 10)
