@@ -11,10 +11,10 @@ namespace Smidge.Nuglify
     /// </summary>
     /// <remarks>
     /// Typically the standard V3SourceMap requires that you provide it a list of files to proces up-front and it will return a single source map
-    /// for them all, however we don't have the ability to tell a single instance up-front which files to process we just know the files when we 
-    /// start processing them. Luckily the underlying V3SourceMap can work with this since anytime Nuglify processes a JS file it will update the 
-    /// underlying V3SourceMap document with a new source and append to it's sources list. 
-    /// 
+    /// for them all, however we don't have the ability to tell a single instance up-front which files to process we just know the files when we
+    /// start processing them. Luckily the underlying V3SourceMap can work with this since anytime Nuglify processes a JS file it will update the
+    /// underlying V3SourceMap document with a new source and append to it's sources list.
+    ///
     /// So this is deferred because it does not write to the processed JS file, it defers the output and writes to a string builder which can be retrieved later.
     /// </remarks>
     public class V3DeferredSourceMap : ISourceMap
@@ -24,20 +24,22 @@ namespace Smidge.Nuglify
         public SourceMapType SourceMapType { get; }
 
         private readonly V3SourceMap _wrapped;
-        private readonly StringBuilder _mapBuilder;        
+        private readonly StringBuilder _mapBuilder;
         private string _mapPath;
 
         /// <summary>
         /// Creates a new inline source map
         /// </summary>
         /// <param name="wrapped"></param>
-        /// <param name="mapBuilder"></param>        
+        /// <param name="mapBuilder"></param>
         /// <param name="sourceSourceMapType"></param>
         public V3DeferredSourceMap(V3SourceMap wrapped, StringBuilder mapBuilder, SourceMapType sourceSourceMapType)
         {
             _wrapped = wrapped ?? throw new ArgumentNullException(nameof(wrapped));
             _mapBuilder = mapBuilder ?? throw new ArgumentNullException(nameof(mapBuilder));
             SourceMapType = sourceSourceMapType;
+            // Disable relative paths, this will always fail and make source maps super slow.
+            _wrapped.MakePathsRelative = false;
         }
 
         public void Dispose()
