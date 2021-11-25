@@ -19,12 +19,13 @@ namespace Smidge
 
         public bool IsExternalRequestPath(string path)
         {
-            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
-                 || path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
+            if ((path.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                 path.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ||
+                 path.StartsWith("//", StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
+
             return false;
         }
 
@@ -42,7 +43,8 @@ namespace Smidge
             }
 
             var filePath = Content(file.FilePath);
-            if (filePath == null) return null;
+            if (filePath == null)
+                return null;
 
             var requestPath = file.RequestPath != null ? Content(file.RequestPath) : string.Empty;
 
@@ -79,12 +81,12 @@ namespace Smidge
                 PathString pathBase = _siteInfo.GetBasePath();
                 return pathBase.Add(new PathString(path.Substring(1))).Value;
             }
-                
+
             return path;
         }
 
         /// <summary>
-        /// Check what kind of compression to use. Need to select the first available compression 
+        /// Check what kind of compression to use. Need to select the first available compression
         /// from the header value as this is how .Net performs caching by compression so we need to follow
         /// this process.
         /// If IE 6 is detected, we will ignore compression as it's known that some versions of IE 6
@@ -94,11 +96,21 @@ namespace Smidge
         {
             var type = CompressionType.None;
 
-            if (headers.TryGetValue(HeaderNames.AcceptEncoding, out StringValues acceptEncoding))
+            if (headers is not IHeaderDictionary headerDictionary)
+            {
+                headerDictionary = new HeaderDictionary(headers.Count);
+                foreach ((var key, StringValues stringValues) in headers)
+                {
+                    headerDictionary[key] = stringValues;
+                }
+            }
+
+            var acceptEncoding = headerDictionary.GetCommaSeparatedValues(HeaderNames.AcceptEncoding);
+            if (acceptEncoding.Length > 0)
             {
                 // Prefer in order: Brotli, GZip, Deflate.
                 // https://www.iana.org/assignments/http-parameters/http-parameters.xml#http-content-coding-registry
-                for (var i = 0; i < acceptEncoding.Count; i++)
+                for (var i = 0; i < acceptEncoding.Length; i++)
                 {
                     var encoding = acceptEncoding[i].Trim();
 
