@@ -78,7 +78,7 @@ namespace Smidge
 
             foreach (var url in urls)
             {
-                result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
+                result.AppendFormat("<script src=\"{0}\"></script>", url);
             }
             return new HtmlString(result.ToString());
         }
@@ -90,7 +90,7 @@ namespace Smidge
 
             foreach (var url in urls)
             {
-                result.AppendFormat("<link href='{0}' rel='stylesheet' type='text/css'/>", url);
+                result.AppendFormat("<link href=\"{0}\" rel=\"stylesheet\">", url);
             }
             return new HtmlString(result.ToString());
         }
@@ -100,7 +100,7 @@ namespace Smidge
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
+        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
         public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
@@ -109,7 +109,7 @@ namespace Smidge
             var urls = await GenerateJsUrlsAsync(pipeline, debug);
             foreach (var url in urls)
             {
-                result.AppendFormat("<script src='{0}' type='text/javascript'></script>", url);
+                result.AppendFormat("<script src=\"{0}\"></script>", url);
             }
             return new HtmlString(result.ToString());
         }
@@ -119,7 +119,7 @@ namespace Smidge
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will 
+        /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
         public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
@@ -128,7 +128,7 @@ namespace Smidge
             var urls = await GenerateCssUrlsAsync(pipeline, debug);
             foreach (var url in urls)
             {
-                result.AppendFormat("<link href='{0}' rel='stylesheet' type='text/css'/>", url);
+                result.AppendFormat("<link href=\"{0}\" rel=\"stylesheet\">", url);
             }
             return new HtmlString(result.ToString());
         }
@@ -192,8 +192,8 @@ namespace Smidge
 
             //if not processing as composite files, then just use their native file paths
             if (!bundleOptions.ProcessAsCompositeFile)
-            {                
-                var files = _fileSetGenerator.GetOrderedFileSet(bundle, 
+            {
+                var files = _fileSetGenerator.GetOrderedFileSet(bundle,
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
@@ -225,7 +225,7 @@ namespace Smidge
             bool debug = false)
         {
             var result = new List<string>();
-            
+
             var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
@@ -237,7 +237,7 @@ namespace Smidge
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
-                
+
             //Get the file collection used to create the composite URLs and the external requests
             var fileBatches = _fileBatcher.GetCompositeFileCollectionForUrlGeneration(orderedFiles);
 
@@ -254,7 +254,7 @@ namespace Smidge
                     //Get the URLs for the batch, this could be more than one resulting URL depending on how many
                     // files are in the batch and the max url length
                     var compositeUrls = _urlManager.GetUrls(
-                        batch.Select(x => x.Hashed), 
+                        batch.Select(x => x.Hashed),
                         fileType == WebFileType.Css ? ".css" : ".js",
                         cacheBusterValue);
 
