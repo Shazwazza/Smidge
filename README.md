@@ -58,7 +58,7 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 	```
 1. Render your bundle:
 	```html
-	<script src="my-application" type="text/javascript"></script>
+	<script src="my-application"></script>
 	```
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
@@ -109,7 +109,7 @@ __[See Declarations](https://github.com/Shazwazza/Smidge/wiki/Declarations) for 
 The easiest way to render bundles is simply by the bundle name:
 
 ```html
-<script src="my-awesome-js-bundle" type="text/javascript"></script>
+<script src="my-awesome-js-bundle"></script>
 <link rel="stylesheet" href="my-cool-css-bundle"/>
 ```
     

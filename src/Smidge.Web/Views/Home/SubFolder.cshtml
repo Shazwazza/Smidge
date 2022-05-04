@@ -1,4 +1,4 @@
-﻿@using Smidge
+@using Smidge
 @using Smidge.Models;
 @using Smidge.FileProcessors;
 
@@ -24,8 +24,8 @@
         SmidgeHelper.RequiresCss("~/Css/Folder/*.css");
     }
 
-    <script src="inline-js-bundle" type="text/javascript"></script>
-    <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" />
+    <script src="inline-js-bundle"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" />
     <link rel="stylesheet" href="inline-css-bundle"/>
     <link rel="stylesheet" href="test-bundle-4" />    
 </head>
@@ -38,7 +38,7 @@
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 
-    <script src="~/Js/non-bundled.js" type="text/javascript"></script>
+    <script src="~/Js/non-bundled.js"></script>
 
 </body>
 </html>

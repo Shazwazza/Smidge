@@ -6,12 +6,39 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using System.Collections.Generic;
+using System;
 
 namespace Smidge.TagHelpers
 {
-    [HtmlTargetElement("link", Attributes = "href", TagStructure = TagStructure.WithoutEndTag)]
+    [HtmlTargetElement("link", Attributes = HrefAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class SmidgeLinkTagHelper : TagHelper
     {
+        private const string HrefIncludeAttributeName = "asp-href-include";
+        private const string HrefExcludeAttributeName = "asp-href-exclude";
+        private const string FallbackHrefAttributeName = "asp-fallback-href";
+        private const string SuppressFallbackIntegrityAttributeName = "asp-suppress-fallback-integrity";
+        private const string FallbackHrefIncludeAttributeName = "asp-fallback-href-include";
+        private const string FallbackHrefExcludeAttributeName = "asp-fallback-href-exclude";
+        private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
+        private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
+        private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
+        private const string AppendVersionAttributeName = "asp-append-version";
+        private const string HrefAttributeName = "href";
+
+        private readonly HashSet<string> _invalid = new()
+        {
+            HrefIncludeAttributeName,
+            HrefExcludeAttributeName,
+            FallbackHrefAttributeName,
+            FallbackHrefIncludeAttributeName,
+            FallbackTestClassAttributeName,
+            FallbackTestPropertyAttributeName,
+            SuppressFallbackIntegrityAttributeName,
+            FallbackHrefExcludeAttributeName,
+            FallbackTestValueAttributeName,
+            AppendVersionAttributeName
+        };
         private readonly SmidgeHelper _smidgeHelper;
         private readonly IBundleManager _bundleManager;
         private readonly HtmlEncoder _encoder;
@@ -31,7 +58,7 @@ namespace Smidge.TagHelpers
         /// </summary>
         public override int Order => -2000;
 
-        [HtmlAttributeName("href")]
+        [HtmlAttributeName(HrefAttributeName)]
         public string Source { get; set; }
 
         [HtmlAttributeName("debug")]
@@ -39,37 +66,48 @@ namespace Smidge.TagHelpers
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            if (string.IsNullOrWhiteSpace(Source))
+            {
+                return;
+            }
+
+            var exists = _bundleManager.Exists(Source);
+
             // Pass through attribute that is also a well-known HTML attribute.
             // this is required to make sure that other tag helpers executing against this element have
             // the value copied across
-            if (Source != null)
+            output.Attributes.SetAttribute("href", Source);
+
+            if (!exists)
             {
-                output.CopyHtmlAttribute("href", context);
+                return;
             }
 
-            if (_bundleManager.Exists(Source))
+            if (context.AllAttributes.Any(x => _invalid.Contains(x.Name)))
             {
-                var result = (await _smidgeHelper.GenerateCssUrlsAsync(Source, Debug)).ToArray();
-                var currAttr = output.Attributes.ToDictionary(x => x.Name, x => x.Value);
-                using (var writer = new StringWriter())
-                {
-                    foreach (var s in result)
-                    {
-                        var builder = new TagBuilder(output.TagName)
-                        {
-                            TagRenderMode = TagRenderMode.SelfClosing
-                        };
-                        builder.MergeAttributes(currAttr);
-                        builder.Attributes["href"] = s;
+                throw new InvalidOperationException("Smidge tag helpers do not support the ASP.NET tag helpers: " + string.Join(", ", _invalid));
+            }
 
-                        builder.WriteTo(writer, _encoder);
-                    }
-                    writer.Flush();
-                    output.PostElement.SetHtmlContent(new HtmlString(writer.ToString()));
+            var result = (await _smidgeHelper.GenerateCssUrlsAsync(Source, Debug)).ToArray();
+            var currAttr = output.Attributes.ToDictionary(x => x.Name, x => x.Value);
+            using (var writer = new StringWriter())
+            {
+                foreach (var s in result)
+                {
+                    var builder = new TagBuilder(output.TagName)
+                    {
+                        TagRenderMode = TagRenderMode.SelfClosing
+                    };
+                    builder.MergeAttributes(currAttr);
+                    builder.Attributes["href"] = s;
+
+                    builder.WriteTo(writer, _encoder);
                 }
-                //This ensures the original tag is not written.
-                output.TagName = null;
-            }            
+                writer.Flush();
+                output.PostElement.SetHtmlContent(new HtmlString(writer.ToString()));
+            }
+            //This ensures the original tag is not written.
+            output.TagName = null;
         }
     }
 }

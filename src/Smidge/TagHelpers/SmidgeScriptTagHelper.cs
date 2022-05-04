@@ -6,13 +6,37 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
+using System.Collections.Generic;
+using System;
 
 namespace Smidge.TagHelpers
 {
 
-    [HtmlTargetElement("script", Attributes = "src")]
+    [HtmlTargetElement("script", Attributes = SrcAttributeName)]
     public class SmidgeScriptTagHelper : TagHelper
     {
+        private const string SrcIncludeAttributeName = "asp-src-include";
+        private const string SrcExcludeAttributeName = "asp-src-exclude";
+        private const string FallbackSrcAttributeName = "asp-fallback-src";
+        private const string FallbackSrcIncludeAttributeName = "asp-fallback-src-include";
+        private const string SuppressFallbackIntegrityAttributeName = "asp-suppress-fallback-integrity";
+        private const string FallbackSrcExcludeAttributeName = "asp-fallback-src-exclude";
+        private const string FallbackTestExpressionAttributeName = "asp-fallback-test";        
+        private const string AppendVersionAttributeName = "asp-append-version";
+
+        private const string SrcAttributeName = "src";
+
+        private readonly HashSet<string> _invalid = new()
+        {
+            SrcIncludeAttributeName,
+            SrcExcludeAttributeName,
+            FallbackSrcAttributeName,
+            FallbackSrcIncludeAttributeName,
+            SuppressFallbackIntegrityAttributeName,
+            FallbackSrcExcludeAttributeName,
+            FallbackTestExpressionAttributeName,
+            AppendVersionAttributeName
+        };
         private readonly SmidgeHelper _smidgeHelper;
         private readonly IBundleManager _bundleManager;
         private readonly HtmlEncoder _encoder;
@@ -40,37 +64,48 @@ namespace Smidge.TagHelpers
         
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
+            if (string.IsNullOrWhiteSpace(Source))
+            {
+                return;
+            }
+
+            var exists = _bundleManager.Exists(Source);
+
             // Pass through attribute that is also a well-known HTML attribute.
             // this is required to make sure that other tag helpers executing against this element have
             // the value copied across
-            if (Source != null)
+            output.Attributes.SetAttribute(SrcAttributeName, Source);
+
+            if (!exists)
             {
-                output.CopyHtmlAttribute("src", context);
+                return;
             }
 
-            if (_bundleManager.Exists(Source))
+            if (context.AllAttributes.Any(x => _invalid.Contains(x.Name)))
             {
-                var result = (await _smidgeHelper.GenerateJsUrlsAsync(Source, Debug)).ToArray();
-                var currAttr = output.Attributes.ToDictionary(x => x.Name, x => x.Value);
-                using (var writer = new StringWriter())
-                {
-                    foreach (var s in result)
-                    {
-                        var builder = new TagBuilder(output.TagName)
-                        {
-                            TagRenderMode = TagRenderMode.Normal
-                        };
-                        builder.MergeAttributes(currAttr);
-                        builder.Attributes["src"] = s;
+                throw new InvalidOperationException("Smidge tag helpers do not support the ASP.NET tag helpers: " + string.Join(", ", _invalid));
+            }
 
-                        builder.WriteTo(writer, _encoder);
-                    }
-                    writer.Flush();
-                    output.PostElement.SetHtmlContent(new HtmlString(writer.ToString()));
+            var result = (await _smidgeHelper.GenerateJsUrlsAsync(Source, Debug)).ToArray();
+            var currAttr = output.Attributes.ToDictionary(x => x.Name, x => x.Value);
+            using (var writer = new StringWriter())
+            {
+                foreach (var s in result)
+                {
+                    var builder = new TagBuilder(output.TagName)
+                    {
+                        TagRenderMode = TagRenderMode.Normal
+                    };
+                    builder.MergeAttributes(currAttr);
+                    builder.Attributes[SrcAttributeName] = s;
+
+                    builder.WriteTo(writer, _encoder);
                 }
-                //This ensures the original tag is not written.
-                output.TagName = null;
-            }            
+                writer.Flush();
+                output.PostElement.SetHtmlContent(new HtmlString(writer.ToString()));
+            }
+            //This ensures the original tag is not written.
+            output.TagName = null;
         }
     }
 }
