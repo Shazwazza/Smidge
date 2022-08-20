@@ -1,4 +1,4 @@
-﻿using Smidge.Models;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,7 @@ using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge
 {
@@ -184,8 +185,10 @@ namespace Smidge
 
             var result = new List<string>();
 
+            var profileName = debug ? SmidgeOptionsProfile.Debug : SmidgeOptionsProfile.Default;
+
             //get the bundle options from the bundle if they have been set otherwise with the defaults
-            var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
+            var bundleOptions = bundle.GetBundleOptions(_bundleManager, profileName);
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             var cacheBusterValue = cacheBuster.GetValue();
@@ -197,11 +200,11 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug, cacheBusterValue)));
+                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), !bundleOptions.ProcessAsCompositeFile, cacheBusterValue)));
                 return result;
             }
 
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBusterValue);
+            var url = _urlManager.GetUrl(bundleName, fileExt, !bundleOptions.ProcessAsCompositeFile, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
             {
                 result.Add(url);
@@ -228,12 +231,15 @@ namespace Smidge
 
             var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+            var profileName = debug ? SmidgeOptionsProfile.Debug : SmidgeOptionsProfile.Default;
+            var bundleOptions = _bundleManager.GetDefaultBundleOptions(profileName);
+
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             var cacheBusterValue = cacheBuster.GetValue();
 
-            if (debug)
+            if (!bundleOptions.ProcessAsCompositeFile)
             {
-                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), debug, cacheBusterValue));
+                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), true, cacheBusterValue));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
@@ -262,7 +268,7 @@ namespace Smidge
                     {
                         //now we need to determine if these files have already been minified
 
-                        var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
+                        //var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
 
                         var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, compression, u.Key, out _);
                         if (!cacheFile.Exists)
