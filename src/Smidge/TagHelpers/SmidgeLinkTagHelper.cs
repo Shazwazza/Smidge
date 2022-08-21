@@ -61,8 +61,12 @@ namespace Smidge.TagHelpers
         [HtmlAttributeName(HrefAttributeName)]
         public string Source { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to generate content based on the debug or production configuration profile.
+        /// If left unset then the configured <see cref="ISmidgeProfileStrategy"/> will determine if the debug profile is used.
+        /// </summary>
         [HtmlAttributeName("debug")]
-        public bool Debug { get; set; }
+        public bool? Debug { get; set; }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
