@@ -32,9 +32,9 @@
 <body>
 
     @await Html.PartialAsync("TopBar")
-    @await Html.PartialAsync("LoadedDependencies", false)
+    @await Html.PartialAsync("LoadedDependencies", (bool?)null)
 
-    @await SmidgeHelper.JsHereAsync(debug: false)
+    @await SmidgeHelper.JsHereAsync()
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
 
