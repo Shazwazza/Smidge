@@ -197,8 +197,12 @@ namespace Smidge
             }
             else
             {
-                profileName = _profileStrategy.GetCurrentProfileName();
+                // If the Bundle explicitly specifies a profile to use then use it otherwise use the current profile 
+                profileName = !string.IsNullOrEmpty(bundle.ProfileName)
+                    ? bundle.ProfileName
+                    : _profileStrategy.GetCurrentProfileName();
             }
+            
 
             //get the bundle options from the bundle if they have been set otherwise with the defaults
             var bundleOptions = bundle.GetBundleOptions(_bundleManager, profileName);
