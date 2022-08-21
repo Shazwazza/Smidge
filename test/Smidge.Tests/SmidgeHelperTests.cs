@@ -170,12 +170,13 @@ namespace Smidge.Tests
 
             var urls = await sut.GenerateJsUrlsAsync("test");
 
-            Assert.Equal("/file1.css?d=00000", urls.ElementAtOrDefault(0));
-            Assert.Equal("/file2.css?d=00000", urls.ElementAtOrDefault(1));
+            Assert.Equal("/file1.css?v=00000", urls.ElementAtOrDefault(0));
+            Assert.Equal("/file2.css?v=00000", urls.ElementAtOrDefault(1));
         }
 
+
         [Fact]
-        public async Task Generate_Css_Urls_Returns_Multiple_Urls_When_Debug_Parameter_Overrides_Profile()
+        public async Task Generate_Css_Urls_Returns_Urls_With_Debug_Token_When_Debug_Parameter_Overrides_Profile()
         {
             var sut = new SmidgeHelper(
                 FakeProfileStrategy.DefaultProfileStrategy,
@@ -284,12 +285,13 @@ namespace Smidge.Tests
 
             var urls = await sut.GenerateJsUrlsAsync("test");
 
-            Assert.Equal("/file1.js?d=00000", urls.ElementAtOrDefault(0));
-            Assert.Equal("/file2.js?d=00000", urls.ElementAtOrDefault(1));
+            Assert.Equal("/file1.js?v=00000", urls.ElementAtOrDefault(0));
+            Assert.Equal("/file2.js?v=00000", urls.ElementAtOrDefault(1));
         }
 
+
         [Fact]
-        public async Task Generate_Js_Urls_Returns_Multiple_Urls_When_Debug_Parameter_Overrides_Profile()
+        public async Task Generate_Js_Urls_Returns_Urls_With_Debug_Token_When_Debug_Parameter_Overrides_Profile()
         {
             var sut = new SmidgeHelper(
                 FakeProfileStrategy.DefaultProfileStrategy,

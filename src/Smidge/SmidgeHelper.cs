@@ -217,11 +217,14 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), !bundleOptions.ProcessAsCompositeFile, cacheBusterValue)));
+
+                // For backwards compatibility we'll only generate a debug token in the url if Debug was explicitly requested.
+                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug is true, cacheBusterValue)));
                 return result;
             }
 
-            var url = _urlManager.GetUrl(bundleName, fileExt, !bundleOptions.ProcessAsCompositeFile, cacheBusterValue);
+            // For backwards compatibility we'll only generate a debug token in the url if Debug was explicitly requested.
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug is true, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
             {
                 result.Add(url);

@@ -68,6 +68,7 @@ namespace Smidge.Options
 
         /// <summary>
         /// Gets or sets the <see cref="BundleOptions"/> for the specified profile.
+        /// If the profile has not been previously configured, returns a new <see cref="BundleOptions"/> instance.
         /// </summary>
         /// <param name="profileName">Name of the profile.</param>
         /// <returns></returns>
@@ -75,7 +76,7 @@ namespace Smidge.Options
         {
             get
             {
-                if (!_profileOptions.TryGetValue(profileName, out BundleOptions options))
+                if (!TryGetProfileOptions(profileName, out BundleOptions options))
                 {
                     // Initialise a new BundleOptions for the requested profile
                     options = new BundleOptions();
@@ -87,6 +88,17 @@ namespace Smidge.Options
             set => _profileOptions[profileName] = value;
         }
 
+
+        /// <summary>
+        /// Gets the <see cref="BundleOptions"/> for the specified profile, if the profile has previously been configured.
+        /// </summary>
+        /// <param name="profileName">Name of the profile.</param>
+        /// <param name="options">The profile options.</param>
+        /// <returns></returns>
+        public bool TryGetProfileOptions(string profileName, out BundleOptions options)
+        {
+            return _profileOptions.TryGetValue(profileName, out options);
+        }
 
     }
 }
