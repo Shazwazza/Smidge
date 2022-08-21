@@ -66,7 +66,11 @@ namespace Smidge.Options
 
 
 
-
+        /// <summary>
+        /// Gets or sets the <see cref="BundleOptions"/> for the specified profile.
+        /// </summary>
+        /// <param name="profileName">Name of the profile.</param>
+        /// <returns></returns>
         public BundleOptions this[string profileName]
         {
             get
