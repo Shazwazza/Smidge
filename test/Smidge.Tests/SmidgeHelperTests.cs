@@ -14,6 +14,7 @@ using Smidge.Cache;
 using Smidge.Hashing;
 using Smidge.FileProcessors;
 using Smidge.Options;
+using Smidge.Tests.Helpers;
 using Xunit;
 
 namespace Smidge.Tests
@@ -47,6 +48,7 @@ namespace Smidge.Tests
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
             _fileSystemHelper = new SmidgeFileSystem(_fileProvider, _fileProviderFilter, _cacheProvider, Mock.Of<IWebsiteInfo>());
+
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions
             {
@@ -69,6 +71,7 @@ namespace Smidge.Tests
         public async Task JsHereAsync_Returns_Empty_String_Result_When_No_Files_Found()
         {
             var sut = new SmidgeHelper(
+                FakeProfileStrategy.DefaultProfileStrategy,
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
@@ -77,7 +80,7 @@ namespace Smidge.Tests
 
             _bundleManager.CreateJs("empty", Array.Empty<string>());
 
-            var result = (await sut.JsHereAsync("empty", false)).ToString();
+            var result = (await sut.JsHereAsync("empty")).ToString();
             Assert.Equal(string.Empty, result);
         }
 
@@ -85,6 +88,7 @@ namespace Smidge.Tests
         public async Task Generate_Css_Urls_For_Non_Existent_Bundle_Throws_Exception()
         {
             var sut = new SmidgeHelper(
+                FakeProfileStrategy.DebugProfileStrategy,
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,                
@@ -93,7 +97,7 @@ namespace Smidge.Tests
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
-                        async () => await sut.GenerateCssUrlsAsync("DoesntExist", true)
+                        async () => await sut.GenerateCssUrlsAsync("DoesntExist")
 
                     );
 
@@ -105,6 +109,7 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                FakeProfileStrategy.DebugProfileStrategy,
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
@@ -113,7 +118,7 @@ namespace Smidge.Tests
 
             var exception = await Assert.ThrowsAsync<BundleNotFoundException>
                     (
-                        async () => await sut.GenerateJsUrlsAsync("DoesntExist", true)
+                        async () => await sut.GenerateJsUrlsAsync("DoesntExist")
                     );
 
 
@@ -124,6 +129,7 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                FakeProfileStrategy.DebugProfileStrategy,
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,
@@ -148,6 +154,7 @@ namespace Smidge.Tests
         {
 
             var sut = new SmidgeHelper(
+                FakeProfileStrategy.DebugProfileStrategy,
                 _fileSetGenerator,
                 _dynamicallyRegisteredWebFiles, _preProcessManager, _fileSystemHelper, 
                 _hasher, _bundleManager, _processorFactory, _urlManager, _requestHelper,

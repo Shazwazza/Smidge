@@ -82,6 +82,11 @@ namespace Smidge.Models
         }
 
 
+        public static BundleOptions GetAvailableOrDefaultBundleOptions(this IBundleManager bundleMgr, BundleOptions options)
+        {
+            return GetAvailableOrDefaultBundleOptions(bundleMgr, options, SmidgeOptionsProfile.Default);
+        }
+
         public static BundleOptions GetAvailableOrDefaultBundleOptions(this IBundleManager bundleMgr, BundleOptions options, string profileName)
         {
             return options != null
