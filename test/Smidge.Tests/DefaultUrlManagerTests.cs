@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Xunit;
 using Smidge.CompositeFiles;
 using Smidge;
@@ -25,7 +25,8 @@ namespace Smidge.Tests
             var manager = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),                
                 Mock.Of<IHasher>(),
-                Mock.Of<IRequestHelper>());
+                Mock.Of<IRequestHelper>(),
+                Mock.Of<ISmidgeConfig>());
 
             var result = manager.ParsePath(path);
 
@@ -48,7 +49,8 @@ namespace Smidge.Tests
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
-                urlHelper);
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
 
             var url = creator.GetUrl("my-bundle", ".js", false, "1");
 
@@ -69,7 +71,8 @@ namespace Smidge.Tests
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
-                urlHelper);
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
 
             var url = creator.GetUrls(
                 new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
@@ -93,7 +96,8 @@ namespace Smidge.Tests
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
-                urlHelper);
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
 
             var url = creator.GetUrls(
                 new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
@@ -119,7 +123,8 @@ namespace Smidge.Tests
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
-                urlHelper);
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
 
             Assert.Throws<InvalidOperationException>(() => creator.GetUrls(
                 new List<IWebFile> { new JavaScriptFile("Test1.js") }, ".js", "1"));
