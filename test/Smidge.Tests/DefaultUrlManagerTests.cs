@@ -58,6 +58,29 @@ namespace Smidge.Tests
         }
 
         [Fact]
+        public void Make_Bundle_Url_Protect_Extension()
+        {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
+            var hasher = new Mock<IHasher>();
+            hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
+            var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
+            var creator = new DefaultUrlManager(
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
+                hasher.Object,
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
+
+            var url = creator.GetUrl("my-bundle", ".js", false, "1");
+
+            Assert.Equal("/sg/my-bundle.v1.js", url);
+        }
+
+
+        [Fact]
         public void Make_Composite_Url()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
@@ -79,6 +102,31 @@ namespace Smidge.Tests
 
             Assert.Single(url);
             Assert.Equal("/sg/Test1.Test2.js.v1", url.First().Url);
+            Assert.Equal("test1.test2", url.First().Key);
+        }
+
+        [Fact]
+        public void Make_Composite_Url_Protect_Extension()
+        {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
+            var hasher = new Mock<IHasher>();
+            hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
+            var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
+            var creator = new DefaultUrlManager(
+                Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
+                hasher.Object,
+                urlHelper,
+                Mock.Of<ISmidgeConfig>());
+
+            var url = creator.GetUrls(
+                new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
+
+            Assert.Single(url);
+            Assert.Equal("/sg/Test1.Test2.v1.js", url.First().Url);
             Assert.Equal("test1.test2", url.First().Key);
         }
 
