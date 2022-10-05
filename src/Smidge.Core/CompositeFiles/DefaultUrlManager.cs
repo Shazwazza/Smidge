@@ -14,12 +14,14 @@ namespace Smidge.CompositeFiles
         private readonly IHasher _hasher;
         private readonly IRequestHelper _requestHelper;
         private readonly UrlManagerOptions _options;
+        private readonly ISmidgeConfig _config;
 
-        public DefaultUrlManager(IOptions<SmidgeOptions> options, IHasher hasher, IRequestHelper requestHelper)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, IHasher hasher, IRequestHelper requestHelper, ISmidgeConfig config)
         {
             _hasher = hasher;
             _requestHelper = requestHelper;
             _options = options.Value.UrlOptions;
+			_config = config;
         }
 
         public string AppendCacheBuster(string url, bool debug, string cacheBusterValue)
@@ -160,8 +162,8 @@ namespace Smidge.CompositeFiles
         private string GetCompositeUrl(string fileKey, string fileExtension, string cacheBusterValue)
         {
             //Create a delimited URL query string
-
-            const string handler = "~/{0}/{1}{2}.v{3}";
+			
+            string handler = _config.ProtectFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
             return _requestHelper.Content(
                 string.Format(
                     handler,
