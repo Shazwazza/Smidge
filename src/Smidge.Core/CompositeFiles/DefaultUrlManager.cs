@@ -137,7 +137,7 @@ namespace Smidge.CompositeFiles
             }
 
             //can start with 'v' or 'd' (d == debug)
-            var prefix = parts[parts.Length - 1][0];
+            var prefix = _config.ProtectFileExtensions ? parts[parts.Length - 2][0] : parts[parts.Length - 1][0];
             if (prefix != 'v' && prefix != 'd')
             {
                 //invalid
@@ -145,8 +145,8 @@ namespace Smidge.CompositeFiles
             }
             result.Debug = prefix == 'd';
 
-            result.CacheBusterValue = parts[parts.Length - 1].Substring(1);
-            var ext = parts[parts.Length - 2];
+            result.CacheBusterValue = _config.ProtectFileExtensions ? parts[parts.Length - 2].Substring(1) : parts[parts.Length - 1].Substring(1);
+            var ext = _config.ProtectFileExtensions ? parts[parts.Length - 1] : parts[parts.Length - 2];
             if (!Enum.TryParse(ext, true, out WebFileType type))
             {
                 //invalid

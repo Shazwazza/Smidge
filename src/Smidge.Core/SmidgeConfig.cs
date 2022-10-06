@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using System.IO;
 
 namespace Smidge
@@ -35,7 +35,7 @@ namespace Smidge
 
         public string DataFolder => (_config["dataFolder"] ?? "Smidge").Replace('/', Path.DirectorySeparatorChar);
 
-		public bool ProtectFileExtensions => bool.Parse(_config["protectFileExtensions"]);
+		public bool ProtectFileExtensions => bool.Parse((_config["protectFileExtensions"] ?? "false"));
         
     }
 }
