@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Text;
@@ -42,7 +42,7 @@ namespace Smidge.CompositeFiles
                 throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
             }
 
-            const string handler = "~/{0}/{1}{2}.{3}{4}";
+            string handler = _config.ProtectFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(
                 string.Format(
                     handler,

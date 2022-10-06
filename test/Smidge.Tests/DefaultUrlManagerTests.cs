@@ -68,11 +68,13 @@ namespace Smidge.Tests
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
+            var config = new Mock<ISmidgeConfig>();
+            config.Setup(m => m.ProtectFileExtensions).Returns(true);
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
                 urlHelper,
-                Mock.Of<ISmidgeConfig>());
+                config.Object);
 
             var url = creator.GetUrl("my-bundle", ".js", false, "1");
 
@@ -116,11 +118,13 @@ namespace Smidge.Tests
             var hasher = new Mock<IHasher>();
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
+            var config = new Mock<ISmidgeConfig>();
+            config.Setup(m => m.ProtectFileExtensions).Returns(true);
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
                 urlHelper,
-                Mock.Of<ISmidgeConfig>());
+                config.Object);
 
             var url = creator.GetUrls(
                 new List<IWebFile> { new JavaScriptFile("Test1.js"), new JavaScriptFile("Test2.js") }, ".js", "1");
