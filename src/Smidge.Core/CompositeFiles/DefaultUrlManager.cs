@@ -42,7 +42,7 @@ namespace Smidge.CompositeFiles
                 throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
             }
 
-            string handler = _config.ProtectFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
+            string handler = _config.KeepFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(
                 string.Format(
                     handler,
@@ -137,7 +137,7 @@ namespace Smidge.CompositeFiles
             }
 
             //can start with 'v' or 'd' (d == debug)
-            var prefix = _config.ProtectFileExtensions ? parts[parts.Length - 2][0] : parts[parts.Length - 1][0];
+            var prefix = _config.KeepFileExtensions ? parts[parts.Length - 2][0] : parts[parts.Length - 1][0];
             if (prefix != 'v' && prefix != 'd')
             {
                 //invalid
@@ -145,8 +145,8 @@ namespace Smidge.CompositeFiles
             }
             result.Debug = prefix == 'd';
 
-            result.CacheBusterValue = _config.ProtectFileExtensions ? parts[parts.Length - 2].Substring(1) : parts[parts.Length - 1].Substring(1);
-            var ext = _config.ProtectFileExtensions ? parts[parts.Length - 1] : parts[parts.Length - 2];
+            result.CacheBusterValue = _config.KeepFileExtensions ? parts[parts.Length - 2].Substring(1) : parts[parts.Length - 1].Substring(1);
+            var ext = _config.KeepFileExtensions ? parts[parts.Length - 1] : parts[parts.Length - 2];
             if (!Enum.TryParse(ext, true, out WebFileType type))
             {
                 //invalid
@@ -163,7 +163,7 @@ namespace Smidge.CompositeFiles
         {
             //Create a delimited URL query string
 			
-            string handler = _config.ProtectFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
+            string handler = _config.KeepFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
             return _requestHelper.Content(
                 string.Format(
                     handler,

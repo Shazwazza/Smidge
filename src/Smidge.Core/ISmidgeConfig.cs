@@ -4,6 +4,6 @@
     {
         string DataFolder { get; }
         string Version { get; }
-		bool ProtectFileExtensions { get; }
+		bool KeepFileExtensions { get; }
     }
 }

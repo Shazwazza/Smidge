@@ -35,7 +35,7 @@ namespace Smidge
 
         public string DataFolder => (_config["dataFolder"] ?? "Smidge").Replace('/', Path.DirectorySeparatorChar);
 
-		public bool ProtectFileExtensions => bool.Parse((_config["protectFileExtensions"] ?? "false"));
+		public bool KeepFileExtensions => bool.Parse((_config["keepFileExtensions"] ?? "false"));
         
     }
 }

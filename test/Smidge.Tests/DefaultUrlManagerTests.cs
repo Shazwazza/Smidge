@@ -58,7 +58,7 @@ namespace Smidge.Tests
         }
 
         [Fact]
-        public void Make_Bundle_Url_Protect_Extension()
+        public void Make_Bundle_Url_Keep_File_Extensions()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
             websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
@@ -69,7 +69,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns("blah");
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { BundleFilePath = "sg" } };
             var config = new Mock<ISmidgeConfig>();
-            config.Setup(m => m.ProtectFileExtensions).Returns(true);
+            config.Setup(m => m.KeepFileExtensions).Returns(true);
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
@@ -108,7 +108,7 @@ namespace Smidge.Tests
         }
 
         [Fact]
-        public void Make_Composite_Url_Protect_Extension()
+        public void Make_Composite_Url_Keep_File_Extensions()
         {
             var websiteInfo = new Mock<IWebsiteInfo>();
             websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
@@ -119,7 +119,7 @@ namespace Smidge.Tests
             hasher.Setup(x => x.Hash(It.IsAny<string>())).Returns((string s) => s.ToLower());
             var options = new SmidgeOptions { UrlOptions = new UrlManagerOptions { CompositeFilePath = "sg", MaxUrlLength = 100 } };
             var config = new Mock<ISmidgeConfig>();
-            config.Setup(m => m.ProtectFileExtensions).Returns(true);
+            config.Setup(m => m.KeepFileExtensions).Returns(true);
             var creator = new DefaultUrlManager(
                 Mock.Of<IOptions<SmidgeOptions>>(x => x.Value == options),
                 hasher.Object,
