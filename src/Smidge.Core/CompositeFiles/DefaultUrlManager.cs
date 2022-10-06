@@ -21,7 +21,7 @@ namespace Smidge.CompositeFiles
             _hasher = hasher;
             _requestHelper = requestHelper;
             _options = options.Value.UrlOptions;
-			_config = config;
+            _config = config;
         }
 
         public string AppendCacheBuster(string url, bool debug, string cacheBusterValue)
@@ -162,7 +162,7 @@ namespace Smidge.CompositeFiles
         private string GetCompositeUrl(string fileKey, string fileExtension, string cacheBusterValue)
         {
             //Create a delimited URL query string
-			
+
             string handler = _config.KeepFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
             return _requestHelper.Content(
                 string.Format(
