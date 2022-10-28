@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -53,8 +53,8 @@ namespace Smidge.Benchmarks
         {
             public Config()
             {
-                Add(MemoryDiagnoser.Default);
-                Add(new MinifiedPercentColumn());
+                AddDiagnoser(MemoryDiagnoser.Default);
+                AddColumn(new MinifiedPercentColumn());
 
                 ////The 'quick and dirty' settings, so it runs a little quicker
                 //// see benchmarkdotnet FAQ
