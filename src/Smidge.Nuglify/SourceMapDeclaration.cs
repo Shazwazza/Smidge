@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Extensions.Options;
 using Smidge.Cache;
@@ -66,7 +66,7 @@ namespace Smidge.Nuglify
                 string.Format(
                     handler,
                     _smidgeOptions.Value.UrlOptions.BundleFilePath + "/nmap",
-                    Uri.EscapeUriString(bundleName),
+                    Uri.EscapeDataString(bundleName),
                     fileExtension,
                     debug ? 'd' : 'v',
                     cacheBusterValue));
