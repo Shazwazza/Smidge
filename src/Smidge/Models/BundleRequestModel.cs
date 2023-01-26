@@ -1,11 +1,10 @@
-﻿using Smidge.CompositeFiles;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Smidge.CompositeFiles;
 
 namespace Smidge.Models
 {
-
     /// <summary>
     /// Model for an inbound request for a bundle
     /// </summary>
@@ -18,7 +17,6 @@ namespace Smidge.Models
             // In reality we'll need to do that anyways if we want to support load balancing!
             // https://github.com/Shazwazza/Smidge/issues/17
 
-
             if (!ParsedPath.Names.Any())
             {
                 throw new InvalidOperationException("The bundle route value does not contain a bundle name");
@@ -30,10 +28,12 @@ namespace Smidge.Models
             {
                 throw new InvalidOperationException("No bundle found with key " + FileKey);
             }
+
             Bundle = bundle;
         }
 
-        public Bundle Bundle { get; }        
+        public Bundle Bundle { get; }
+
         public override string FileKey { get; }
     }
 }

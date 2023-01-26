@@ -1,28 +1,33 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Smidge
 {
-    public struct CompressionType : IEquatable<CompressionType>, IEquatable<string>
+    public readonly struct CompressionType : IEquatable<CompressionType>, IEquatable<string>
     {
         private readonly string _compressionType;
 
         private CompressionType(string compressionType) => _compressionType = compressionType;
 
-        public static CompressionType Deflate { get; } = new CompressionType("deflate");
-        public static CompressionType GZip { get; } = new CompressionType("gzip");
-        public static CompressionType Brotli { get; } = new CompressionType("br");
-        public static CompressionType None { get; } = new CompressionType("");
+        public static CompressionType Deflate { get; } = new("deflate");
+
+        public static CompressionType GZip { get; } = new("gzip");
+
+        public static CompressionType Brotli { get; } = new("br");
+
+        public static CompressionType None { get; } = new("");
 
         public static IReadOnlyCollection<CompressionType> All { get; } = new[] { Brotli, GZip, Deflate, None };
 
         public static CompressionType Parse(string compressionType)
         {
-            if (compressionType == Deflate) return Deflate;            
-            if (compressionType == GZip) return GZip;
-            if (compressionType == "x-gzip") return GZip;
-            if (compressionType == Brotli) return Brotli;
-            return None;
+            if (compressionType == Deflate)
+                return Deflate;
+
+            if ((compressionType == GZip) || (compressionType == "x-gzip"))
+                return GZip;
+
+            return compressionType == Brotli ? Brotli : None;
         }
 
         public override string ToString() => _compressionType;

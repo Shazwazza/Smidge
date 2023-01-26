@@ -28,8 +28,7 @@
         public override int GetHashCode()
         {
             var hashCode = -1429085014;
-            hashCode = hashCode * -1521134295 + WebFilePairEqualityComparer.Instance.GetHashCode(Original);
-            return hashCode;
+            return hashCode * -1521134295 + WebFilePairEqualityComparer.Instance.GetHashCode(Original);
         }
 
        

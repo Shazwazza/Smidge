@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -12,14 +12,15 @@ using Smidge.Options;
 namespace Smidge.FileProcessors
 {
     /// <summary>
-    /// This performs the pre-processing on an <see cref="IWebFile"/> based on it's pipeline and writes the processed output to file cache
+    /// This performs the pre-processing on an <see cref="IWebFile" /> based on it's pipeline and writes the processed output to file cache
     /// </summary>
     public class PreProcessManager : IPreProcessManager
     {
-        private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
+        private readonly ISmidgeFileSystem _fileSystem;
+        private readonly char[] _invalidPathChars = Path.GetInvalidPathChars();
         private readonly ILogger<PreProcessManager> _logger;
-        private readonly SemaphoreSlim _processFileSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _processFileSemaphore = new(1, 1);
 
         public PreProcessManager(ISmidgeFileSystem fileSystem, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
         {
@@ -31,8 +32,11 @@ namespace Smidge.FileProcessors
         /// <inheritdoc />
         public async Task ProcessAndCacheFileAsync(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
-            if (file == null) throw new ArgumentNullException(nameof(file));
-            if (file.Pipeline == null) throw new ArgumentNullException($"{nameof(file)}.Pipeline");
+            if (file == null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (file.Pipeline == null)
+                throw new ArgumentNullException($"{nameof(file)}.{nameof(file.Pipeline)}");
 
             await ProcessFile(file, _bundleManager.GetAvailableOrDefaultBundleOptions(bundleOptions, false), bundleContext);
         }
@@ -41,9 +45,10 @@ namespace Smidge.FileProcessors
         {
             //If Its external throw an exception this is not allowed. 
             if (file.FilePath.Contains(SmidgeConstants.SchemeDelimiter))
-            {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
-            };
+
+            if (file.FilePath.IndexOfAny(_invalidPathChars) != -1)
+                throw new InvalidOperationException("Cannot process paths with invalid chars");
 
             await _processFileSemaphore.WaitAsync();
 
@@ -59,13 +64,18 @@ namespace Smidge.FileProcessors
 
         private async Task ProcessFileImpl(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
         {
-            if (file == null) throw new ArgumentNullException(nameof(file));
-            if (bundleOptions == null) throw new ArgumentNullException(nameof(bundleOptions));
-            if (bundleContext == null) throw new ArgumentNullException(nameof(bundleContext));
+            if (file == null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (bundleOptions == null)
+                throw new ArgumentNullException(nameof(bundleOptions));
+
+            if (bundleContext == null)
+                throw new ArgumentNullException(nameof(bundleContext));
 
             var extension = Path.GetExtension(file.FilePath);
 
-            var fileWatchEnabled = bundleOptions?.FileWatchOptions.Enabled ?? false;
+            var fileWatchEnabled = bundleOptions.FileWatchOptions.Enabled;
 
             var cacheBusterValue = bundleContext.CacheBusterValue;
 

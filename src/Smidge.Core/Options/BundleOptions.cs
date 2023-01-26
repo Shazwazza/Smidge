@@ -1,15 +1,16 @@
-﻿using System;
+using System;
+using System.IO.Compression;
 using Smidge.Cache;
 
 namespace Smidge.Options
 {
-    
-
     /// <summary>
     /// Defines options for a particular bundle
     /// </summary>
     public sealed class BundleOptions
     {
+        private Type _defaultCacheBuster;
+
         /// <summary>
         /// Constructor with default values
         /// </summary>
@@ -19,10 +20,40 @@ namespace Smidge.Options
             CacheControlOptions = new CacheControlOptions();
             ProcessAsCompositeFile = true;
             CompressResult = true;
-            
+            CompressionLevel = CompressionLevel.Optimal;
         }
 
-        private Type _defaultCacheBuster;
+        /// <summary>
+        /// Used to control the caching of the bundle
+        /// </summary>
+        public CacheControlOptions CacheControlOptions { get; set; }
+
+        /// <summary>
+        /// Whether to add compression to the response
+        /// </summary>
+        public bool CompressResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the compression level.
+        /// </summary>
+        /// <value>The compression level.</value>
+        public CompressionLevel CompressionLevel { get; set; }
+
+        /// <summary>
+        /// Options for file watching to re-process them if they are modified on disk
+        /// </summary>
+        public FileWatchOptions FileWatchOptions { get; set; }
+
+        /// <summary>
+        /// If set to true, will process the bundle as composite files and combine them into a single file
+        /// </summary>
+        /// <remarks>
+        /// Generally when using normal css or js and in debug mode this will be set to false and Smidge will
+        /// just set the URLs for these files as their normal static file locations, however when processing scripts and
+        /// styles such as TypeScript or Sass, then even in debug mode this would need to be set to true otherwise
+        /// the pre-processors wont execute
+        /// </remarks>
+        public bool ProcessAsCompositeFile { get; set; }
 
         /// <summary>
         /// Sets the default cache buster type
@@ -32,7 +63,7 @@ namespace Smidge.Options
         /// This instance will be resolved from IoC at runtime
         /// </remarks>
         public void SetCacheBusterType<T>()
-            where T: ICacheBuster
+            where T : ICacheBuster
         {
             _defaultCacheBuster = typeof(T);
         }
@@ -49,6 +80,7 @@ namespace Smidge.Options
             {
                 throw new InvalidOperationException($"The type {t} is not of type {typeof(ICacheBuster)}");
             }
+
             _defaultCacheBuster = t;
         }
 
@@ -63,31 +95,5 @@ namespace Smidge.Options
         {
             return _defaultCacheBuster ?? typeof(ConfigCacheBuster);
         }
-        
-        /// <summary>
-        /// If set to true, will process the bundle as composite files and combine them into a single file
-        /// </summary>
-        /// <remarks>
-        /// Generally when using normal css or js and in debug mode this will be set to false and Smidge will
-        /// just set the URLs for these files as their normal static file locations, however when processing scripts and
-        /// styles such as TypeScript or Sass, then even in debug mode this would need to be set to true otherwise 
-        /// the pre-processors wont execute
-        /// </remarks>
-        public bool ProcessAsCompositeFile { get; set; }
-
-        /// <summary>
-        /// Whether to add compression to the response
-        /// </summary>
-        public bool CompressResult { get; set; }
-
-        /// <summary>
-        /// Used to control the caching of the bundle
-        /// </summary>
-        public CacheControlOptions CacheControlOptions { get; set; }
-
-        /// <summary>
-        /// Options for file watching to re-process them if they are modified on disk
-        /// </summary>
-        public FileWatchOptions FileWatchOptions { get; set; }
     }
 }
