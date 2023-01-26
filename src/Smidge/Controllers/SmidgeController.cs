@@ -200,9 +200,7 @@ namespace Smidge.Controllers
         {
             await cacheProvider.WriteFileAsync(filePath, compositeStream);
             if (compositeStream.CanSeek)
-            {
                 compositeStream.Position = 0;
-            }
         }
 
         /// <summary>
