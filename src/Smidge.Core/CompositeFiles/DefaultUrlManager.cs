@@ -11,8 +11,8 @@ namespace Smidge.CompositeFiles
 {
     public class DefaultUrlManager : IUrlManager
     {
-        private readonly ISmidgeConfig _config;
         private readonly IHasher _hasher;
+        private readonly bool _keepFileExtensions;
         private readonly UrlManagerOptions _options;
         private readonly IRequestHelper _requestHelper;
 
@@ -21,7 +21,7 @@ namespace Smidge.CompositeFiles
             _hasher = hasher;
             _requestHelper = requestHelper;
             _options = options.Value.UrlOptions;
-            _config = config;
+            _keepFileExtensions = config.KeepFileExtensions;
         }
 
         public string AppendCacheBuster(string url, bool debug, string cacheBusterValue)
@@ -41,7 +41,7 @@ namespace Smidge.CompositeFiles
                 throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
             }
 
-            var handler = _config.KeepFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
+            var handler = _keepFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(string.Format(handler,
                                                         _options.BundleFilePath,
                                                         Uri.EscapeUriString(bundleName),
@@ -80,9 +80,7 @@ namespace Smidge.CompositeFiles
                 {
                     //we need to do a check here, this is the first one and it's already exceeded the max length we cannot continue
                     if (currBuilder.Length == 0)
-                    {
                         throw new InvalidOperationException($"The path for the single dependency: '{current.FilePath.TrimExtension(fileExtension)}' exceeds the max length ({_options.MaxUrlLength}), either reduce the single dependency's path length or increase the MaxHandlerUrlLength value");
-                    }
 
                     //flush the current output to the array
                     var output = currBuilder.ToString().TrimEnd('.');
@@ -116,7 +114,6 @@ namespace Smidge.CompositeFiles
             var result = new ParsedUrlPath();
 
             var parts = input.Split(new[] { '.' });
-
             if (parts.Length < 3)
             {
                 //invalid
@@ -124,7 +121,7 @@ namespace Smidge.CompositeFiles
             }
 
             //can start with 'v' or 'd' (d == debug)
-            var prefix = _config.KeepFileExtensions ? parts[^2][0] : parts[^1][0];
+            var prefix = _keepFileExtensions ? parts[^2][0] : parts[^1][0];
             if ((prefix != 'v') && (prefix != 'd'))
             {
                 //invalid
@@ -132,17 +129,18 @@ namespace Smidge.CompositeFiles
             }
 
             result.Debug = prefix == 'd';
+            result.CacheBusterValue = _keepFileExtensions ? parts[^2][1..] : parts[^1][1..];
 
-            result.CacheBusterValue = _config.KeepFileExtensions ? parts[^2][1..] : parts[^1][1..];
-            var ext = _config.KeepFileExtensions ? parts[^1] : parts[^2];
-            if (!Enum.TryParse(ext, true, out WebFileType type))
-            {
-                //invalid
+            var extension = _keepFileExtensions ? parts[^1] : parts[^2];
+            WebFileType webType;
+            if (extension.Equals("js", StringComparison.OrdinalIgnoreCase))
+                webType = WebFileType.Js;
+            else if (extension.Equals("css", StringComparison.OrdinalIgnoreCase))
+                webType = WebFileType.Css;
+            else
                 return null;
-            }
 
-            result.WebType = type;
-
+            result.WebType = webType;
             result.Names = parts.Take(parts.Length - 2);
 
             return result;
@@ -152,7 +150,7 @@ namespace Smidge.CompositeFiles
         {
             //Create a delimited URL query string
 
-            var handler = _config.KeepFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
+            var handler = _keepFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
             return _requestHelper.Content(string.Format(handler,
                                                         _options.CompositeFilePath,
                                                         Uri.EscapeUriString(fileKey),

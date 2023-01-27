@@ -39,7 +39,7 @@ namespace Smidge
             if (file.FilePath.StartsWith("//"))
             {
                 var scheme = _siteInfo.GetBaseUrl().Scheme;
-                return Regex.Replace(file.FilePath, @"^\/\/", string.Format("{0}{1}", scheme, SmidgeConstants.SchemeDelimiter));
+                return Regex.Replace(file.FilePath, @"^\/\/", scheme + SmidgeConstants.SchemeDelimiter);
             }
 
             var filePath = Content(file.FilePath);
@@ -71,7 +71,7 @@ namespace Smidge
             if (path.StartsWith("//"))
             {
                 var scheme = _siteInfo.GetBaseUrl().Scheme;
-                return Regex.Replace(path, @"^\/\/", string.Format("{0}{1}", scheme, SmidgeConstants.SchemeDelimiter));
+                return Regex.Replace(path, @"^\/\/", scheme + SmidgeConstants.SchemeDelimiter);
             }
 
             //This code is taken from the UrlHelper code ... which shouldn't need to be tucked away in there
@@ -79,7 +79,7 @@ namespace Smidge
             if (path[0] == 126)
             {
                 PathString pathBase = _siteInfo.GetBasePath();
-                return pathBase.Add(new PathString(path.Substring(1))).Value;
+                return pathBase.Add(new PathString(path[1..])).Value;
             }
 
             return path;

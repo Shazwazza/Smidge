@@ -21,13 +21,13 @@ namespace Smidge
 
         public static CompressionType Parse(string compressionType)
         {
-            if (compressionType == Deflate)
-                return Deflate;
+            if (compressionType == Brotli)
+                return Brotli;
 
             if ((compressionType == GZip) || (compressionType == "x-gzip"))
                 return GZip;
 
-            return compressionType == Brotli ? Brotli : None;
+            return compressionType == Deflate ? Deflate : None;
         }
 
         public override string ToString() => _compressionType;

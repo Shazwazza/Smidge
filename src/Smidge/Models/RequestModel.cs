@@ -14,6 +14,11 @@ namespace Smidge.Models
             if (string.IsNullOrWhiteSpace(valueName))
                 throw new ArgumentException("message", nameof(valueName));
 
+#if NET6_0_OR_GREATER
+            ArgumentNullException.ThrowIfNull(urlManager);
+            ArgumentNullException.ThrowIfNull(accessor);
+            ArgumentNullException.ThrowIfNull(requestHelper);
+#else
             if (urlManager is null)
                 throw new ArgumentNullException(nameof(urlManager));
 
@@ -22,9 +27,10 @@ namespace Smidge.Models
 
             if (requestHelper is null)
                 throw new ArgumentNullException(nameof(requestHelper));
+#endif
 
             //default 
-            LastFileWriteTime = DateTime.Now;
+            LastFileWriteTime = DateTime.MinValue;
 
             Compression = requestHelper.GetClientCompression(accessor.ActionContext.HttpContext.Request.Headers);
 
