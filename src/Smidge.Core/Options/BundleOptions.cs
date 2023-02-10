@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Compression;
 using Smidge.Cache;
 
 namespace Smidge.Options
@@ -19,7 +20,7 @@ namespace Smidge.Options
             CacheControlOptions = new CacheControlOptions();
             ProcessAsCompositeFile = true;
             CompressResult = true;
-            
+            CompressionLevel = CompressionLevel.Optimal;
         }
 
         private Type _defaultCacheBuster;
@@ -32,7 +33,7 @@ namespace Smidge.Options
         /// This instance will be resolved from IoC at runtime
         /// </remarks>
         public void SetCacheBusterType<T>()
-            where T: ICacheBuster
+            where T : ICacheBuster
         {
             _defaultCacheBuster = typeof(T);
         }
@@ -79,6 +80,11 @@ namespace Smidge.Options
         /// Whether to add compression to the response
         /// </summary>
         public bool CompressResult { get; set; }
+
+        /// <summary>
+        /// The compression level of the bundle
+        /// </summary>
+        public CompressionLevel CompressionLevel {get; set; }
 
         /// <summary>
         /// Used to control the caching of the bundle

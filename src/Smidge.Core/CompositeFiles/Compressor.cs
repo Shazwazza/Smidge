@@ -11,7 +11,7 @@ namespace Smidge.CompositeFiles
     /// </summary>
     public static class Compressor
     {        
-        public static async Task<Stream> CompressAsync(CompressionType type, Stream original)
+        public static async Task<Stream> CompressAsync(CompressionType type, CompressionLevel level, Stream original)
         {            
             using (var ms = new MemoryStream())
             {
@@ -19,15 +19,15 @@ namespace Smidge.CompositeFiles
 
                 if (type == CompressionType.Deflate)
                 {
-                    compressedStream = new DeflateStream(ms, CompressionLevel.Optimal);
+                    compressedStream = new DeflateStream(ms, level);
                 }
                 else if (type == CompressionType.GZip)
                 {
-                    compressedStream = new GZipStream(ms, CompressionLevel.Optimal);
+                    compressedStream = new GZipStream(ms, level);
                 }
                 else if (type == CompressionType.Brotli)
                 {
-                    compressedStream = new BrotliStream(ms, CompressionLevel.Optimal);
+                    compressedStream = new BrotliStream(ms, level);
                 }
 
                 if (type != CompressionType.None)
