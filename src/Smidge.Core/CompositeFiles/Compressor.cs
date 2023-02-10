@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -10,7 +10,9 @@ namespace Smidge.CompositeFiles
     /// Performs byte compression
     /// </summary>
     public static class Compressor
-    {        
+    {
+        public static async Task<Stream> CompressAsync(CompressionType type, Stream original) => await CompressAsync(type, CompressionLevel.Optimal, original);
+
         public static async Task<Stream> CompressAsync(CompressionType type, CompressionLevel level, Stream original)
         {            
             using (var ms = new MemoryStream())

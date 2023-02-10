@@ -180,8 +180,8 @@ namespace Smidge.Controllers
                 }
                 else
                 {
-                return File(cacheFile.CreateReadStream(), file.Mime);
-            }
+                    return File(cacheFile.CreateReadStream(), file.Mime);
+                }
             }
 
             using (var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath))
@@ -192,7 +192,7 @@ namespace Smidge.Controllers
 
                 using (var resultStream = await GetCombinedStreamAsync(files, bundleContext))
                 {
-                    var compressedStream = await Compressor.CompressAsync(file.Compression, CompressionLevel.Optimal, resultStream);
+                    var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
                     await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFilePath, compressedStream);
 
