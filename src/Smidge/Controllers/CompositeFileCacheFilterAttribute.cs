@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
@@ -28,7 +28,7 @@ namespace Smidge.Controllers
         internal static bool TryGetCachedCompositeFileResult(ISmidgeFileSystem fileSystem, string cacheBusterValue, string filesetKey, CompressionType type, string mime, out FileResult result, out DateTime lastWriteTime)
         {
             result = null;
-            lastWriteTime = DateTime.Now;
+            lastWriteTime = DateTime.MinValue;
 
             var cacheFile = fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, type, filesetKey, out _);
             if (cacheFile.Exists)
