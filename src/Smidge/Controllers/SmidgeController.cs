@@ -180,8 +180,8 @@ namespace Smidge.Controllers
                 }
                 else
                 {
-                return File(cacheFile.CreateReadStream(), file.Mime);
-            }
+                    return File(cacheFile.CreateReadStream(), file.Mime);
+                }
             }
 
             using (var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath))
