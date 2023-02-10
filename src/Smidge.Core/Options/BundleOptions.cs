@@ -33,7 +33,7 @@ namespace Smidge.Options
         /// This instance will be resolved from IoC at runtime
         /// </remarks>
         public void SetCacheBusterType<T>()
-            where T: ICacheBuster
+            where T : ICacheBuster
         {
             _defaultCacheBuster = typeof(T);
         }

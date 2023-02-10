@@ -63,7 +63,7 @@ namespace Smidge.Controllers
         /// Handles requests for named bundles
         /// </summary>
         /// <param name="bundleModel">The bundle model</param>
-        /// <returns></returns>       
+        /// <returns></returns>
         public async Task<IActionResult> Bundle(
             [FromServices] BundleRequestModel bundleModel)
         {
@@ -91,8 +91,8 @@ namespace Smidge.Controllers
                 }
                 else
                 {
-                    return File(cacheFile.CreateReadStream(), bundleModel.Mime);
-                }
+                return File(cacheFile.CreateReadStream(), bundleModel.Mime);
+            }
             }
 
             //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -100,10 +100,10 @@ namespace Smidge.Controllers
 
             //get the files for the bundle
             var files = _fileSetGenerator.GetOrderedFileSet(foundBundle,
-                    _processorFactory.CreateDefault(
-                        //the file type in the bundle will always be the same
-                        foundBundle.Files[0].DependencyType))
-                .ToArray();
+                                                            _processorFactory.CreateDefault(
+                                                                                            //the file type in the bundle will always be the same
+                                                                                            foundBundle.Files[0].DependencyType))
+                                         .ToArray();
 
             if (files.Length == 0)
             {
@@ -123,13 +123,12 @@ namespace Smidge.Controllers
                 }
 
                 //Get each file path to it's hashed location since that is what the pre-processed file will be saved as
-                var fileInfos = files.Select(x => _fileSystem.CacheFileSystem.GetCacheFile(
-                    x,
-                    () => _fileSystem.GetRequiredFileInfo(x),
-                    bundleOptions.FileWatchOptions.Enabled,
-                    Path.GetExtension(x.FilePath),
-                    cacheBusterValue,
-                    out _));
+                var fileInfos = files.Select(x => _fileSystem.CacheFileSystem.GetCacheFile(x,
+                                                                                           () => _fileSystem.GetRequiredFileInfo(x),
+                                                                                           bundleOptions.FileWatchOptions.Enabled,
+                                                                                           Path.GetExtension(x.FilePath),
+                                                                                           cacheBusterValue,
+                                                                                           out _));
 
                 using (var resultStream = await GetCombinedStreamAsync(fileInfos, bundleContext))
                 {
@@ -158,7 +157,7 @@ namespace Smidge.Controllers
         /// <param name="file"></param>
         /// <returns></returns>
         public async Task<IActionResult> Composite(
-             [FromServices] CompositeFileModel file)
+            [FromServices] CompositeFileModel file)
         {
             if (!file.ParsedPath.Names.Any())
             {
@@ -222,8 +221,8 @@ namespace Smidge.Controllers
             try
             {
                 inputs = files.Where(x => x.Exists)
-                    .Select(x => x.CreateReadStream())
-                    .ToList();
+                              .Select(x => x.CreateReadStream())
+                              .ToList();
 
                 var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";\n" : "\n";
                 var combined = await bundleContext.GetCombinedStreamAsync(inputs, delimeter);

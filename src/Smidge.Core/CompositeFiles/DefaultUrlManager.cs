@@ -76,7 +76,7 @@ namespace Smidge.CompositeFiles
                      + _options.CompositeFilePath.Length
                      + fileExtension.Length
                      + cacheBusterValue.Length
-                     //this number deals with slashes, etc...
+                    //this number deals with slashes, etc...
                      + 10)
                     >= (_options.MaxUrlLength))
                 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -12,7 +12,7 @@ using Smidge.Options;
 namespace Smidge.FileProcessors
 {
     /// <summary>
-    /// This performs the pre-processing on an <see cref="IWebFile"/> based on it's pipeline and writes the processed output to file cache
+    /// This performs the pre-processing on an <see cref="IWebFile" /> based on it's pipeline and writes the processed output to file cache
     /// </summary>
     public class PreProcessManager : IPreProcessManager
     {

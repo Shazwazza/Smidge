@@ -65,7 +65,7 @@ namespace Smidge.Cache
             {
                 File.Delete(file.PhysicalPath);
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -120,7 +120,7 @@ namespace Smidge.Cache
         public IFileInfo GetCacheFile(IWebFile file, Func<IFileInfo> sourceFile, bool fileWatchEnabled, string extension, string cacheBusterValue, out string filePath)
         {
             IFileInfo cacheFile;
-            
+
             if (fileWatchEnabled)
             {
                 //When file watching, the file path will be different since we'll hash twice:
