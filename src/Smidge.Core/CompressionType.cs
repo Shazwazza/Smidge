@@ -1,21 +1,18 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Smidge
 {
-    public readonly struct CompressionType : IEquatable<CompressionType>, IEquatable<string>
+    public struct CompressionType : IEquatable<CompressionType>, IEquatable<string>
     {
         private readonly string _compressionType;
 
         private CompressionType(string compressionType) => _compressionType = compressionType;
 
-        public static CompressionType Deflate { get; } = new("deflate");
-
-        public static CompressionType GZip { get; } = new("gzip");
-
-        public static CompressionType Brotli { get; } = new("br");
-
-        public static CompressionType None { get; } = new("");
+        public static CompressionType Deflate { get; } = new CompressionType("deflate");
+        public static CompressionType GZip { get; } = new CompressionType("gzip");
+        public static CompressionType Brotli { get; } = new CompressionType("br");
+        public static CompressionType None { get; } = new CompressionType("");
 
         public static IReadOnlyCollection<CompressionType> All { get; } = new[] { Brotli, GZip, Deflate, None };
 

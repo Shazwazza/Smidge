@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,20 +11,24 @@ namespace Smidge.Controllers
     /// </summary>
     public sealed class AddCompressionHeaderAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <summary>Creates an instance of the executable filter.</summary>
+        /// <param name="serviceProvider">The request <see cref="T:System.IServiceProvider" />.</param>
+        /// <returns>An instance of the executable filter.</returns>
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+        {
+            return new AddCompressionFilter(
+                serviceProvider.GetRequiredService<IRequestHelper>(),
+                serviceProvider.GetRequiredService<IBundleManager>());
+        }
+
         public bool IsReusable => true;
 
         public int Order { get; set; }
 
-        /// <summary>Creates an instance of the executable filter.</summary>
-        /// <param name="serviceProvider">The request <see cref="T:System.IServiceProvider" />.</param>
-        /// <returns>An instance of the executable filter.</returns>
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => new AddCompressionFilter(serviceProvider.GetRequiredService<IRequestHelper>(),
-                                                                                                            serviceProvider.GetRequiredService<IBundleManager>());
-
         private class AddCompressionFilter : IActionFilter
         {
-            private readonly IBundleManager _bundleManager;
             private readonly IRequestHelper _requestHelper;
+            private readonly IBundleManager _bundleManager;
 
             public AddCompressionFilter(IRequestHelper requestHelper, IBundleManager bundleManager)
             {
@@ -48,8 +52,7 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
-                if (context.Exception != null)
-                    return;
+                if (context.Exception != null) return;
 
                 //get the model from the items
                 if (context.HttpContext.Items.TryGetValue(nameof(AddCompressionHeaderAttribute), out var requestModel) && requestModel is RequestModel file)

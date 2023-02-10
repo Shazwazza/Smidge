@@ -36,7 +36,8 @@ namespace Smidge.FileProcessors
         internal string ReplaceUrlsWithAbsolutePaths(string fileContents, string url)
         {
             var uri = new Uri(url, UriKind.RelativeOrAbsolute);
-            return ReplaceUrlsWithAbsolutePaths(fileContents, uri.MakeAbsoluteUri(_siteInfo.GetBaseUrl()));
+            fileContents = ReplaceUrlsWithAbsolutePaths(fileContents, uri.MakeAbsoluteUri(_siteInfo.GetBaseUrl()));
+            return fileContents;
         }
 
         /// <summary>

@@ -1,5 +1,7 @@
+﻿using Smidge.Models;
+using System;
+using System.Collections;
 using System.Collections.Generic;
-using Smidge.Models;
 
 namespace Smidge.CompositeFiles
 {
@@ -8,6 +10,10 @@ namespace Smidge.CompositeFiles
     /// </summary>
     public class ParsedUrlPath
     {
+        public WebFileType WebType { get; set; }
+        
+        public IEnumerable<string> Names { get; set; }
+
         /// <summary>
         /// The cache buster value used when the URL was generated
         /// </summary>
@@ -17,9 +23,5 @@ namespace Smidge.CompositeFiles
         /// If the request is in debug mode
         /// </summary>
         public bool Debug { get; set; }
-
-        public IEnumerable<string> Names { get; set; }
-
-        public WebFileType WebType { get; set; }
     }
 }

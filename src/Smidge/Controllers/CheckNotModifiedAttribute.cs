@@ -48,8 +48,7 @@ namespace Smidge.Controllers
             /// <param name="context"></param>
             public void OnActionExecuted(ActionExecutedContext context)
             {
-                if (context.Exception != null)
-                    return;
+                if (context.Exception != null) return;
 
                 //get the model from the items
                 if (context.HttpContext.Items.TryGetValue(nameof(CheckNotModifiedAttribute), out var requestModel) && requestModel is RequestModel file)

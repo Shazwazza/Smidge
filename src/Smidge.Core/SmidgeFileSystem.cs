@@ -36,9 +36,9 @@ namespace Smidge
 
         public ICacheFileSystem CacheFileSystem { get; }
 
-        public IFileInfo GetRequiredFileInfo(IWebFile webFile)
+        public IFileInfo GetRequiredFileInfo(IWebFile webfile)
         {
-            var path = ConvertToFileProviderPath(webFile.FilePath);
+            var path = ConvertToFileProviderPath(webfile.FilePath);
             var fileInfo = _sourceFileProvider.GetFileInfo(path);
 
             if (!fileInfo.Exists)

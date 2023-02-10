@@ -1,4 +1,5 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using System;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 
@@ -28,11 +29,30 @@ namespace Smidge.Options
             //create the default options
             options.UrlOptions = new UrlManagerOptions();
             options.CacheOptions = new SmidgeCacheOptions();
-            options.FileProcessingConventions = new FileProcessingConventionsCollection { typeof(MinifiedFilePathConvention) };
+            options.FileProcessingConventions = new FileProcessingConventionsCollection
+            {
+                typeof(MinifiedFilePathConvention)
+            };
             options.DefaultBundleOptions = new BundleEnvironmentOptions
             {
-                DebugOptions = new BundleOptions { FileWatchOptions = new FileWatchOptions { Enabled = false }, ProcessAsCompositeFile = false, CompressResult = false },
-                ProductionOptions = new BundleOptions { FileWatchOptions = new FileWatchOptions { Enabled = false } }
+                DebugOptions = new BundleOptions
+                {
+                    FileWatchOptions = new FileWatchOptions
+                    {
+                        Enabled = false
+                    },
+                    ProcessAsCompositeFile = false,
+                    CompressResult = false
+                },
+                ProductionOptions = new BundleOptions
+                {
+                    FileWatchOptions = new FileWatchOptions
+                    {
+                        Enabled = false
+                    },
+                    ProcessAsCompositeFile = true,
+                    CompressResult = true
+                }
             };
         }
 
