@@ -1,8 +1,7 @@
-﻿using Smidge.CompositeFiles;
-using Smidge.FileProcessors;
 using System;
 using System.Collections.Generic;
-using Smidge.Cache;
+using Smidge.CompositeFiles;
+using Smidge.FileProcessors;
 
 namespace Smidge.Options
 {
@@ -11,28 +10,12 @@ namespace Smidge.Options
     /// </summary>
     public sealed class SmidgeOptions
     {
-        public SmidgeOptions()
-        {
-
-        }
-        
-        /// <summary>
-        /// Gets/sets the pipeline factory
-        /// </summary>
-        /// <remarks>
-        /// This will be set with the BundlesSetup class
-        /// </remarks>
-        public PreProcessPipelineFactory PipelineFactory { get; set; }
+        public SmidgeCacheOptions CacheOptions { get; set; }
 
         /// <summary>
         /// Gets/sets the default bundle options
         /// </summary>
         public BundleEnvironmentOptions DefaultBundleOptions { get; set; }
-
-        /// <summary>
-        /// Defines the URL options for Smidge bundle URLs
-        /// </summary>
-        public UrlManagerOptions UrlOptions { get; set; }
 
         /// <summary>
         /// Specifies the file processing conventions that Smidge will use
@@ -42,6 +25,17 @@ namespace Smidge.Options
         /// </remarks>
         public ICollection<Type> FileProcessingConventions { get; set; }
 
-        public SmidgeCacheOptions CacheOptions { get; set; }
+        /// <summary>
+        /// Gets/sets the pipeline factory
+        /// </summary>
+        /// <remarks>
+        /// This will be set with the BundlesSetup class
+        /// </remarks>
+        public PreProcessPipelineFactory PipelineFactory { get; set; }
+
+        /// <summary>
+        /// Defines the URL options for Smidge bundle URLs
+        /// </summary>
+        public UrlManagerOptions UrlOptions { get; set; }
     }
 }

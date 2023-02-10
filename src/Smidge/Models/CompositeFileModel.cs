@@ -1,12 +1,11 @@
-﻿using Smidge.CompositeFiles;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Smidge.CompositeFiles;
 using Smidge.Hashing;
 
 namespace Smidge.Models
 {
     public class CompositeFileModel : RequestModel
     {
-
         public CompositeFileModel(IHasher hasher, IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
             : base("file", urlManager, accessor, requestHelper)
         {

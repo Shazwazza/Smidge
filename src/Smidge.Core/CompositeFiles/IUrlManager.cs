@@ -1,5 +1,5 @@
-﻿using Smidge.Models;
 using System.Collections.Generic;
+using Smidge.Models;
 
 namespace Smidge.CompositeFiles
 {
@@ -16,5 +16,4 @@ namespace Smidge.CompositeFiles
 
         ParsedUrlPath ParsePath(string input);
     }
-
 }

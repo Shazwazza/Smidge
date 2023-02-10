@@ -79,7 +79,7 @@ namespace Smidge
             if (path[0] == 126)
             {
                 PathString pathBase = _siteInfo.GetBasePath();
-                return pathBase.Add(new PathString(path.Substring(1))).Value;
+                return pathBase.Add(new PathString(path[1..])).Value;
             }
 
             return path;

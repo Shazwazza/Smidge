@@ -11,24 +11,24 @@ namespace Smidge
     public interface ISmidgeFileSystem
     {
         /// <summary>
-        /// Get the <see cref="ICacheFileSystem"/>
+        /// Get the <see cref="ICacheFileSystem" />
         /// </summary>
         ICacheFileSystem CacheFileSystem { get; }
 
         /// <summary>
-        /// Get a required <see cref="IFileInfo"/>
+        /// Get a required <see cref="IFileInfo" />
         /// </summary>
-        /// <param name="webfile"></param>
+        /// <param name="webFile"></param>
         /// <returns></returns>
         /// <remarks>
         /// Throws an exception if the file doesn't exist
         /// </remarks>
-        IFileInfo GetRequiredFileInfo(IWebFile webfile);
+        IFileInfo GetRequiredFileInfo(IWebFile webFile);
 
         /// <summary>
-        /// Get a required <see cref="IFileInfo"/>
+        /// Get a required <see cref="IFileInfo" />
         /// </summary>
-        /// <param name="webfile"></param>
+        /// <param name="filePath"></param>
         /// <returns></returns>
         /// <remarks>
         /// Throws an exception if the file doesn't exist
@@ -38,10 +38,10 @@ namespace Smidge
         /// <summary>
         /// Returns virtual paths for all files matching the pattern.
         /// </summary>
-        /// <param name="folderPath"></param>
+        /// <param name="filePattern"></param>
         /// <returns></returns>
         IEnumerable<string> GetMatchingFiles(string filePattern);
-        
+
         /// <summary>
         /// Reads the content of a file
         /// </summary>
@@ -49,9 +49,10 @@ namespace Smidge
         /// <returns></returns>
         Task<string> ReadContentsAsync(IFileInfo fileInfo);
 
-
         string ReverseMapPath(string subPath, IFileInfo fileInfo);
+
         bool Watch(IWebFile webFile, IFileInfo fileInfo, BundleOptions bundleOptions, Action<WatchedFile> fileModifiedCallback);
+
         string ConvertToFileProviderPath(string path);
     }
 }

@@ -1,16 +1,29 @@
-﻿using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Smidge.Hashing;
-using Smidge.Models;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Smidge.Hashing;
+using Smidge.Models;
 
 namespace Smidge.Cache
 {
     public class PhysicalFileCacheFileSystem : ICacheFileSystem
     {
-        public static PhysicalFileCacheFileSystem CreatePhysicalFileCacheFileSystem(
+        private readonly PhysicalFileProvider _fileProvider;
+        private readonly IHasher _hasher;
+
+        public PhysicalFileCacheFileSystem
+        (
+            PhysicalFileProvider cacheFileProvider,
+            IHasher hasher)
+        {
+            _fileProvider = cacheFileProvider;
+            _hasher = hasher;
+        }
+
+        public static PhysicalFileCacheFileSystem CreatePhysicalFileCacheFileSystem
+        (
             IHasher hasher,
             ISmidgeConfig config,
             IHostEnvironment hosting)
@@ -25,21 +38,9 @@ namespace Smidge.Cache
             return new PhysicalFileCacheFileSystem(cacheFileProvider, hasher);
         }
 
-        private readonly IHasher _hasher;
-        private readonly PhysicalFileProvider _fileProvider;
-
-        public PhysicalFileCacheFileSystem(
-            PhysicalFileProvider cacheFileProvider, 
-            IHasher hasher)
-        {
-            _fileProvider = cacheFileProvider;
-            _hasher = hasher;
-        }
-
         public IFileInfo GetRequiredFileInfo(string filePath)
         {
             var fileInfo = _fileProvider.GetFileInfo(filePath);
-
             if (!fileInfo.Exists)
             {
                 throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
@@ -87,6 +88,7 @@ namespace Smidge.Cache
             {
                 writer.Write(contents);
             }
+
             return Task.CompletedTask;
         }
 
