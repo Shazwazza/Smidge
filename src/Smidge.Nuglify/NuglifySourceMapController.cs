@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +21,7 @@ namespace Smidge.Nuglify
 
         public FileResult SourceMap([FromServices] BundleRequestModel bundle)
         {
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out _))
+            if (!bundle.IsBundleFound)
             {
                 //TODO: Throw an exception, this will result in an exception anyways
                 return null;
