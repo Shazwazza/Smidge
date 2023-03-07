@@ -67,7 +67,7 @@ namespace Smidge.Controllers
         public async Task<IActionResult> Bundle(
             [FromServices] BundleRequestModel bundleModel)
         {
-            if (!_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
+            if (!bundleModel.IsBundleFound || !_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
             {
                 return NotFound();
             }
@@ -160,7 +160,7 @@ namespace Smidge.Controllers
         public async Task<IActionResult> Composite(
              [FromServices] CompositeFileModel file)
         {
-            if (!file.ParsedPath.Names.Any())
+            if (!file.IsBundleFound || !file.ParsedPath.Names.Any())
             {
                 return NotFound();
             }

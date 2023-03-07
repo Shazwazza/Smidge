@@ -198,6 +198,12 @@ namespace Smidge.Web
                 {
                     RequestPath = "/smidge-static"
                 });
+
+                bundles
+                .CreateCss("bootstrap-css-bundle",
+                "~/Css/Libs/bootstrap/dist/css/bootstrap-icons.css",
+                "~/Css/Libs/bootstrap/dist/css/bootstrap.min.css"
+                );
             });
 
             app.UseSmidgeNuglify();
