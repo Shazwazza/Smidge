@@ -40,9 +40,10 @@ jobs:
 
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1.7.2
-      with: |
-        6.0.x
-        7.0.x
+      with:
+        dotnet-version: | 
+          6.0.x
+          7.0.x
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v0.9.9
