@@ -198,6 +198,11 @@ namespace Smidge.Web
                 {
                     RequestPath = "/smidge-static"
                 });
+
+                bundles
+             .CreateCss("notfound-map-css-bundle",
+             "~/Css/notFoundMap.min.css"
+             );
             });
 
             app.UseSmidgeNuglify();

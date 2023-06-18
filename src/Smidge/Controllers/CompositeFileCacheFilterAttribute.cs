@@ -68,7 +68,7 @@ namespace Smidge.Controllers
                 if (context.ActionArguments.Count == 0) return;
 
                 var firstArg = context.ActionArguments.First().Value;
-                if (firstArg is RequestModel file)
+                if (firstArg is RequestModel file && file.IsBundleFound)
                 {
                     var cacheBusterValue = file.ParsedPath.CacheBusterValue;
 

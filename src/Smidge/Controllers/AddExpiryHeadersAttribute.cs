@@ -50,7 +50,7 @@ namespace Smidge.Controllers
                     return;
 
                 //get the model from the items
-                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object fileObject) || fileObject is not RequestModel file)
+                if (!context.HttpContext.Items.TryGetValue(nameof(AddExpiryHeadersAttribute), out object fileObject) || fileObject is not RequestModel file || !file.IsBundleFound)
                     return;
 
                 var enableETag = true;

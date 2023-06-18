@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Smidge.Cache;
 using Smidge.Models;
 using Smidge.Options;
@@ -19,12 +20,11 @@ namespace Smidge.Nuglify
             _bundleManager = bundleManager;
         }
 
-        public FileResult SourceMap([FromServices] BundleRequestModel bundle)
+        public ActionResult SourceMap([FromServices] BundleRequestModel bundle)
         {
-            if (!_bundleManager.TryGetValue(bundle.FileKey, out _))
+            if (!bundle.IsBundleFound)
             {
-                //TODO: Throw an exception, this will result in an exception anyways
-                return null;
+                return NotFound();
             }
 
             var sourceMapFile = _fileSystem.CacheFileSystem.GetRequiredFileInfo(bundle.GetSourceMapFilePath());
@@ -43,8 +43,7 @@ namespace Smidge.Nuglify
                 }
             }
 
-            //TODO: Throw an exception, this will result in an exception anyways
-            return null;
+            return NotFound();
         }
 
         

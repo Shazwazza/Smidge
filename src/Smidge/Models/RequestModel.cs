@@ -1,4 +1,4 @@
-﻿using Smidge.CompositeFiles;
+using Smidge.CompositeFiles;
 using System;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -25,7 +25,10 @@ namespace Smidge.Models
             ParsedPath = urlManager.ParsePath(bundleId);
 
             if (ParsedPath == null)
-                throw new InvalidOperationException($"Could not parse {bundleId} as a valid smidge path");
+            {
+                IsBundleFound = false;
+                return;
+            }
 
             Debug = ParsedPath.Debug;
 
@@ -61,5 +64,7 @@ namespace Smidge.Models
         public string Mime { get; private set; }
 
         public DateTime LastFileWriteTime { get; set; }
+
+        public bool IsBundleFound { get; set; } = true;
     }
 }
