@@ -200,10 +200,9 @@ namespace Smidge.Web
                 });
 
                 bundles
-                .CreateCss("bootstrap-css-bundle",
-                "~/Css/Libs/bootstrap/dist/css/bootstrap-icons.css",
-                "~/Css/Libs/bootstrap/dist/css/bootstrap.min.css"
-                );
+             .CreateCss("notfound-map-css-bundle",
+             "~/Css/notFoundMap.min.css"
+             );
             });
 
             app.UseSmidgeNuglify();
