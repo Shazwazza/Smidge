@@ -45,10 +45,30 @@ namespace Smidge.Models
         /// </summary>
         public Func<IEnumerable<IWebFile>, IEnumerable<IWebFile>> OrderingCallback { get; private set; }
 
+
+
+        /// <summary>
+        /// The name of the Profile used to configure the BundleOptions for this bundle.
+        /// If a BundleOptions has also been specified, the ProfileName will have no effect.
+        /// </summary>
+        public string ProfileName { get; set; }
+
+        /// <summary>
+        /// Set the name of the Profile to use for this bundle.
+        /// </summary>
+        /// <param name="profileName">Name of the profile.</param>
+        public Bundle UseProfile(string profileName)
+        {
+            ProfileName = profileName;
+            return this;
+        }
+
+
+
         /// <summary>
         /// Defines the options for this bundle
         /// </summary>
-        public BundleEnvironmentOptions BundleOptions { get; private set; }        
+        public BundleEnvironmentOptions BundleOptions { get; private set; }
 
         /// <summary>
         /// Sets the options for the bundle

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -34,6 +34,7 @@ namespace Smidge
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
+            services.AddSingleton<ISmidgeProfileStrategy, DefaultProfileStrategy>();
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
             services.AddSingleton<IPreProcessManager, PreProcessManager>();

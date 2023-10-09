@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
+using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -17,6 +18,7 @@ namespace Smidge.Controllers
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return new AddCompressionFilter(
+                serviceProvider.GetRequiredService<ISmidgeProfileStrategy>(),
                 serviceProvider.GetRequiredService<IRequestHelper>(),
                 serviceProvider.GetRequiredService<IBundleManager>());
         }
@@ -27,11 +29,13 @@ namespace Smidge.Controllers
 
         private class AddCompressionFilter : IActionFilter
         {
+            private readonly ISmidgeProfileStrategy _profileStrategy;
             private readonly IRequestHelper _requestHelper;
             private readonly IBundleManager _bundleManager;
 
-            public AddCompressionFilter(IRequestHelper requestHelper, IBundleManager bundleManager)
+            public AddCompressionFilter(ISmidgeProfileStrategy profileStrategy, IRequestHelper requestHelper, IBundleManager bundleManager)
             {
+                _profileStrategy = profileStrategy ?? throw new ArgumentNullException(nameof(profileStrategy));
                 _requestHelper = requestHelper ?? throw new ArgumentNullException(nameof(requestHelper));
                 _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
             }
@@ -62,7 +66,22 @@ namespace Smidge.Controllers
                     //check if it's a bundle (not composite file)
                     if (file is BundleRequestModel bundleRequest && _bundleManager.TryGetValue(bundleRequest.FileKey, out var bundle))
                     {
-                        var bundleOptions = bundle.GetBundleOptions(_bundleManager, bundleRequest.Debug);
+                        string profileName;
+
+                        // For backwards compatibility we'll use the Debug profile if it was explicitly requested in the request.
+                        if (bundleRequest.Debug)
+                        {
+                            profileName = SmidgeOptionsProfile.Debug;
+                        }
+                        else
+                        {
+                            // If the Bundle explicitly specifies a profile to use then use it otherwise use the current profile 
+                            profileName = !string.IsNullOrEmpty(bundle.ProfileName)
+                                ? bundle.ProfileName
+                                : _profileStrategy.GetCurrentProfileName();
+                        }
+                        
+                        var bundleOptions = bundle.GetBundleOptions(_bundleManager, profileName);
                         enableCompression = bundleOptions.CompressResult;
                     }
 

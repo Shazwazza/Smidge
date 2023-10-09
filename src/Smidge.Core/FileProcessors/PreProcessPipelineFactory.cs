@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Linq;
@@ -67,19 +67,20 @@ namespace Smidge.FileProcessors
                 switch (fileType)
                 {
                     case WebFileType.Js:
+
                         return new PreProcessPipeline(new IPreProcessor[]
                         {
-                            _allProcessors.Value.OfType<JsMinifier>().First(),
-                            _allProcessors.Value.OfType<JsSourceMapProcessor>().First()
-                        });
+                            _allProcessors.Value.OfType<JsMinifier>().FirstOrDefault(),
+                            _allProcessors.Value.OfType<JsSourceMapProcessor>().FirstOrDefault()
+                        }.Where(p => p != null));
                     case WebFileType.Css:
                     default:
                         return new PreProcessPipeline(new IPreProcessor[]
                         {
-                            _allProcessors.Value.OfType<CssImportProcessor>().First(),
-                            _allProcessors.Value.OfType<CssUrlProcessor>().First(),
-                            _allProcessors.Value.OfType<CssMinifier>().First()
-                        });
+                            _allProcessors.Value.OfType<CssImportProcessor>().FirstOrDefault(),
+                            _allProcessors.Value.OfType<CssUrlProcessor>().FirstOrDefault(),
+                            _allProcessors.Value.OfType<CssMinifier>().FirstOrDefault()
+                        }.Where(p => p != null));
                 }
             });
         }

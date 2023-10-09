@@ -13,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Smidge.FileProcessors;
 using Smidge.Cache;
 using Microsoft.AspNetCore.Authorization;
+using System.Reflection.Metadata;
+using Smidge.Options;
 
 namespace Smidge.Controllers
 {
@@ -27,6 +29,7 @@ namespace Smidge.Controllers
     [AllowAnonymous]
     public class SmidgeController : Controller
     {
+        private readonly ISmidgeProfileStrategy _profileStrategy;
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
         private readonly IBundleFileSetGenerator _fileSetGenerator;
@@ -44,6 +47,7 @@ namespace Smidge.Controllers
         /// <param name="preProcessManager"></param>
         /// <param name="logger"></param>
         public SmidgeController(
+            ISmidgeProfileStrategy profileStrategy,
             ISmidgeFileSystem fileSystemHelper,
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
@@ -51,6 +55,7 @@ namespace Smidge.Controllers
             IPreProcessManager preProcessManager,
             ILogger<SmidgeController> logger)
         {
+            _profileStrategy = profileStrategy ?? throw new ArgumentNullException(nameof(profileStrategy));
             _fileSystem = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));
             _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
             _fileSetGenerator = fileSetGenerator ?? throw new ArgumentNullException(nameof(fileSetGenerator));
@@ -72,8 +77,24 @@ namespace Smidge.Controllers
                 return NotFound();
             }
 
-            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
+            string profileName;
 
+            // For backwards compatibility we'll use the Debug profile if it was explicitly requested in the request.
+            if (bundleModel.Debug)
+            {
+                profileName = SmidgeOptionsProfile.Debug;
+            }
+            else
+            {
+                // If the Bundle explicitly specifies a profile to use then use it otherwise use the current profile 
+                profileName = !string.IsNullOrEmpty(foundBundle.ProfileName)
+                    ? foundBundle.ProfileName
+                    : _profileStrategy.GetCurrentProfileName();
+            }
+
+            //get the bundle options from the bundle if they have been set otherwise with the defaults
+            var bundleOptions = foundBundle.GetBundleOptions(_bundleManager, profileName);
+            
             var cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
 
             //now we need to determine if this bundle has already been created
