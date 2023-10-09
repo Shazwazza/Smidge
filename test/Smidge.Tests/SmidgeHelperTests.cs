@@ -46,6 +46,9 @@ namespace Smidge.Tests
             
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
             _fileSystemHelper = new SmidgeFileSystem(_fileProvider, new DefaultFileProviderFilter(), _cacheProvider, new FakeWebsiteInfo());
+            
+            var smidgeConfig = new Mock<ISmidgeConfig>();
+            smidgeConfig.Setup(c => c.KeepFileExtensions).Returns(false);
 
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(() =>
@@ -61,7 +64,7 @@ namespace Smidge.Tests
             });
 
             _requestHelper = new RequestHelper(new FakeWebsiteInfo());
-            _urlManager = new DefaultUrlManager(smidgeOptions.Object, _hasher, _requestHelper);
+            _urlManager = new DefaultUrlManager(smidgeOptions.Object, _hasher, _requestHelper, smidgeConfig.Object);
 
             _cacheBusterResolver = new CacheBusterResolver(FakeCacheBuster.Instances);
             
