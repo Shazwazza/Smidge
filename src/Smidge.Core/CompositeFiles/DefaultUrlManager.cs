@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Smidge.Models;
 using System.Text;
@@ -12,14 +12,16 @@ namespace Smidge.CompositeFiles
     public class DefaultUrlManager : IUrlManager
     {
         private readonly IHasher _hasher;
-        private readonly IRequestHelper _requestHelper;
+        private readonly bool _keepFileExtensions;
         private readonly UrlManagerOptions _options;
+        private readonly IRequestHelper _requestHelper;
 
-        public DefaultUrlManager(IOptions<SmidgeOptions> options, IHasher hasher, IRequestHelper requestHelper)
+        public DefaultUrlManager(IOptions<SmidgeOptions> options, IHasher hasher, IRequestHelper requestHelper, ISmidgeConfig config)
         {
             _hasher = hasher;
             _requestHelper = requestHelper;
             _options = options.Value.UrlOptions;
+            _keepFileExtensions = config.KeepFileExtensions;
         }
 
         public string AppendCacheBuster(string url, bool debug, string cacheBusterValue)
@@ -40,16 +42,13 @@ namespace Smidge.CompositeFiles
                 throw new ArgumentException($"'{nameof(cacheBusterValue)}' cannot be null or whitespace.", nameof(cacheBusterValue));
             }
 
-            const string handler = "~/{0}/{1}{2}.{3}{4}";
-            return _requestHelper.Content(
-                string.Format(
-                    handler,
-                    _options.BundleFilePath,
-                    Uri.EscapeUriString(bundleName),
-                    fileExtension,
-                    debug ? 'd' : 'v',
-                    cacheBusterValue));
-
+            var handler = _keepFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
+            return _requestHelper.Content(string.Format(handler,
+                                                        _options.BundleFilePath,
+                                                        Uri.EscapeUriString(bundleName),
+                                                        fileExtension,
+                                                        debug ? 'd' : 'v',
+                                                        cacheBusterValue));
         }
 
         public IEnumerable<FileSetUrl> GetUrls(IEnumerable<IWebFile> dependencies, string fileExtension, string cacheBusterValue)
@@ -65,7 +64,7 @@ namespace Smidge.CompositeFiles
             var builderCount = 1;
 
             var remaining = new Queue<IWebFile>(dependencies);
-            while (remaining.Any())
+            while (remaining.Count > 0)
             {
                 var current = remaining.Peek();
 
@@ -135,23 +134,25 @@ namespace Smidge.CompositeFiles
             }
 
             //can start with 'v' or 'd' (d == debug)
-            var prefix = parts[parts.Length - 1][0];
+            var prefix = _keepFileExtensions ? parts[parts.Length - 2][0] : parts[parts.Length - 1][0];
             if (prefix != 'v' && prefix != 'd')
             {
                 //invalid
                 return null;
             }
             result.Debug = prefix == 'd';
+            result.CacheBusterValue = _keepFileExtensions ? parts[parts.Length - 2].Substring(1) : parts[parts.Length - 1].Substring(1);
+            var ext = _keepFileExtensions ? parts[parts.Length - 1] : parts[parts.Length - 2];
 
-            result.CacheBusterValue = parts[parts.Length - 1].Substring(1);
-            var ext = parts[parts.Length - 2];
-            if (!Enum.TryParse(ext, true, out WebFileType type))
-            {
-                //invalid
+            WebFileType type;
+            if (ext.Equals("js", StringComparison.OrdinalIgnoreCase))
+                type = WebFileType.Js;
+            else if (ext.Equals("css", StringComparison.OrdinalIgnoreCase))
+                type = WebFileType.Css;
+            else
                 return null;
-            }
-            result.WebType = type;
 
+            result.WebType = type;
             result.Names = parts.Take(parts.Length - 2);
 
             return result;
@@ -161,7 +162,7 @@ namespace Smidge.CompositeFiles
         {
             //Create a delimited URL query string
 
-            const string handler = "~/{0}/{1}{2}.v{3}";
+            string handler = _keepFileExtensions ? "~/{0}/{1}.v{3}{2}" : "~/{0}/{1}{2}.v{3}";
             return _requestHelper.Content(
                 string.Format(
                     handler,

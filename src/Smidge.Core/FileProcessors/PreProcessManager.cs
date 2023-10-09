@@ -20,6 +20,7 @@ namespace Smidge.FileProcessors
         private readonly IBundleManager _bundleManager;
         private readonly ILogger<PreProcessManager> _logger;
         private readonly SemaphoreSlim _processFileSemaphore = new SemaphoreSlim(1, 1);
+        private readonly char[] _invalidPathChars = Path.GetInvalidPathChars();
 
         public PreProcessManager(ISmidgeFileSystem fileSystem, IBundleManager bundleManager, ILogger<PreProcessManager> logger)
         {
@@ -43,7 +44,12 @@ namespace Smidge.FileProcessors
             if (file.FilePath.Contains(SmidgeConstants.SchemeDelimiter))
             {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
-            };
+            }
+
+            if (file.FilePath.IndexOfAny(_invalidPathChars) != -1)
+            {
+                throw new InvalidOperationException("Cannot process paths with invalid chars");
+            }
 
             await _processFileSemaphore.WaitAsync();
 
@@ -65,7 +71,7 @@ namespace Smidge.FileProcessors
 
             var extension = Path.GetExtension(file.FilePath);
 
-            var fileWatchEnabled = bundleOptions?.FileWatchOptions.Enabled ?? false;
+            var fileWatchEnabled = bundleOptions.FileWatchOptions.Enabled;
 
             var cacheBusterValue = bundleContext.CacheBusterValue;
 

@@ -17,7 +17,7 @@ namespace Smidge.Models
             if (requestHelper is null)throw new ArgumentNullException(nameof(requestHelper));
 
             //default 
-            LastFileWriteTime = DateTime.Now;
+            LastFileWriteTime = DateTime.MinValue;
 
             Compression = requestHelper.GetClientCompression(accessor.ActionContext.HttpContext.Request.Headers);
 
