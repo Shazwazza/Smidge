@@ -21,17 +21,17 @@ namespace Smidge
         /// <param name="webfile"></param>
         /// <returns></returns>
         /// <remarks>
-        /// Throws an exception if the file doesn't exist
+        /// Returns even if the file doesn't exist
         /// </remarks>
         IFileInfo GetRequiredFileInfo(IWebFile webfile);
 
         /// <summary>
         /// Get a required <see cref="IFileInfo"/>
         /// </summary>
-        /// <param name="webfile"></param>
+        /// <param name="filePath"></param>
         /// <returns></returns>
         /// <remarks>
-        /// Throws an exception if the file doesn't exist
+        /// Returns even if the file doesn't exist
         /// </remarks>
         IFileInfo GetRequiredFileInfo(string filePath);
 
