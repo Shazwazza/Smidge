@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -10,6 +10,7 @@ using Smidge.Options;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Smidge.InMemory
 {
@@ -31,14 +32,19 @@ namespace Smidge.InMemory
 
             if (_options.CacheOptions.UseInMemoryCache)
             {
-                _wrapped = new MemoryCacheFileSystem(hasher);
+                var logger = services.GetRequiredService<ILogger<MemoryCacheFileSystem>>();
+
+                _wrapped = new MemoryCacheFileSystem(hasher, logger);
             }
             else
             {
+                var logger = services.GetRequiredService<ILogger<PhysicalFileCacheFileSystem>>();
+
                 _wrapped = PhysicalFileCacheFileSystem.CreatePhysicalFileCacheFileSystem(
                     hasher,
                     services.GetRequiredService<ISmidgeConfig>(),
-                    services.GetRequiredService<IHostEnvironment>());
+                    services.GetRequiredService<IHostEnvironment>(),
+                    logger);
             }
         }
 

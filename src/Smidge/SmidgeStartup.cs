@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -17,6 +17,7 @@ using Smidge.Options;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -47,6 +48,7 @@ namespace Smidge
             services.AddSingleton<ISmidgeFileSystem>(p =>
             {
                 var hosting = p.GetRequiredService<IWebHostEnvironment>();
+                var logger = p.GetRequiredService<ILogger<SmidgeFileSystem>>();
 
                 //resolve the ISmidgeFileProvider if there is one
                 var provider = p.GetService<ISmidgeFileProvider>() ?? hosting.WebRootFileProvider;
@@ -54,13 +56,15 @@ namespace Smidge
                     provider,
                     p.GetRequiredService<IFileProviderFilter>(),
                     p.GetRequiredService<ICacheFileSystem>(),
-                    p.GetRequiredService<IWebsiteInfo>());
+                    p.GetRequiredService<IWebsiteInfo>(),
+                    logger);
             });
             
             services.AddSingleton<ICacheFileSystem>(p => PhysicalFileCacheFileSystem.CreatePhysicalFileCacheFileSystem(
                 p.GetRequiredService<IHasher>(),
                 p.GetRequiredService<ISmidgeConfig>(),
-                p.GetRequiredService<IHostEnvironment>()));
+                p.GetRequiredService<IHostEnvironment>(),
+                p.GetRequiredService<ILogger<PhysicalFileCacheFileSystem>>()));
 
             services.AddSingleton<ISmidgeConfig>((p) =>
             {

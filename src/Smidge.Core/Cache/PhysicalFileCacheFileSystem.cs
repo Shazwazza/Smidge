@@ -1,5 +1,6 @@
-﻿using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Smidge.Hashing;
 using Smidge.Models;
 using System;
@@ -13,7 +14,8 @@ namespace Smidge.Cache
         public static PhysicalFileCacheFileSystem CreatePhysicalFileCacheFileSystem(
             IHasher hasher,
             ISmidgeConfig config,
-            IHostEnvironment hosting)
+            IHostEnvironment hosting,
+            ILogger logger)
         {
             var cacheFolder = Path.Combine(hosting.ContentRootPath, config.DataFolder, "Cache", Environment.MachineName.ReplaceNonAlphanumericChars('-'));
 
@@ -22,18 +24,21 @@ namespace Smidge.Cache
 
             var cacheFileProvider = new PhysicalFileProvider(cacheFolder);
 
-            return new PhysicalFileCacheFileSystem(cacheFileProvider, hasher);
+            return new PhysicalFileCacheFileSystem(cacheFileProvider, hasher, logger);
         }
 
         private readonly IHasher _hasher;
         private readonly PhysicalFileProvider _fileProvider;
+        private readonly ILogger _logger;
 
         public PhysicalFileCacheFileSystem(
             PhysicalFileProvider cacheFileProvider, 
-            IHasher hasher)
+            IHasher hasher,
+            ILogger logger)
         {
             _fileProvider = cacheFileProvider;
             _hasher = hasher;
+            _logger = logger;
         }
 
         public IFileInfo GetRequiredFileInfo(string filePath)
@@ -42,7 +47,7 @@ namespace Smidge.Cache
 
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
+                _logger.LogError("No such file exists {FileName} (mapped from {FilePath})", fileInfo.PhysicalPath ?? fileInfo.Name, filePath);
             }
 
             return fileInfo;

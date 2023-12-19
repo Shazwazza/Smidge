@@ -23,6 +23,7 @@ namespace Smidge.Tests
         private readonly IUrlManager _urlManager = Mock.Of<IUrlManager>();
         private readonly IFileProvider _fileProvider = Mock.Of<IFileProvider>();
         private readonly ICacheFileSystem _cacheProvider = Mock.Of<ICacheFileSystem>();
+        private readonly ILogger _logger = Mock.Of<ILogger>();
         private readonly IFileProviderFilter _fileProviderFilter = Mock.Of<IFileProviderFilter>();
         private readonly IHasher _hasher = Mock.Of<IHasher>();
         private readonly IEnumerable<IPreProcessor> _preProcessors = new List<IPreProcessor>();
@@ -46,7 +47,7 @@ namespace Smidge.Tests
             _httpContextAccessor.Setup(x => x.HttpContext).Returns(_httpContext.Object);
 
             _dynamicallyRegisteredWebFiles = new DynamicallyRegisteredWebFiles();
-            _fileSystemHelper = new SmidgeFileSystem(_fileProvider, _fileProviderFilter, _cacheProvider, Mock.Of<IWebsiteInfo>());
+            _fileSystemHelper = new SmidgeFileSystem(_fileProvider, _fileProviderFilter, _cacheProvider, Mock.Of<IWebsiteInfo>(), _logger);
             _smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             _smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions
             {

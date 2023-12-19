@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Smidge.Cache;
 using Smidge.FileProcessors;
@@ -69,7 +70,8 @@ div {display: block;}".Replace("\r\n", string.Empty).Replace("\n", string.Empty)
                 Mock.Of<IFileProvider>(),
                 Mock.Of<IFileProviderFilter>(),
                 Mock.Of<ICacheFileSystem>(),
-                Mock.Of<IWebsiteInfo>());
+                Mock.Of<IWebsiteInfo>(),
+                Mock.Of<ILogger>());
             return fileSystem;
         }
 
