@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -76,7 +76,17 @@ namespace Smidge.FileProcessors
             var cacheBusterValue = bundleContext.CacheBusterValue;
 
             //we're making this lazy since we don't always want to resolve it
-            var sourceFile = new Lazy<IFileInfo>(() => _fileSystem.GetRequiredFileInfo(file), LazyThreadSafetyMode.None);
+            var sourceFile = new Lazy<IFileInfo>(() =>
+            {
+                var fileInfo = _fileSystem.GetRequiredFileInfo(file);
+
+                if (!fileInfo.Exists)
+                {
+                    throw new FileNotFoundException(fileInfo.PhysicalPath ?? fileInfo.Name);
+                }
+
+                return fileInfo;
+            }, LazyThreadSafetyMode.None);
 
             var cacheFile = _fileSystem.CacheFileSystem.GetCacheFile(file, () => sourceFile.Value, fileWatchEnabled, extension, cacheBusterValue, out var filePath);
 

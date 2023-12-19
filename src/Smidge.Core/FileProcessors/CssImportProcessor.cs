@@ -1,6 +1,7 @@
-﻿using Smidge.Models;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -48,6 +49,12 @@ namespace Smidge.FileProcessors
                 {
                     //it's internal (in theory)
                     var filePath = _fileSystem.GetRequiredFileInfo(path);
+
+                    if (!filePath.Exists)
+                    {
+                        throw new FileNotFoundException(filePath.PhysicalPath ?? filePath.Name);
+                    }
+
                     var content = await _fileSystem.ReadContentsAsync(filePath);
 
                     //This needs to be put back through the whole pre-processor pipeline before being added,

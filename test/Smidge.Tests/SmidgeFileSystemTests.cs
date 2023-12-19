@@ -3,19 +3,22 @@ using Moq;
 using System.IO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Smidge.Cache;
+using System.Collections.Generic;
 
 namespace Smidge.Tests
 {
     public class SmidgeFileSystemTests
     {
-        private ISmidgeFileSystem Create(IWebsiteInfo websiteInfo, string url = "~/Js/Test1.js")
+        private ISmidgeFileSystem Create(IWebsiteInfo websiteInfo, out Mock<ILogger> logger, string url = "~/Js/Test1.js")
         {
             var webRootPath = $"C:{Path.DirectorySeparatorChar}MySolution{Path.DirectorySeparatorChar}MyProject";
 
             var cacheProvider = new Mock<ICacheFileSystem>();
             var fileProvider = new Mock<IFileProvider>();
+            logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
             var file = new Mock<IFileInfo>();
             string filePath = Path.Combine(webRootPath, $"Js{Path.DirectorySeparatorChar}Test1.js");
@@ -33,7 +36,8 @@ namespace Smidge.Tests
                 fileProvider.Object,
                 fileProviderFilter,
                 cacheProvider.Object,
-                websiteInfo);
+                websiteInfo,
+                logger.Object);
 
 
             return helper;
@@ -55,7 +59,7 @@ namespace Smidge.Tests
             {
                 websiteInfo.Setup(x => x.GetBasePath()).Returns(pathBase);
             }
-            var fs = Create(websiteInfo.Object);
+            var fs = Create(websiteInfo.Object, out _);
 
             var result = fs.ConvertToFileProviderPath(from);
 
@@ -63,7 +67,7 @@ namespace Smidge.Tests
         }
 
         [Fact]
-        public void Get_File_Info_Non_Existent_File_Throws_Informative_Exception()
+        public void Get_File_Info_Non_Existent_File_Logs_Informative_Error()
         {
             var url = "~/Js/Test1.js";
 
@@ -71,13 +75,19 @@ namespace Smidge.Tests
             websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
             websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
 
-            var helper = Create(websiteInfo.Object, url);
+            var helper = Create(websiteInfo.Object, out var logger, url);
 
-            FileNotFoundException ex = Assert.Throws<FileNotFoundException>(() => helper.GetRequiredFileInfo(url));
+            helper.GetRequiredFileInfo(url);
 
-            //    var result = helper.MapPath(url);
-
-            Assert.Contains(url, ex.Message);
+            logger.Verify(
+                x => x.Log(
+                    LogLevel.Error,
+                    0,
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().Contains(url)),
+                    null,
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()
+                )
+            );
         }
 
         [Fact]
@@ -95,6 +105,7 @@ namespace Smidge.Tests
 
             var urlHelper = new Mock<IUrlHelper>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<Microsoft.Extensions.Logging.ILogger>();
             var fileProvider = new Mock<IFileProvider>();
             var fileProviderFilter = new DefaultFileProviderFilter();
 
@@ -103,7 +114,8 @@ namespace Smidge.Tests
                 fileProvider.Object,
                 fileProviderFilter,
                 cacheProvider.Object,
-                Mock.Of<IWebsiteInfo>());
+                Mock.Of<IWebsiteInfo>(),
+                logger.Object);
 
             var result = helper.ReverseMapPath(subPath, file.Object);
 

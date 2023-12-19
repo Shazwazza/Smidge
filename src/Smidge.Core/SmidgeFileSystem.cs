@@ -8,6 +8,7 @@ using Smidge.Models;
 using Smidge.Options;
 using Smidge.Cache;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Smidge
 {
@@ -21,17 +22,20 @@ namespace Smidge
         private readonly IWebsiteInfo _siteInfo;
         private readonly IFileProvider _sourceFileProvider;
         private readonly IFileProviderFilter _fileProviderFilter;
+        private readonly ILogger _logger;
 
         public SmidgeFileSystem(
             IFileProvider sourceFileProvider,
             IFileProviderFilter fileProviderFilter,
             ICacheFileSystem cacheFileProvider,
-            IWebsiteInfo siteInfo)
+            IWebsiteInfo siteInfo,
+            ILogger logger)
         {
             _sourceFileProvider = sourceFileProvider;
             _fileProviderFilter = fileProviderFilter;
             CacheFileSystem = cacheFileProvider;
             _siteInfo = siteInfo;
+            _logger = logger;
         }
 
         public ICacheFileSystem CacheFileSystem { get; }
@@ -43,7 +47,7 @@ namespace Smidge
 
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {path})", fileInfo.PhysicalPath ?? fileInfo.Name);
+                _logger.LogError("No such file exists {FileName} (mapped from {FilePath})", fileInfo.PhysicalPath ?? fileInfo.Name, path);
             }
 
             return fileInfo;
@@ -56,7 +60,7 @@ namespace Smidge
 
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
+                _logger.LogError("No such file exists {FileName} (mapped from {FilePath})", fileInfo.PhysicalPath ?? fileInfo.Name, filePath);
             }
 
             return fileInfo;
