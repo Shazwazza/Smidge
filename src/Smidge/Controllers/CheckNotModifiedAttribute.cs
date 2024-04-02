@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Smidge.Models;
 using System;
@@ -51,7 +51,7 @@ namespace Smidge.Controllers
                 if (context.Exception != null) return;
 
                 //get the model from the items
-                if (context.HttpContext.Items.TryGetValue(nameof(CheckNotModifiedAttribute), out var requestModel) && requestModel is RequestModel file)
+                if (context.HttpContext.Items.TryGetValue(nameof(CheckNotModifiedAttribute), out var requestModel) && requestModel is RequestModel file && file.IsBundleFound)
                 {
                     //Don't execute when the request is in Debug
                     if (file.Debug)
