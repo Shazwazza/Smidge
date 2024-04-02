@@ -10,7 +10,7 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Nuglify" Version="1.20.2" />
+    <PackageReference Include="Nuglify" Version="1.21.4" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
