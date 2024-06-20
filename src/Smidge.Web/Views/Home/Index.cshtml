@@ -39,12 +39,12 @@
 <body>
 
     @await Html.PartialAsync("TopBar")
-    @await Html.PartialAsync("LoadedDependencies", false)
+    @await Html.PartialAsync("LoadedDependencies", (bool?)null)
 
-    @await SmidgeHelper.JsHereAsync(debug: false)
+    @await SmidgeHelper.JsHereAsync()
     @await SmidgeHelper.JsHereAsync("test-bundle-1")
     @await SmidgeHelper.JsHereAsync("test-bundle-2")
-    @await SmidgeHelper.JsHereAsync("no-files", debug: false)
+    @await SmidgeHelper.JsHereAsync("no-files")
     @await SmidgeHelper.JsHereAsync("test-bundle-10")
 
     <script src="~/Js/non-bundled.js" asp-append-version="true"></script>

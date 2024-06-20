@@ -13,7 +13,10 @@ namespace Smidge.Controllers
     /// </summary>
     public sealed class AddExpiryHeadersAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => new AddExpiryHeaderFilter(serviceProvider.GetRequiredService<IHasher>(), serviceProvider.GetRequiredService<IBundleManager>());
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider) => new AddExpiryHeaderFilter(
+            serviceProvider.GetRequiredService<ISmidgeProfileStrategy>(),
+            serviceProvider.GetRequiredService<IHasher>(),
+            serviceProvider.GetRequiredService<IBundleManager>());
 
         public bool IsReusable => true;
 
@@ -21,13 +24,15 @@ namespace Smidge.Controllers
 
         public sealed class AddExpiryHeaderFilter : IActionFilter
         {
+            private readonly ISmidgeProfileStrategy _profileStrategy;
             private readonly IHasher _hasher;
             private readonly IBundleManager _bundleManager;
 
-            public AddExpiryHeaderFilter(IHasher hasher, IBundleManager bundleManager)
+            public AddExpiryHeaderFilter(ISmidgeProfileStrategy profileStrategy, IHasher hasher, IBundleManager bundleManager)
             {
-                _hasher = hasher;
-                _bundleManager = bundleManager;
+                _profileStrategy = profileStrategy ?? throw new ArgumentNullException(nameof(profileStrategy));
+                _hasher = hasher ?? throw new ArgumentNullException(nameof(hasher));
+                _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
             }
 
             public void OnActionExecuting(ActionExecutingContext context)
@@ -56,15 +61,34 @@ namespace Smidge.Controllers
                 var enableETag = true;
                 var cacheControlMaxAge = 10 * 24; //10 days
 
+                string profileName;
                 BundleOptions bundleOptions;
-
-                if (_bundleManager.TryGetValue(file.FileKey, out Bundle b))
+                
+                if (_bundleManager.TryGetValue(file.FileKey, out Bundle bundle))
                 {
-                    bundleOptions = b.GetBundleOptions(_bundleManager, file.Debug);
+                    // For backwards compatibility we'll use the Debug profile if it was explicitly requested in the request.
+                    if (file.Debug)
+                    {
+                        profileName = SmidgeOptionsProfile.Debug;
+                    }
+                    else
+                    {
+                        // If the Bundle explicitly specifies a profile to use then use it otherwise use the current profile 
+                        profileName = !string.IsNullOrEmpty(bundle.ProfileName)
+                            ? bundle.ProfileName
+                            : _profileStrategy.GetCurrentProfileName();
+                    }
+
+                    bundleOptions = bundle.GetBundleOptions(_bundleManager, profileName);
                 }
                 else
                 {
-                    bundleOptions = file.Debug ? _bundleManager.DefaultBundleOptions.DebugOptions : _bundleManager.DefaultBundleOptions.ProductionOptions;
+                    // For backwards compatibility we'll use the Debug profile if it was explicitly requested in the request.
+                    profileName = file.Debug
+                        ? SmidgeOptionsProfile.Debug
+                        : _profileStrategy.GetCurrentProfileName();
+
+                    _bundleManager.DefaultBundleOptions.TryGetProfileOptions(profileName, out bundleOptions);
                 }
 
                 if (bundleOptions != null)

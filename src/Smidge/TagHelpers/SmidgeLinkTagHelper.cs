@@ -39,9 +39,12 @@ namespace Smidge.TagHelpers
             _encoder = encoder;
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to generate content based on the debug or production configuration profile.
+        /// If left unset then the configured <see cref="ISmidgeProfileStrategy"/> will determine if the debug profile is used.
+        /// </summary>
         [HtmlAttributeName("debug")]
-        public bool Debug { get; set; }
-
+        public bool? Debug { get; set; }
         /// <summary>
         /// TODO: Need to figure out why we need this. If the order is default and executes 'after' the
         /// default tag helpers like the script tag helper and url resolution tag helper, the url resolution
