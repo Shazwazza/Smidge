@@ -9,6 +9,7 @@ using Smidge.Models;
 using Smidge.Hashing;
 using Smidge.Options;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Smidge.FileProcessors;
 using Microsoft.Extensions.Options;
 using Smidge.Cache;
@@ -28,9 +29,10 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>(), logger.Object);
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
@@ -58,9 +60,10 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>(), logger.Object);
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
@@ -89,9 +92,10 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
 
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>(), logger.Object);
             var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
             var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
             smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());

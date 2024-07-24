@@ -1,7 +1,8 @@
-﻿using Dazinator.Extensions.FileProviders;
+using Dazinator.Extensions.FileProviders;
 using Dazinator.Extensions.FileProviders.InMemory;
 using Dazinator.Extensions.FileProviders.InMemory.Directory;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Smidge.Cache;
 using Smidge.Hashing;
 using Smidge.Models;
@@ -17,12 +18,14 @@ namespace Smidge.InMemory
         private readonly IDirectory _directory;
         private readonly IHasher _hasher;
         private readonly IFileProvider _fileProvider;
+        private readonly ILogger _logger;
 
-        public MemoryCacheFileSystem(IHasher hasher)
+        public MemoryCacheFileSystem(IHasher hasher, ILogger logger)
         {
             _directory = new InMemoryDirectory();
             _fileProvider = new InMemoryFileProvider(_directory);
             _hasher = hasher;
+            _logger = logger;
         }
 
         public IFileInfo GetRequiredFileInfo(string filePath)
@@ -31,7 +34,7 @@ namespace Smidge.InMemory
 
             if (!fileInfo.Exists)
             {
-                throw new FileNotFoundException($"No such file exists {fileInfo.PhysicalPath ?? fileInfo.Name} (mapped from {filePath})", fileInfo.PhysicalPath ?? fileInfo.Name);
+                _logger.LogError("No such file exists {FileName} (mapped from {FilePath})", fileInfo.PhysicalPath ?? fileInfo.Name, filePath);
             }
 
             return fileInfo;

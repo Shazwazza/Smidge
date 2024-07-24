@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Smidge.Hashing;
 using Smidge.Cache;
@@ -28,10 +29,11 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
 
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>(), logger.Object);
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
@@ -59,9 +61,10 @@ namespace Smidge.Tests
 
             var fileProvider = new Mock<IFileProvider>();
             var cacheProvider = new Mock<ICacheFileSystem>();
+            var logger = new Mock<ILogger>();
             var fileProviderFilter = new DefaultFileProviderFilter();
             var hasher = Mock.Of<IHasher>();
-            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());          
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>(), logger.Object);          
             var batcher = new FileBatcher(fileSystemHelper, urlHelper, hasher);
 
             var file = new Mock<IFileInfo>();
