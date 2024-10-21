@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Smidge": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:62980;http://localhost:62981"
+    }
+  }
+}

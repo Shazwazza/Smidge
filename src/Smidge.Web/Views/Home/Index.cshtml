@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/foundation/5.5.2/css/foundation.min.css" />
     <link rel="stylesheet" href="inline-css-bundle" />
     <link rel="stylesheet" href="test-bundle-4" onload="window.alert('hello')" />
+    @await SmidgeHelper.CssHereAsync("notfound-map-css-bundle", debug: false)
 </head>
 <body>
 

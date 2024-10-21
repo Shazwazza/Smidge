@@ -45,7 +45,7 @@ namespace Smidge.CompositeFiles
             var handler = _keepFileExtensions ? "~/{0}/{1}.{3}{4}{2}" : "~/{0}/{1}{2}.{3}{4}";
             return _requestHelper.Content(string.Format(handler,
                                                         _options.BundleFilePath,
-                                                        Uri.EscapeUriString(bundleName),
+                                                        Uri.EscapeDataString(bundleName),
                                                         fileExtension,
                                                         debug ? 'd' : 'v',
                                                         cacheBusterValue));
@@ -167,7 +167,7 @@ namespace Smidge.CompositeFiles
                 string.Format(
                     handler,
                     _options.CompositeFilePath,
-                    Uri.EscapeUriString(fileKey),
+                    Uri.EscapeDataString(fileKey),
                     fileExtension,
                     cacheBusterValue));
         }

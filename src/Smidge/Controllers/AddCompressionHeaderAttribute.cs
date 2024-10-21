@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,7 +55,7 @@ namespace Smidge.Controllers
                 if (context.Exception != null) return;
 
                 //get the model from the items
-                if (context.HttpContext.Items.TryGetValue(nameof(AddCompressionHeaderAttribute), out var requestModel) && requestModel is RequestModel file)
+                if (context.HttpContext.Items.TryGetValue(nameof(AddCompressionHeaderAttribute), out var requestModel) && requestModel is RequestModel file && file.IsBundleFound)
                 {
                     var enableCompression = true;
 

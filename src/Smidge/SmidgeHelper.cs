@@ -1,4 +1,4 @@
-﻿using Smidge.Models;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -173,14 +173,12 @@ namespace Smidge
             //TODO: We should cache this, but problem is how do we do that with file watchers enabled? We'd still have to lookup the bundleOptions
             // or maybe we just cache when file watchers are not enabled - probably the way to do it
 
-            var bundle = _bundleManager.GetBundle(bundleName);
-            if (bundle == null)
-            {
-                throw new BundleNotFoundException(bundleName);
-            }
+            var bundle = _bundleManager.GetBundle(bundleName) ?? throw new BundleNotFoundException(bundleName);
 
             if (bundle.Files.Count == 0)
+            {
                 return Enumerable.Empty<string>();
+            }
 
             var result = new List<string>();
 

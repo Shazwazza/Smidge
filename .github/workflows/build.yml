@@ -89,7 +89,3 @@ jobs:
       with:
         name: smidge-nuget-${{ env.GitVersion_SemVer }}
         path:  ${{ github.workspace }}/_NugetOutput/*.*
-
-    - name: Publish to GitHub Packages
-      if: ${{ success() && github.event_name == 'pull_request' }}
-      run: dotnet nuget push "${{ github.workspace }}/_NugetOutput/*.nupkg"  --api-key ${{ secrets.GITHUB_TOKEN }} --source "https://nuget.pkg.github.com/shazwazza/index.json"
