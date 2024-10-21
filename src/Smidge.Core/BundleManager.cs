@@ -133,9 +133,7 @@ namespace Smidge
         /// <param name="type"></param>
         /// <returns></returns>
         public IEnumerable<string> GetBundleNames(WebFileType type)
-        {
-            return _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Key);
-        }
+            => _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Key);
 
         /// <summary>
         /// Returns all bundles registered
@@ -143,19 +141,14 @@ namespace Smidge
         /// <param name="type"></param>
         /// <returns></returns>
         public IEnumerable<Bundle> GetBundles(WebFileType type)
-        {
-            return _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Value);
-        }
+            => _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Value);
 
         /// <summary>
         /// Checks if the bundle exists by name
         /// </summary>
         /// <param name="bundleName"></param>
         /// <returns></returns>
-        public bool Exists(string bundleName)
-        {
-            return TryGetValue(bundleName, out _);
-        }
+        public bool Exists(string bundleName) => TryGetValue(bundleName, out _);
 
         /// <summary>
         /// Adds an item to the bundle, if the bundle doesn't exist it will be created
@@ -164,8 +157,7 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, CssFile file)
         {
-            Bundle collection;
-            if (TryGetValue(bundleName, out collection))
+            if (TryGetValue(bundleName, out Bundle collection))
             {
                 _logger.LogDebug($"Adding {WebFileType.Css} file '{file.FilePath}' to bundle '{bundleName}'");
                 collection.Files.Add(file);
@@ -183,8 +175,7 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, JavaScriptFile file)
         {
-            Bundle collection;
-            if (TryGetValue(bundleName, out collection))
+            if (TryGetValue(bundleName, out Bundle collection))
             {
                 _logger.LogDebug($"Adding {WebFileType.Js} file '{file.FilePath}' to bundle '{bundleName}'");
                 collection.Files.Add(file);

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Smidge.Models;
 
 namespace Smidge
@@ -23,10 +24,20 @@ namespace Smidge
 
         public ISmidgeRequire RequiresJs(JavaScriptFile file)
         {
+            if (file is null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
             if (_type == WebFileType.Css)
+            {
                 throw new InvalidOperationException("Cannot add css file to a js bundle");
+            }
+
             if (_requestHelper.IsExternalRequestPath(file.FilePath))
+            {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
+            }
 
             _bundleManager.AddToBundle(_bundleName, file);
             return this;
@@ -35,12 +46,17 @@ namespace Smidge
         public ISmidgeRequire RequiresJs(params string[] paths)
         {
             if (_type == WebFileType.Css)
+            {
                 throw new InvalidOperationException("Cannot add css file to a js bundle");
+            }
 
-            foreach (var path in paths)
+            foreach (var path in paths.Where(p => !string.IsNullOrWhiteSpace(p)))
             {
                 if (_requestHelper.IsExternalRequestPath(path))
+                {
                     throw new InvalidOperationException("Cannot process an external file as part of a bundle");
+                }
+
                 _bundleManager.AddToBundle(_bundleName, new JavaScriptFile(path));
             }
             return this;
@@ -48,10 +64,21 @@ namespace Smidge
 
         public ISmidgeRequire RequiresCss(CssFile file)
         {
+            if (file is null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
             if (_type == WebFileType.Js)
+            {
                 throw new InvalidOperationException("Cannot add js file to a css bundle");
+            }
+
             if (_requestHelper.IsExternalRequestPath(file.FilePath))
+            {
                 throw new InvalidOperationException("Cannot process an external file as part of a bundle");
+            }
+
             _bundleManager.AddToBundle(_bundleName, file);
             return this;
         }
@@ -59,12 +86,17 @@ namespace Smidge
         public ISmidgeRequire RequiresCss(params string[] paths)
         {
             if (_type == WebFileType.Js)
+            {
                 throw new InvalidOperationException("Cannot add js file to a css bundle");
+            }
 
-            foreach (var path in paths)
+            foreach (var path in paths.Where(p => !string.IsNullOrWhiteSpace(p)))
             {
                 if (_requestHelper.IsExternalRequestPath(path))
+                {
                     throw new InvalidOperationException("Cannot process an external file as part of a bundle");
+                }
+
                 _bundleManager.AddToBundle(_bundleName, new CssFile(path));
             }
             return this;
