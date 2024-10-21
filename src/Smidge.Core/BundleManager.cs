@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 using Smidge.Models;
@@ -202,9 +202,11 @@ namespace Smidge
         /// <returns></returns>
         public Bundle GetBundle(string bundleName)
         {
-            Bundle collection;
-            if (!TryGetValue(bundleName, out collection))
+            if (!TryGetValue(bundleName, out Bundle collection))
+            {
                 return null;
+            }
+
             return collection;
         }
     }
