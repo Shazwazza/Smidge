@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 
 namespace Smidge.Options
 {
@@ -8,29 +9,39 @@ namespace Smidge.Options
     public sealed class BundleEnvironmentOptionsBuilder
     {
         private readonly BundleEnvironmentOptions _bundleEnvironmentOptions;
-        private Action<BundleOptionsBuilder> _debugBuilder;
-        private Action<BundleOptionsBuilder> _productionBuilder;
-        private bool _built = false;
+
+        private readonly Dictionary<string, Action<BundleOptionsBuilder>> _profileBuilders;
+        private readonly bool _built = false;
 
         public BundleEnvironmentOptionsBuilder(BundleEnvironmentOptions bundleEnvironmentOptions)
         {
+            _profileBuilders = new Dictionary<string, Action<BundleOptionsBuilder>>();
+
             _bundleEnvironmentOptions = bundleEnvironmentOptions;
         }
 
         public BundleEnvironmentOptionsBuilder ForDebug(Action<BundleOptionsBuilder> debugBuilder)
         {
-            if (debugBuilder == null) throw new ArgumentNullException(nameof(debugBuilder));
-            _debugBuilder = debugBuilder;
-            return this;
+            return ForProfile(SmidgeOptionsProfile.Debug, debugBuilder);
         }
 
         public BundleEnvironmentOptionsBuilder ForProduction(Action<BundleOptionsBuilder> productionBuilder)
         {
-            if (productionBuilder == null) throw new ArgumentNullException(nameof(productionBuilder));
-            _productionBuilder = productionBuilder;
-            return this;
+            return ForProfile(SmidgeOptionsProfile.Production, productionBuilder);
         }
 
+        public BundleEnvironmentOptionsBuilder ForProfile(string profileName, Action<BundleOptionsBuilder> profileOptionsBuilder)
+        {
+            if (string.IsNullOrEmpty(profileName))
+                throw new ArgumentNullException(nameof(profileName));
+
+            if (profileOptionsBuilder == null)
+                throw new ArgumentNullException(nameof(profileOptionsBuilder));
+
+            _profileBuilders.Add(profileName, profileOptionsBuilder);
+            return this;
+        }
+        
         /// <summary>
         /// Builds the bundle environment options based on the callbacks specified
         /// </summary>
@@ -39,13 +50,10 @@ namespace Smidge.Options
         {
             if (!_built)
             {
-                if (_debugBuilder != null)
+                foreach (var (profileName, profileBuilder) in _profileBuilders)
                 {
-                    _debugBuilder(new BundleOptionsBuilder(_bundleEnvironmentOptions.DebugOptions));
-                }
-                if (_productionBuilder != null)
-                {
-                    _productionBuilder(new BundleOptionsBuilder(_bundleEnvironmentOptions.ProductionOptions));
+                    BundleOptions options = _bundleEnvironmentOptions[profileName];
+                    profileBuilder.Invoke(new BundleOptionsBuilder(options));
                 }
             }
             return _bundleEnvironmentOptions;

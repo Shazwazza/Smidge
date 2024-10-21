@@ -1,4 +1,4 @@
-﻿using Smidge.Models;
+using Smidge.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +10,7 @@ using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
+using Smidge.Options;
 
 namespace Smidge
 {
@@ -18,6 +19,7 @@ namespace Smidge
     /// </summary>
     public class SmidgeHelper : ISmidgeRequire
     {
+        private readonly ISmidgeProfileStrategy _profileStrategy;
         private readonly DynamicallyRegisteredWebFiles _dynamicallyRegisteredWebFiles;
         private readonly IPreProcessManager _preProcessManager;
         private readonly ISmidgeFileSystem _fileSystem;
@@ -34,6 +36,7 @@ namespace Smidge
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="profileStrategy"></param>
         /// <param name="fileSetGenerator"></param>
         /// <param name="dynamicallyRegisteredWebFiles"></param>
         /// <param name="preProcessManager"></param>
@@ -46,6 +49,7 @@ namespace Smidge
         /// <param name="httpContextAccessor"></param>
         /// <param name="cacheBusterResolver"></param>
         public SmidgeHelper(
+            ISmidgeProfileStrategy profileStrategy,
             IBundleFileSetGenerator fileSetGenerator,
             DynamicallyRegisteredWebFiles dynamicallyRegisteredWebFiles,
             IPreProcessManager preProcessManager,
@@ -58,6 +62,7 @@ namespace Smidge
             IHttpContextAccessor httpContextAccessor,
             CacheBusterResolver cacheBusterResolver)
         {
+            _profileStrategy = profileStrategy ?? throw new ArgumentNullException(nameof(profileStrategy));
             _fileSetGenerator = fileSetGenerator ?? throw new ArgumentNullException(nameof(fileSetGenerator));
             _processorFactory = processorFactory ?? throw new ArgumentNullException(nameof(processorFactory));
             _urlManager = urlManager ?? throw new ArgumentNullException(nameof(urlManager));
@@ -71,7 +76,7 @@ namespace Smidge
             _fileBatcher = new FileBatcher(_fileSystem, _requestHelper, hasher);
         }
 
-        public async Task<HtmlString> JsHereAsync(string bundleName, bool debug = false)
+        public async Task<HtmlString> JsHereAsync(string bundleName, bool? debug = null)
         {
             var urls = await GenerateJsUrlsAsync(bundleName, debug);
             var result = new StringBuilder();
@@ -83,7 +88,7 @@ namespace Smidge
             return new HtmlString(result.ToString());
         }
 
-        public async Task<HtmlString> CssHereAsync(string bundleName, bool debug = false)
+        public async Task<HtmlString> CssHereAsync(string bundleName, bool? debug = null)
         {
             var urls = await GenerateCssUrlsAsync(bundleName, debug);
             var result = new StringBuilder();
@@ -103,7 +108,7 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
+        public async Task<HtmlString> JsHereAsync(PreProcessPipeline pipeline = null, bool? debug = null)
         {
             var result = new StringBuilder();
             var urls = await GenerateJsUrlsAsync(pipeline, debug);
@@ -122,7 +127,7 @@ namespace Smidge
         /// TODO: Once the tags are rendered the collection on the context is cleared. Therefore if this method is called multiple times it will
         /// render anything that has been registered as 'pending' but has not been rendered.
         /// </remarks>
-        public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null, bool debug = false)
+        public async Task<HtmlString> CssHereAsync(PreProcessPipeline pipeline = null, bool? debug = null)
         {
             var result = new StringBuilder();
             var urls = await GenerateCssUrlsAsync(pipeline, debug);
@@ -137,12 +142,12 @@ namespace Smidge
         /// Generates the list of URLs to render based on what is dynamically registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
+        public async Task<IEnumerable<string>> GenerateJsUrlsAsync(PreProcessPipeline pipeline = null, bool? debug = null)
         {
             return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.JavaScriptFiles, WebFileType.Js, pipeline, debug);
         }
 
-        public Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool debug = false)
+        public Task<IEnumerable<string>> GenerateJsUrlsAsync(string bundleName, bool? debug = null)
         {
             return Task.FromResult(GenerateBundleUrlsAsync(bundleName, ".js", debug));
         }
@@ -151,12 +156,12 @@ namespace Smidge
         /// Generates the list of URLs to render based on what is dynamically registered
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool debug = false)
+        public async Task<IEnumerable<string>> GenerateCssUrlsAsync(PreProcessPipeline pipeline = null, bool? debug = null)
         {
             return await GenerateUrlsAsync(_dynamicallyRegisteredWebFiles.CssFiles, WebFileType.Css, pipeline, debug);
         }
 
-        public Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool debug = false)
+        public Task<IEnumerable<string>> GenerateCssUrlsAsync(string bundleName, bool? debug = null)
         {
             return Task.FromResult(GenerateBundleUrlsAsync(bundleName, ".css", debug));
         }
@@ -168,7 +173,7 @@ namespace Smidge
         /// <param name="fileExt"></param>
         /// <param name="debug"></param>
         /// <returns></returns>
-        private IEnumerable<string> GenerateBundleUrlsAsync(string bundleName, string fileExt, bool debug)
+        private IEnumerable<string> GenerateBundleUrlsAsync(string bundleName, string fileExt, bool? debug = null)
         {
             //TODO: We should cache this, but problem is how do we do that with file watchers enabled? We'd still have to lookup the bundleOptions
             // or maybe we just cache when file watchers are not enabled - probably the way to do it
@@ -184,8 +189,23 @@ namespace Smidge
 
             var result = new List<string>();
 
+            string profileName;
+            if (debug != null)
+            {
+                // Backwards compatibility - use the Debug parameter to choose the profile to use
+                profileName = debug.Value ? SmidgeOptionsProfile.Debug : SmidgeOptionsProfile.Default;
+            }
+            else
+            {
+                // If the Bundle explicitly specifies a profile to use then use it otherwise use the current profile 
+                profileName = !string.IsNullOrEmpty(bundle.ProfileName)
+                    ? bundle.ProfileName
+                    : _profileStrategy.GetCurrentProfileName();
+            }
+            
+
             //get the bundle options from the bundle if they have been set otherwise with the defaults
-            var bundleOptions = bundle.GetBundleOptions(_bundleManager, debug);
+            var bundleOptions = bundle.GetBundleOptions(_bundleManager, profileName);
 
             var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             var cacheBusterValue = cacheBuster.GetValue();
@@ -197,11 +217,14 @@ namespace Smidge
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
                         bundle.Files[0].DependencyType));
-                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug, cacheBusterValue)));
+
+                // For backwards compatibility we'll only generate a debug token in the url if Debug was explicitly requested.
+                result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug is true, cacheBusterValue)));
                 return result;
             }
 
-            var url = _urlManager.GetUrl(bundleName, fileExt, debug, cacheBusterValue);
+            // For backwards compatibility we'll only generate a debug token in the url if Debug was explicitly requested.
+            var url = _urlManager.GetUrl(bundleName, fileExt, debug is true, cacheBusterValue);
             if (!string.IsNullOrWhiteSpace(url))
             {
                 result.Add(url);
@@ -218,22 +241,31 @@ namespace Smidge
         /// <param name="pipeline"></param>
         /// <param name="debug"></param>
         /// <returns></returns>
-        private async Task<IEnumerable<string>> GenerateUrlsAsync(
-            IEnumerable<IWebFile> files,
-            WebFileType fileType,
-            PreProcessPipeline pipeline = null,
-            bool debug = false)
+        private async Task<IEnumerable<string>> GenerateUrlsAsync(IEnumerable<IWebFile> files, WebFileType fileType, PreProcessPipeline pipeline = null, bool? debug = null)
         {
             var result = new List<string>();
 
             var orderedFiles = _fileSetGenerator.GetOrderedFileSet(files, pipeline ?? _processorFactory.CreateDefault(fileType));
 
-            var cacheBuster = _cacheBusterResolver.GetCacheBuster(_bundleManager.GetDefaultBundleOptions(debug).GetCacheBusterType());
+            string profileName;
+            if (debug != null)
+            {
+                // Backwards compatibility - use the Debug parameter to choose the profile to use
+                profileName = debug.Value ? SmidgeOptionsProfile.Debug : SmidgeOptionsProfile.Default;
+            }
+            else
+            {
+                profileName = _profileStrategy.GetCurrentProfileName();
+            }
+
+            var bundleOptions = _bundleManager.GetDefaultBundleOptions(profileName);
+
+            var cacheBuster = _cacheBusterResolver.GetCacheBuster(bundleOptions.GetCacheBusterType());
             var cacheBusterValue = cacheBuster.GetValue();
 
-            if (debug)
+            if (!bundleOptions.ProcessAsCompositeFile)
             {
-                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), debug, cacheBusterValue));
+                return orderedFiles.Select(x => _urlManager.AppendCacheBuster(_requestHelper.Content(x), true, cacheBusterValue));
             }
 
             var compression = _requestHelper.GetClientCompression(_httpContextAccessor.HttpContext.Request.Headers);
@@ -262,7 +294,7 @@ namespace Smidge
                     {
                         //now we need to determine if these files have already been minified
 
-                        var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
+                        //var defaultBundleOptions = _bundleManager.GetDefaultBundleOptions(false);
 
                         var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, compression, u.Key, out _);
                         if (!cacheFile.Exists)
@@ -272,7 +304,7 @@ namespace Smidge
                                 //need to process/minify these files - need to use their original paths of course
                                 foreach (var file in batch.Select(x => x.Original))
                                 {
-                                    await _preProcessManager.ProcessAndCacheFileAsync(file, null, bundleContext);
+                                    await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions, bundleContext);
                                 }
                             }
                         }

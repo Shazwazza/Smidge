@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -35,7 +35,7 @@ namespace Smidge.FileProcessors
             if (file == null) throw new ArgumentNullException(nameof(file));
             if (file.Pipeline == null) throw new ArgumentNullException($"{nameof(file)}.Pipeline");
 
-            await ProcessFile(file, _bundleManager.GetAvailableOrDefaultBundleOptions(bundleOptions, false), bundleContext);
+            await ProcessFile(file, _bundleManager.GetAvailableOrDefaultBundleOptions(bundleOptions), bundleContext);
         }
 
         private async Task ProcessFile(IWebFile file, BundleOptions bundleOptions, BundleContext bundleContext)
