@@ -28,7 +28,7 @@ namespace Smidge.Controllers
     [AllowAnonymous]
     public class SmidgeController : Controller
     {
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> s_locks;
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> s_locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
