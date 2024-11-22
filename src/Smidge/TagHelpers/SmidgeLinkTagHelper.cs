@@ -77,7 +77,7 @@ namespace Smidge.TagHelpers
                 return;
             }
 
-            if (context.AllAttributes.TryGetAttribute("as", out TagHelperAttribute attribute) && attribute.Value is not "style")
+            if (context.AllAttributes.TryGetAttribute("as", out TagHelperAttribute attribute) && attribute.Value?.ToString() is not "style")
             {
                 return;
             }
