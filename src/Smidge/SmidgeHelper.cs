@@ -310,6 +310,7 @@ namespace Smidge
             {
                 RequiresCss(new CssFile(path));
             }
+
             return this;
         }
 
