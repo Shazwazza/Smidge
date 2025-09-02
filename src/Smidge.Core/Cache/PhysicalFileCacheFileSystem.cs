@@ -78,11 +78,24 @@ namespace Smidge.Cache
         public Task WriteFileAsync(string filePath, string contents)
         {
             if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+            {
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
+            }
+
+            if (filePath.Contains(SmidgeConstants.SchemeDelimiter) || Path.IsPathRooted(filePath))
+            {
+                throw new InvalidOperationException("Illegal characters found in path.");
+            }
 
             filePath = GetFullFilePathForWriting(filePath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            string directoryPath = Path.GetDirectoryName(filePath);
+            if (!directoryPath.InvariantIgnoreCaseStartsWith(_fileProvider.Root))
+            {
+                throw new InvalidOperationException("Illegal characters found in path.");
+            }
+
+            Directory.CreateDirectory(directoryPath);
             using (var writer = File.CreateText(filePath))
             {
                 writer.Write(contents);
@@ -93,11 +106,24 @@ namespace Smidge.Cache
         public async Task WriteFileAsync(string filePath, Stream contents)
         {
             if (string.IsNullOrEmpty(Path.GetExtension(filePath)))
+            {
                 throw new InvalidOperationException("The path supplied must contain a file extension.");
+            }
+
+            if (filePath.Contains(SmidgeConstants.SchemeDelimiter) || Path.IsPathRooted(filePath))
+            {
+                throw new InvalidOperationException("Illegal characters found in path.");
+            }
 
             filePath = GetFullFilePathForWriting(filePath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+            string directoryPath = Path.GetDirectoryName(filePath);
+            if (!directoryPath.InvariantIgnoreCaseStartsWith(_fileProvider.Root))
+            {
+                throw new InvalidOperationException("Illegal characters found in path.");
+            }
+
+            Directory.CreateDirectory(directoryPath);
             using (var newFile = File.Create(filePath))
             {
                 await contents.CopyToAsync(newFile);
