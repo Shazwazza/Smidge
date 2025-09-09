@@ -61,6 +61,7 @@ namespace Smidge.Models
         public CompressionType Compression { get; private set; }
 
         public string Extension { get; private set; }
+
         public string Mime { get; private set; }
 
         public DateTime LastFileWriteTime { get; set; }

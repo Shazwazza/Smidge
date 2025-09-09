@@ -36,6 +36,7 @@ namespace Smidge.Controllers
         private readonly PreProcessPipelineFactory _processorFactory;
         private readonly IPreProcessManager _preProcessManager;
         private readonly ILogger _logger;
+        private readonly CacheBusterResolver _cacheBusterResolver;
 
         /// <summary>
         /// Constructor
@@ -52,7 +53,8 @@ namespace Smidge.Controllers
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory,
             IPreProcessManager preProcessManager,
-            ILogger<SmidgeController> logger)
+            ILogger<SmidgeController> logger,
+            CacheBusterResolver cacheBusterResolver)
         {
             _fileSystem = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));
             _bundleManager = bundleManager ?? throw new ArgumentNullException(nameof(bundleManager));
@@ -60,6 +62,7 @@ namespace Smidge.Controllers
             _processorFactory = processorFactory ?? throw new ArgumentNullException(nameof(processorFactory));
             _preProcessManager = preProcessManager ?? throw new ArgumentNullException(nameof(preProcessManager));
             _logger = logger;
+            _cacheBusterResolver = cacheBusterResolver;
         }
 
         /// <summary>
@@ -75,9 +78,7 @@ namespace Smidge.Controllers
                 return NotFound();
             }
 
-            Options.BundleOptions bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
-
-            if (TryGetBundle(bundleModel, out IActionResult actionResult, out var cacheFilePath))
+            if (TryGetBundle(bundleModel, out IActionResult actionResult, out string cacheFilePath))
             {
                 return actionResult;
             }
@@ -106,7 +107,27 @@ namespace Smidge.Controllers
                     return NotFound();
                 }
 
-                var cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
+                Options.BundleOptions bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
+
+                // Validate the cache buster in the case where the file wasn't eagerly created by the view,
+                // and the request is coming in directly to the controller action.
+                string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
+                Type cacheBusterType = bundleOptions.GetCacheBusterType();
+                if (cacheBusterType != typeof(TimestampCacheBuster))
+                {
+                    ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
+                    if (cacheBusterValue != cacheBuster.GetValue())
+                    {
+                        // We cannot let this continue, someone is trying to spoof the cache buster value,
+                        // which can lead to lots of arbitrary files being created on the server.
+                        _logger.LogWarning(
+                            "An invalid cache buster value {cacheBusterValue} was detected for the bundle {bundleName} which was not produced by the registered cache buster type {cacheBusterType}",
+                            cacheBusterValue,
+                            bundleModel.Bundle.Name,
+                            cacheBusterType);
+                        return BadRequest();
+                    }
+                }
 
                 using var bundleContext = new BundleContext(cacheBusterValue, bundleModel, cacheFilePath);
 
@@ -115,7 +136,7 @@ namespace Smidge.Controllers
                 _logger.LogDebug($"Processing bundle '{bundleModel.FileKey}', debug? {bundleModel.Debug} ...");
 
                 //we need to do the minify on the original files
-                foreach (var file in files)
+                foreach (IWebFile file in files)
                 {
                     await _preProcessManager.ProcessAndCacheFileAsync(file, bundleOptions, bundleContext);
                 }
@@ -170,17 +191,15 @@ namespace Smidge.Controllers
                 return NotFound();
             }
 
-            var cacheBusterValue = file.ParsedPath.CacheBusterValue;
-
-            var cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, file.Compression, file.FileKey, out var cacheFilePath);
-
+            string cacheBusterValue = file.ParsedPath.CacheBusterValue;
+            IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, file.Compression, file.FileKey, out string cacheFilePath);
             if (cacheFile.Exists)
             {
-                //this is already processed, return it
+                // this is already processed, return it
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
                 {
-                    //if physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
-                    //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
+                    // If physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
+                    // FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
                     return PhysicalFile(cacheFile.PhysicalPath, file.Mime);
                 }
                 else
@@ -189,26 +208,42 @@ namespace Smidge.Controllers
                 }
             }
 
-            using (var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath))
+            // Validate the cache buster in the case where the file wasn't eagerly created by the view,
+            // and the request is coming in directly to the controller action.
+            Type cacheBusterType = _bundleManager.GetDefaultBundleOptions(file.Debug).GetCacheBusterType();
+            if (cacheBusterType != typeof(TimestampCacheBuster))
             {
-                var files = file.ParsedPath.Names.Select(filePath =>
-                    _fileSystem.CacheFileSystem.GetRequiredFileInfo(
-                        $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}"));
-
-                using (var resultStream = await GetCombinedStreamAsync(files, bundleContext))
+                ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
+                if (cacheBusterValue != cacheBuster.GetValue())
                 {
-                    var compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
-
-                    await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFilePath, compressedStream);
-
-                    return File(compressedStream, file.Mime);
+                    // We cannot let this continue, someone is trying to spoof the cache buster value,
+                    // which can lead to lots of arbitrary files being created on the server.
+                    _logger.LogWarning(
+                        "An invalid cache buster value {cacheBusterValue} was detected for the composite file {compositeFile} which was not produced by the registered cache buster type {cacheBusterType}",
+                        cacheBusterValue,
+                        cacheFilePath,
+                        cacheBusterType);
+                    return BadRequest();
                 }
             }
+
+            using var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath);
+            IEnumerable<IFileInfo> files = file.ParsedPath.Names.Select(filePath =>
+                _fileSystem.CacheFileSystem.GetRequiredFileInfo(
+                    $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}"));
+
+            using Stream resultStream = await GetCombinedStreamAsync(files, bundleContext);
+            Stream compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
+
+            await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFilePath, compressedStream);
+
+            return File(compressedStream, file.Mime);
         }
 
         private bool TryGetBundle(BundleRequestModel bundleModel, out IActionResult actionResult, out string cacheFilePath)
         {
-            var cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
+            // TODO: Here or further internally we need to validate the arbitrary value.
+            string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
 
             //now we need to determine if this bundle has already been created
             IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, bundleModel.Compression, bundleModel.FileKey, out cacheFilePath);
@@ -239,7 +274,9 @@ namespace Smidge.Controllers
         {
             await cacheProvider.WriteFileAsync(filePath, compositeStream);
             if (compositeStream.CanSeek)
+            {
                 compositeStream.Position = 0;
+            }
         }
 
         /// <summary>
@@ -259,15 +296,15 @@ namespace Smidge.Controllers
                     .Select(x => x.CreateReadStream())
                     .ToList();
 
-                var delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";\n" : "\n";
-                var combined = await bundleContext.GetCombinedStreamAsync(inputs, delimeter);
+                string delimeter = bundleContext.BundleRequest.Extension == ".js" ? ";\n" : "\n";
+                Stream combined = await bundleContext.GetCombinedStreamAsync(inputs, delimeter);
                 return combined;
             }
             finally
             {
                 if (inputs != null)
                 {
-                    foreach (var input in inputs)
+                    foreach (Stream input in inputs)
                     {
                         input.Dispose();
                     }

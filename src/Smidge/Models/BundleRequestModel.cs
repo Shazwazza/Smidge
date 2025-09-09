@@ -1,7 +1,6 @@
-using Smidge.CompositeFiles;
-using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Smidge.CompositeFiles;
 
 namespace Smidge.Models
 {
@@ -41,7 +40,8 @@ namespace Smidge.Models
             Bundle = bundle;
         }
 
-        public Bundle Bundle { get; }        
+        public Bundle Bundle { get; }
+
         public override string FileKey { get; }
     }
 }
