@@ -100,8 +100,6 @@ namespace Smidge
 
                     return GetFilesInFolder(fileProvider, folder, extension, 0, 0);
                 }
-
-                return Enumerable.Empty<string>();
             }
         }
 
