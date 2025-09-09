@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Globalization;
 
 namespace Smidge.Cache
 {
-
     /// <summary>
     /// Creates a cache bust value for the lifetime of the app domain
     /// </summary>
@@ -12,16 +11,10 @@ namespace Smidge.Cache
     /// </remarks>
     public class AppDomainLifetimeCacheBuster : ICacheBuster
     {
-        public AppDomainLifetimeCacheBuster()
-        {
-            _value = new Lazy<string>(() => DateTime.UtcNow.Ticks.ToString(NumberFormatInfo.InvariantInfo));
-        }
+        public AppDomainLifetimeCacheBuster() => s_value = new Lazy<string>(() => DateTime.UtcNow.Ticks.ToString(NumberFormatInfo.InvariantInfo));
 
-        private static Lazy<string> _value;
+        private static Lazy<string> s_value;
 
-        public string GetValue()
-        {
-            return _value.Value;
-        }
+        public string GetValue() => s_value.Value;
     }
 }
