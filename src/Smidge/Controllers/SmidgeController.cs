@@ -113,9 +113,9 @@ namespace Smidge.Controllers
                 // and the request is coming in directly to the controller action.
                 string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
                 Type cacheBusterType = bundleOptions.GetCacheBusterType();
-                if (cacheBusterType != typeof(TimestampCacheBuster))
+                ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
+                if (cacheBuster is not TimestampCacheBuster timestampCacheBuster || !timestampCacheBuster.TimestampBased)
                 {
-                    ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
                     if (cacheBusterValue != cacheBuster.GetValue())
                     {
                         // We cannot let this continue, someone is trying to spoof the cache buster value,
@@ -211,9 +211,9 @@ namespace Smidge.Controllers
             // Validate the cache buster in the case where the file wasn't eagerly created by the view,
             // and the request is coming in directly to the controller action.
             Type cacheBusterType = _bundleManager.GetDefaultBundleOptions(file.Debug).GetCacheBusterType();
-            if (cacheBusterType != typeof(TimestampCacheBuster))
+            ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
+            if (cacheBuster is not TimestampCacheBuster timestampCacheBuster || !timestampCacheBuster.TimestampBased)
             {
-                ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
                 if (cacheBusterValue != cacheBuster.GetValue())
                 {
                     // We cannot let this continue, someone is trying to spoof the cache buster value,

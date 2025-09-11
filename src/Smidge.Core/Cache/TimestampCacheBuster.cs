@@ -11,6 +11,8 @@ namespace Smidge.Cache
         private readonly AppDomainLifetimeCacheBuster _appDomainLifetimeCacheBuster = new AppDomainLifetimeCacheBuster();
         private readonly IHostEnvironment _hostEnvironment;
 
+        public bool TimestampBased => _hostEnvironment.IsDevelopment();
+
         public TimestampCacheBuster(IHostEnvironment hostEnvironment, AppDomainLifetimeCacheBuster appDomainLifetimeCacheBuster)
         {
             _hostEnvironment = hostEnvironment;
