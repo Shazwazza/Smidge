@@ -1,24 +1,34 @@
 using System;
+using Microsoft.Extensions.Hosting;
 
 namespace Smidge.Cache
 {
     /// <summary>
-    /// When in DEBUG mode, cache bust for every request, else in RELEASE mode, cache bust for the lifetime of the AppDomain.
+    /// When in DEBUG mode, cache bust for every request, else cache bust for the lifetime of the AppDomain.
     /// </summary>
     public class TimestampCacheBuster : ICacheBuster
     {
-#if RELEASE
         private readonly AppDomainLifetimeCacheBuster _appDomainLifetimeCacheBuster = new AppDomainLifetimeCacheBuster();
+        private readonly IHostEnvironment _hostEnvironment;
 
-        public string GetValue() => _appDomainLifetimeCacheBuster.GetValue();
-#else
+        public TimestampCacheBuster(IHostEnvironment hostEnvironment, AppDomainLifetimeCacheBuster appDomainLifetimeCacheBuster)
+        {
+            _hostEnvironment = hostEnvironment;
+            _appDomainLifetimeCacheBuster = appDomainLifetimeCacheBuster;
+        }
+
         public string GetValue()
         {
-            // round to the nearest 5 seconds
-            long roundedTicks = (DateTime.UtcNow.Ticks + 25000000) / 50000000 * 50000000;
-            return roundedTicks.ToString();
+            if (_hostEnvironment.IsDevelopment())
+            {
+                // round to the nearest 5 seconds
+                long roundedTicks = (DateTime.UtcNow.Ticks + 25000000) / 50000000 * 50000000;
+                return roundedTicks.ToString();
+            }
+            else
+            {
+                return _appDomainLifetimeCacheBuster.GetValue();
+            }
         }
-#endif
-
     }
 }
