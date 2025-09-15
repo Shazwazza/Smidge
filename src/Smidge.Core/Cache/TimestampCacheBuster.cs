@@ -13,10 +13,9 @@ namespace Smidge.Cache
 
         public bool TimestampBased => _hostEnvironment.IsDevelopment();
 
-        public TimestampCacheBuster(IHostEnvironment hostEnvironment, AppDomainLifetimeCacheBuster appDomainLifetimeCacheBuster)
+        public TimestampCacheBuster(IHostEnvironment hostEnvironment)
         {
             _hostEnvironment = hostEnvironment;
-            _appDomainLifetimeCacheBuster = appDomainLifetimeCacheBuster;
         }
 
         public string GetValue()
