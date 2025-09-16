@@ -13,10 +13,7 @@ namespace Smidge.Cache
 
         public bool TimestampBased => _hostEnvironment.IsDevelopment();
 
-        public TimestampCacheBuster(IHostEnvironment hostEnvironment)
-        {
-            _hostEnvironment = hostEnvironment;
-        }
+        public TimestampCacheBuster(IHostEnvironment hostEnvironment) => _hostEnvironment = hostEnvironment;
 
         public string GetValue()
         {
