@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Smidge.FileProcessors;
 using Smidge.Models;
 using Smidge.Options;
 using Xunit;
@@ -111,6 +112,44 @@ namespace Smidge.Tests
             // Assert
             var bundle = bundleManager.GetBundle("test-bundle");
             Assert.Equal(1, bundle.Files.Count);
+        }
+
+        [Fact]
+        public void Create_Js_Bundle_With_Pipeline_Filters_Null_Files()
+        {
+            // Arrange
+            var bundleManager = CreateBundleManager();
+            var file1 = new JavaScriptFile("~/test1.js");
+            var file2 = new JavaScriptFile("~/test2.js");
+            var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
+
+            // Act
+            var bundle = bundleManager.Create("test-bundle", pipeline, file1, null, file2);
+
+            // Assert
+            Assert.NotNull(bundle);
+            Assert.Equal(2, bundle.Files.Count);
+            Assert.Equal("~/test1.js", bundle.Files[0].FilePath);
+            Assert.Equal("~/test2.js", bundle.Files[1].FilePath);
+        }
+
+        [Fact]
+        public void Create_Css_Bundle_With_Pipeline_Filters_Null_Files()
+        {
+            // Arrange
+            var bundleManager = CreateBundleManager();
+            var file1 = new CssFile("~/test1.css");
+            var file2 = new CssFile("~/test2.css");
+            var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
+
+            // Act
+            var bundle = bundleManager.Create("test-bundle", pipeline, file1, null, file2);
+
+            // Assert
+            Assert.NotNull(bundle);
+            Assert.Equal(2, bundle.Files.Count);
+            Assert.Equal("~/test1.css", bundle.Files[0].FilePath);
+            Assert.Equal("~/test2.css", bundle.Files[1].FilePath);
         }
     }
 }
