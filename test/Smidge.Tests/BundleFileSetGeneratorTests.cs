@@ -126,5 +126,36 @@ namespace Smidge.Tests
             Assert.Equal("~/test/test_2.js", result[1].FilePath);
             Assert.Equal("~/test/test_3.js", result[2].FilePath);
         }
+
+        [Fact]
+        public void Get_Ordered_File_Set_Throws_On_Null_File()
+        {
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+            websiteInfo.Setup(x => x.GetBaseUrl()).Returns(new Uri("http://test.com"));
+
+            var urlHelper = new RequestHelper(websiteInfo.Object);
+
+            var fileProvider = new Mock<IFileProvider>();
+            var cacheProvider = new Mock<ICacheFileSystem>();
+            var fileProviderFilter = new DefaultFileProviderFilter();
+
+            var fileSystemHelper = new SmidgeFileSystem(fileProvider.Object, fileProviderFilter, cacheProvider.Object, Mock.Of<IWebsiteInfo>());
+            var pipeline = new PreProcessPipeline(Enumerable.Empty<IPreProcessor>());
+            var smidgeOptions = new Mock<IOptions<SmidgeOptions>>();
+            smidgeOptions.Setup(opt => opt.Value).Returns(new SmidgeOptions());
+
+            var generator = new BundleFileSetGenerator(fileSystemHelper,
+                                                       new FileProcessingConventions(smidgeOptions.Object, Enumerable.Empty<IFileProcessingConvention>()));
+
+            // Act & Assert - should throw ArgumentNullException when null file is encountered
+            Assert.Throws<ArgumentNullException>(() => 
+                generator.GetOrderedFileSet(new IWebFile[] {
+                    Mock.Of<IWebFile>(f => f.FilePath == "~/test/test.js"),
+                    null,
+                    Mock.Of<IWebFile>(f => f.FilePath == "~/test/test_3.js")
+                }, pipeline).ToList()
+            );
+        }
     }
 }

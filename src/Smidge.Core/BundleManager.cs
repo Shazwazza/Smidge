@@ -37,7 +37,7 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files");
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles.Where(f => f != null)));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -49,7 +49,7 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files");
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles.Where(f => f != null)));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -75,14 +75,14 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files and a custom pipeline");
 
-            foreach (var file in jsFiles)
+            foreach (var file in jsFiles.Where(f => f != null))
             {
                 if (file.Pipeline == null)
                 {
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles.Where(f => f != null)));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -94,14 +94,14 @@ namespace Smidge
 
             _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files and a custom pipeline");
 
-            foreach (var file in cssFiles)
+            foreach (var file in cssFiles.Where(f => f != null))
             {
                 if (file.Pipeline == null)
                 {
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles.Where(f => f != null)));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -157,6 +157,12 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, CssFile file)
         {
+            if (file == null)
+            {
+                _logger.LogWarning($"Attempted to add null {WebFileType.Css} file to bundle '{bundleName}'. Skipping.");
+                return;
+            }
+
             if (TryGetValue(bundleName, out Bundle collection))
             {
                 _logger.LogDebug($"Adding {WebFileType.Css} file '{file.FilePath}' to bundle '{bundleName}'");
@@ -175,6 +181,12 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, JavaScriptFile file)
         {
+            if (file == null)
+            {
+                _logger.LogWarning($"Attempted to add null {WebFileType.Js} file to bundle '{bundleName}'. Skipping.");
+                return;
+            }
+
             if (TryGetValue(bundleName, out Bundle collection))
             {
                 _logger.LogDebug($"Adding {WebFileType.Js} file '{file.FilePath}' to bundle '{bundleName}'");
