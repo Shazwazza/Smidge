@@ -35,11 +35,11 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            var validFiles = jsFiles.Where(f => f != null).ToList();
+            var validFiles = jsFiles.Where(f => f != null).Cast<IWebFile>().ToList();
 
             _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {validFiles.Count} files");
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
+            var collection = new Bundle(bundleName, validFiles);
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -49,11 +49,11 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            var validFiles = cssFiles.Where(f => f != null).ToList();
+            var validFiles = cssFiles.Where(f => f != null).Cast<IWebFile>().ToList();
 
             _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {validFiles.Count} files");
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
+            var collection = new Bundle(bundleName, validFiles);
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -88,7 +88,7 @@ namespace Smidge
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
+            var collection = new Bundle(bundleName, validFiles.Cast<IWebFile>().ToList());
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -109,7 +109,7 @@ namespace Smidge
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
+            var collection = new Bundle(bundleName, validFiles.Cast<IWebFile>().ToList());
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
