@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Smidge.Hashing;
 using Smidge.Models;
 
@@ -30,9 +31,21 @@ namespace Smidge.Controllers
                 var etag = _hasher.Hash(file.FileKey + file.Compression + file.Mime);
 
                 var request = context.HttpContext.Request;
-                var isDifferent = request.HasETagBeenModified(etag);
-                var hasChanged = request.HasRequestBeenModifiedSince(file.LastFileWriteTime.ToUniversalTime());
-                if (!isDifferent || !hasChanged)
+
+                // Per RFC 7232, If-None-Match takes precedence over If-Modified-Since: when an
+                // If-None-Match header is present the If-Modified-Since header must be ignored,
+                // otherwise a mismatched ETag combined with an unchanged date could wrongly 304.
+                bool notModified;
+                if (request.Headers.ContainsKey(HeaderNames.IfNoneMatch))
+                {
+                    notModified = !request.HasETagBeenModified(etag);
+                }
+                else
+                {
+                    notModified = !request.HasRequestBeenModifiedSince(file.LastFileWriteTime.ToUniversalTime());
+                }
+
+                if (notModified)
                 {
                     return Results.StatusCode(StatusCodes.Status304NotModified);
                 }

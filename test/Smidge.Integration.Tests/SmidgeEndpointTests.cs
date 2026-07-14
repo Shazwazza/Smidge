@@ -200,6 +200,29 @@ namespace Smidge.Integration.Tests
         }
 
         [Fact]
+        public async Task Conditional_Request_With_NonMatching_ETag_Is_Not_304_Even_When_Unmodified_Since()
+        {
+            // Per RFC 7232 If-None-Match takes precedence over If-Modified-Since. When a client sends a
+            // non-matching ETag it must receive the full response even if If-Modified-Since indicates the
+            // content is unchanged (the If-Modified-Since header must be ignored).
+            using var client = _app.CreateClient();
+
+            var urls = await GetUrlsAsync(client, "/urls/js/test-bundle-1");
+            var bundleUrl = urls.Single();
+
+            using var first = await client.GetAsync(bundleUrl);
+            Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+            using var conditional = new HttpRequestMessage(HttpMethod.Get, bundleUrl);
+            conditional.Headers.IfNoneMatch.Add(new EntityTagHeaderValue("\"this-does-not-match\""));
+            // A far-future If-Modified-Since would, on its own, produce a 304.
+            conditional.Headers.IfModifiedSince = DateTimeOffset.UtcNow.AddYears(1);
+
+            using var second = await client.SendAsync(conditional);
+            Assert.Equal(HttpStatusCode.OK, second.StatusCode);
+        }
+
+        [Fact]
         public async Task Compressed_Request_Returns_Gzip_Encoded_Body()
         {
             using var client = _app.CreateClient();
