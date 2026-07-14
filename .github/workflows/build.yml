@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Solution_File: Smidge.sln
+      Solution_File: Smidge.slnx
       Test_Proj: test/Smidge.Tests/Smidge.Tests.csproj
       Configuration: Release
 
