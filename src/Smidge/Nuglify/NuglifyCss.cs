@@ -9,7 +9,7 @@ using Smidge.Models;
 
 namespace Smidge.Nuglify
 {
-    public class NuglifyCss : IPreProcessor
+    public class NuglifyCss : IPreProcessor, IMinifier
     {
         private readonly NuglifySettings _settings;
         private readonly IRequestHelper _requestHelper;
@@ -19,6 +19,9 @@ namespace Smidge.Nuglify
             _settings = settings;
             _requestHelper = requestHelper;
         }
+
+        /// <inheritdoc />
+        public WebFileType FileType => WebFileType.Css;
 
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {

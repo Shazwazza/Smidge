@@ -90,7 +90,7 @@ namespace Smidge.Web
             // We could replace a processor in the default pipeline like this
             //services.Configure<SmidgeOptions>(opt =>
             //{
-            //    opt.PipelineFactory.OnCreateDefault = (type, pipeline) => pipeline.Replace<JsMinifier, NuglifyJs>(opt.PipelineFactory);                
+            //    opt.PipelineFactory.OnCreateDefault = (type, pipeline) => pipeline.Replace<NuglifyJs, MyCustomJsProcessor>(opt.PipelineFactory);                
             //});
 
             // We could change a lot of defaults like this
@@ -104,7 +104,6 @@ namespace Smidge.Web
                 options.DefaultBundleOptions.ProductionOptions.SetCacheBusterType<AppDomainLifetimeCacheBuster>();
             });
 
-            services.AddSmidgeNuglify();
             services.AddSmidgeInMemory();
 
             //services.AddSingleton<IPreProcessor, DotlessPreProcessor>();
@@ -185,13 +184,13 @@ namespace Smidge.Web
                     new CssFile("~/Css/Bundle1/a2.css"));
 
                 bundles.CreateJs("libs-js",
-                    //Here we can change the default pipeline to use Nuglify for this single bundle
-                    bundles.PipelineFactory.Create<NuglifyJs>(),
+                    //Nuglify is now the default JS minifier, so the default pipeline already uses it
+                    bundles.PipelineFactory.DefaultJs(),
                     "~/Js/Libs/jquery-1.12.2.js", "~/Js/Libs/knockout-es5.js");
 
                 bundles.CreateCss("libs-css",
-                    //Here we can change the default pipeline to use Nuglify for this single bundle (we'll replace the default)
-                    bundles.PipelineFactory.DefaultCss().Replace<CssMinifier, NuglifyCss>(bundles.PipelineFactory),
+                    //Nuglify is now the default CSS minifier, so the default pipeline already uses it
+                    bundles.PipelineFactory.DefaultCss(),
                     "~/Css/Libs/font-awesome.css");
 
                 bundles.Create("test-bundle-10", new JavaScriptFile("~/test10.js")
@@ -204,8 +203,6 @@ namespace Smidge.Web
              "~/Css/notFoundMap.min.css"
              );
             });
-
-            app.UseSmidgeNuglify();
         }
     }
 }

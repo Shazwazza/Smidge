@@ -19,12 +19,12 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 
 ## Features
 
-* Minification, combination, compression for JS/CSS files
+* Minification (via [NUglify](https://github.com/trullock/NUglify)), combination, compression for JS/CSS files
 * Properly configured client side caching, persistent server side caching (no rebundling unnecessarily)
 * Fluent syntax for creating and configuring bundles
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
-* JS source maps (via the [Smidge.Nuglify](https://github.com/Shazwazza/Smidge/wiki/installation#nuglify-minification-engine) package)
+* JS source maps (built in, powered by NUglify)
 * File watchers to auto invalidate/refresh a processed bundle
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
 

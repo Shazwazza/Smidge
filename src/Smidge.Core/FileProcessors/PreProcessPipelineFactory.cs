@@ -67,19 +67,31 @@ namespace Smidge.FileProcessors
                 switch (fileType)
                 {
                     case WebFileType.Js:
-                        return new PreProcessPipeline(new IPreProcessor[]
                         {
-                            _allProcessors.Value.OfType<JsMinifier>().First(),
-                            _allProcessors.Value.OfType<JsSourceMapProcessor>().First()
-                        });
+                            var processors = new List<IPreProcessor>();
+                            var minifier = _allProcessors.Value.OfType<IMinifier>().FirstOrDefault(x => x.FileType == WebFileType.Js);
+                            if (minifier != null)
+                            {
+                                processors.Add(minifier);
+                            }
+                            processors.Add(_allProcessors.Value.OfType<JsSourceMapProcessor>().First());
+                            return new PreProcessPipeline(processors);
+                        }
                     case WebFileType.Css:
                     default:
-                        return new PreProcessPipeline(new IPreProcessor[]
                         {
-                            _allProcessors.Value.OfType<CssImportProcessor>().First(),
-                            _allProcessors.Value.OfType<CssUrlProcessor>().First(),
-                            _allProcessors.Value.OfType<CssMinifier>().First()
-                        });
+                            var processors = new List<IPreProcessor>
+                            {
+                                _allProcessors.Value.OfType<CssImportProcessor>().First(),
+                                _allProcessors.Value.OfType<CssUrlProcessor>().First()
+                            };
+                            var minifier = _allProcessors.Value.OfType<IMinifier>().FirstOrDefault(x => x.FileType == WebFileType.Css);
+                            if (minifier != null)
+                            {
+                                processors.Add(minifier);
+                            }
+                            return new PreProcessPipeline(processors);
+                        }
                 }
             });
         }

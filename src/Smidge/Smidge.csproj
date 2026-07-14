@@ -12,6 +12,10 @@
   <ItemGroup>
     <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nuglify" Version="1.22.0" />
+  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\Smidge.Core\Smidge.Core.csproj" />

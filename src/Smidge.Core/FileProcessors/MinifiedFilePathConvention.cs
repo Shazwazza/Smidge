@@ -14,7 +14,7 @@ namespace Smidge.FileProcessors
             var pattern = file.DependencyType == WebFileType.Css ? "min.css" : "min.js";
             if (file.FilePath.EndsWith(pattern, StringComparison.OrdinalIgnoreCase))
             {
-                var found = file.Pipeline.Processors.Where(x => x is JsMinifier || x is CssMinifier).ToList();
+                var found = file.Pipeline.Processors.Where(x => x is IMinifier).ToList();
                 if (found.Count > 0)
                 {
                     // copy the pipeline 
