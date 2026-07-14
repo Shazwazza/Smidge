@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <!-- Fail the build on any compiler or NuGet warning so issues are caught in CI rather than ignored -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

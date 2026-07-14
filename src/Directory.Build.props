@@ -1,5 +1,8 @@
 <Project>
 
+  <!-- Import the repo-root props (TreatWarningsAsErrors, etc.) since the nearest-only auto-import stops here -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
   <PropertyGroup>
     <!-- These are Source link props -->
     <PublishRepositoryUrl>https://github.com/Shazwazza/Smidge</PublishRepositoryUrl>
