@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Smidge\Smidge.csproj" />
+    <ProjectReference Include="..\..\src\Smidge.InMemory\Smidge.InMemory.csproj" />
   </ItemGroup>
 
   <ItemGroup>
