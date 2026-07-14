@@ -1,6 +1,6 @@
 using Smidge.CompositeFiles;
 using System;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 
 namespace Smidge.Models
 {
@@ -9,19 +9,21 @@ namespace Smidge.Models
     /// </summary>
     public abstract class RequestModel : IRequestModel
     {
-        protected RequestModel(string valueName, IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
+        protected RequestModel(string valueName, IUrlManager urlManager, IHttpContextAccessor httpContextAccessor, IRequestHelper requestHelper)
         {
             if (string.IsNullOrWhiteSpace(valueName)) throw new ArgumentException("message", nameof(valueName));
             if (urlManager is null) throw new ArgumentNullException(nameof(urlManager));
-            if (accessor is null)throw new ArgumentNullException(nameof(accessor));
+            if (httpContextAccessor is null) throw new ArgumentNullException(nameof(httpContextAccessor));
             if (requestHelper is null)throw new ArgumentNullException(nameof(requestHelper));
+
+            var request = httpContextAccessor.HttpContext.Request;
 
             //default 
             LastFileWriteTime = DateTime.MinValue;
 
-            Compression = requestHelper.GetClientCompression(accessor.ActionContext.HttpContext.Request.Headers);
+            Compression = requestHelper.GetClientCompression(request.Headers);
 
-            var bundleId = (string)accessor.ActionContext.RouteData.Values[valueName];
+            var bundleId = (string)request.RouteValues[valueName];
             ParsedPath = urlManager.ParsePath(bundleId);
 
             if (ParsedPath == null)

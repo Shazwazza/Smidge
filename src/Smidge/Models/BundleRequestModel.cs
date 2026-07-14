@@ -1,5 +1,5 @@
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Smidge.CompositeFiles;
 
 namespace Smidge.Models
@@ -10,8 +10,8 @@ namespace Smidge.Models
     /// </summary>
     public class BundleRequestModel : RequestModel
     {
-        public BundleRequestModel(IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper, IBundleManager bundleManager)
-            : base("bundle", urlManager, accessor, requestHelper)
+        public BundleRequestModel(IUrlManager urlManager, IHttpContextAccessor httpContextAccessor, IRequestHelper requestHelper, IBundleManager bundleManager)
+            : base("bundle", urlManager, httpContextAccessor, requestHelper)
         {
             //TODO: Pretty sure if we want to control the caching of the file, we'll have to retrieve the bundle definition here
             // In reality we'll need to do that anyways if we want to support load balancing!

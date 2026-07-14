@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using NUglify.Css;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
+using Smidge.Controllers;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.Models;
@@ -34,7 +35,6 @@ namespace Smidge
         public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null, NuglifySettings nuglifySettings = null)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
 
             services.AddTransient<IConfigureOptions<SmidgeOptions>, SmidgeOptionsSetup>();
 
@@ -100,68 +100,49 @@ namespace Smidge
             services.AddSingleton<FileProcessingConventions>();
             services.AddSingleton<IFileProcessingConvention, MinifiedFilePathConvention>();
 
-            //Add the controller models as DI services - these get auto created for model binding
+            //Add the request models as DI services - these get resolved per request and read route/header data from the current HttpContext
             services.AddTransient<BundleRequestModel>();
             services.AddTransient<CompositeFileModel>();
 
-            // NOTE: This wasn't explicitly requred for app previous to .net core 3, however it seems like it should have always been there for 
-            // previous versions anyways. Seems sort of odd that this ever worked without it?
-            var builder = services.AddMvcCore();
-            builder.AddApplicationPart(typeof(SmidgeStartup).Assembly);
+            //Request handlers invoked directly from the minimal API endpoints (previously MVC controllers)
+            services.AddSingleton<SmidgeRequestHandler>();
+            services.AddSingleton<NuglifySourceMapHandler>();
 
             return services;
         }
 
 
 
-        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null, bool useEndpointRouting = true)
+        public static void UseSmidge(this IApplicationBuilder app, Action<IBundleManager> configureBundles = null)
         {
             //Creates custom routes 
             var options = app.ApplicationServices.GetRequiredService<IOptions<SmidgeOptions>>();
 
-            //NOTE: It's no longer polite to just call UseMVC as it enables things that the developer may 
-            //not need and the dev must disable EndpointRouting - so we let the dev decide.
-            //with core 3.0 you have to explicitly disable EndpointRouting se we default to on here 
-            if (useEndpointRouting)
+            //Map the Smidge endpoints using minimal APIs. The behaviour that was previously implemented with MVC
+            //action filters is now implemented with endpoint filters. The filters are added outer-to-inner in the
+            //same execution order the MVC filters ran (compression, expiry, not-modified, then the cache short-circuit).
+            app.UseEndpoints(endpoints =>
             {
-                app.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapControllerRoute(
-                            name: "SmidgeComposite",
-                            pattern: options.Value.UrlOptions.CompositeFilePath + "/{file}",
-                            defaults: new { controller = "Smidge", action = "Composite" });
-                    endpoints.MapControllerRoute(
-                            name: "SmidgeBundle",
-                            pattern: options.Value.UrlOptions.BundleFilePath + "/{bundle}",
-                            defaults: new { controller = "Smidge", action = "Bundle" });
-                    endpoints.MapControllerRoute(
-                            name: "SmidgeNuglifySourceMap",
-                            pattern: options.Value.UrlOptions.BundleFilePath + "/nmap/{bundle}",
-                            defaults: new { controller = "NuglifySourceMap", action = "SourceMap" });
-                });
-
-            }
-            else
-            {
-
-                app.UseMvc(routes =>
-                {
-                    routes.MapRoute(
-                        "SmidgeComposite",
+                endpoints.MapGet(
                         options.Value.UrlOptions.CompositeFilePath + "/{file}",
-                        new { controller = "Smidge", action = "Composite" });
+                        ([FromServices] CompositeFileModel file, [FromServices] SmidgeRequestHandler handler) => handler.Composite(file))
+                    .AddEndpointFilter<AddCompressionHeaderEndpointFilter>()
+                    .AddEndpointFilter<AddExpiryHeadersEndpointFilter>()
+                    .AddEndpointFilter<CheckNotModifiedEndpointFilter>()
+                    .AddEndpointFilter<CompositeFileCacheEndpointFilter>();
 
-                    routes.MapRoute(
-                        "SmidgeBundle",
+                endpoints.MapGet(
                         options.Value.UrlOptions.BundleFilePath + "/{bundle}",
-                        new { controller = "Smidge", action = "Bundle" });
+                        ([FromServices] BundleRequestModel bundle, [FromServices] SmidgeRequestHandler handler) => handler.Bundle(bundle))
+                    .AddEndpointFilter<AddCompressionHeaderEndpointFilter>()
+                    .AddEndpointFilter<AddExpiryHeadersEndpointFilter>()
+                    .AddEndpointFilter<CheckNotModifiedEndpointFilter>()
+                    .AddEndpointFilter<CompositeFileCacheEndpointFilter>();
 
-                    routes.MapRoute(
-                        "SmidgeNuglifySourceMap",
-                        options.Value.UrlOptions.BundleFilePath + "/nmap/{bundle}",
-                        new { controller = "NuglifySourceMap", action = "SourceMap" });
-                });
-            }
+                endpoints.MapGet(
+                    options.Value.UrlOptions.BundleFilePath + "/nmap/{bundle}",
+                    ([FromServices] BundleRequestModel bundle, [FromServices] NuglifySourceMapHandler handler) => handler.SourceMap(bundle));
+            });
 
             if (configureBundles != null)
             {

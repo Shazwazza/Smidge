@@ -1,5 +1,5 @@
 using Smidge.CompositeFiles;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Smidge.Hashing;
 
 namespace Smidge.Models
@@ -7,8 +7,8 @@ namespace Smidge.Models
     public class CompositeFileModel : RequestModel
     {
 
-        public CompositeFileModel(IHasher hasher, IUrlManager urlManager, IActionContextAccessor accessor, IRequestHelper requestHelper)
-            : base("file", urlManager, accessor, requestHelper)
+        public CompositeFileModel(IHasher hasher, IUrlManager urlManager, IHttpContextAccessor httpContextAccessor, IRequestHelper requestHelper)
+            : base("file", urlManager, httpContextAccessor, requestHelper)
         {
             if (!IsBundleFound)
             {
