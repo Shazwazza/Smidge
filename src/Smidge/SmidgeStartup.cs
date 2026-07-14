@@ -8,11 +8,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NUglify.Css;
 using Smidge.Cache;
 using Smidge.CompositeFiles;
 using Smidge.FileProcessors;
 using Smidge.Hashing;
 using Smidge.Models;
+using Smidge.Nuglify;
 using Smidge.Options;
 using System;
 using System.Collections.Generic;
@@ -29,7 +31,7 @@ namespace Smidge
         //If you call it after, then if AddControllersAsServices was used before you need
         //to tell smidge to do so
 
-        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null)
+        public static IServiceCollection AddSmidge(this IServiceCollection services, IConfiguration smidgeConfiguration = null, NuglifySettings nuglifySettings = null)
         {
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
@@ -82,12 +84,17 @@ namespace Smidge
             services.AddScoped<IUrlManager, DefaultUrlManager>();
 
             //pre-processors
-            services.AddSingleton<IPreProcessor, JsMinifier>();
+            //Nuglify is the built-in minifier for both JS and CSS
+            services.AddSingleton<IPreProcessor, NuglifyJs>();
+            services.AddSingleton<IPreProcessor, NuglifyCss>();
             services.AddSingleton<IPreProcessor, JsSourceMapProcessor>();
-            services.AddSingleton<IPreProcessor, CssMinifier>();
             services.AddSingleton<IPreProcessor, CssImportProcessor>();
             services.AddSingleton<IPreProcessor, CssUrlProcessor>();
             services.AddSingleton<Lazy<IEnumerable<IPreProcessor>>>(provider => new Lazy<IEnumerable<IPreProcessor>>(provider.GetRequiredService<IEnumerable<IPreProcessor>>));
+
+            //Nuglify services
+            services.AddSingleton<ISourceMapDeclaration, SourceMapDeclaration>();
+            services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()));
 
             //conventions
             services.AddSingleton<FileProcessingConventions>();
@@ -127,6 +134,10 @@ namespace Smidge
                             name: "SmidgeBundle",
                             pattern: options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                             defaults: new { controller = "Smidge", action = "Bundle" });
+                    endpoints.MapControllerRoute(
+                            name: "SmidgeNuglifySourceMap",
+                            pattern: options.Value.UrlOptions.BundleFilePath + "/nmap/{bundle}",
+                            defaults: new { controller = "NuglifySourceMap", action = "SourceMap" });
                 });
 
             }
@@ -144,6 +155,11 @@ namespace Smidge
                         "SmidgeBundle",
                         options.Value.UrlOptions.BundleFilePath + "/{bundle}",
                         new { controller = "Smidge", action = "Bundle" });
+
+                    routes.MapRoute(
+                        "SmidgeNuglifySourceMap",
+                        options.Value.UrlOptions.BundleFilePath + "/nmap/{bundle}",
+                        new { controller = "NuglifySourceMap", action = "SourceMap" });
                 });
             }
 

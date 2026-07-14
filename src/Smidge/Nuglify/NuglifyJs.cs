@@ -14,7 +14,7 @@ using Smidge.Models;
 
 namespace Smidge.Nuglify
 {
-    public class NuglifyJs : IPreProcessor
+    public class NuglifyJs : IPreProcessor, IMinifier
     {
         private readonly NuglifySettings _settings;
         private readonly ISourceMapDeclaration _sourceMapDeclaration;
@@ -26,6 +26,9 @@ namespace Smidge.Nuglify
             _sourceMapDeclaration = sourceMapDeclaration;
             _requestHelper = requestHelper;
         }
+
+        /// <inheritdoc />
+        public WebFileType FileType => WebFileType.Js;
         
         public Task ProcessAsync(FileProcessContext fileProcessContext, PreProcessorDelegate next)
         {            

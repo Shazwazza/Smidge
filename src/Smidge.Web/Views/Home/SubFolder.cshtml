@@ -1,6 +1,7 @@
 @using Smidge
 @using Smidge.Models;
 @using Smidge.FileProcessors;
+@using Smidge.Nuglify;
 
 <html>
 <head>
@@ -14,7 +15,7 @@
             .RequiresJs("~/Js/test1.js", "~/Js/test2.js")
             .RequiresJs(new JavaScriptFile("~/Js/test2.js")
             {
-                Pipeline = PipelineFactory.Create(typeof(JsMinifier))
+                Pipeline = PipelineFactory.Create(typeof(NuglifyJs))
             });
         SmidgeHelper
             .CreateCssBundle("inline-css-bundle")
