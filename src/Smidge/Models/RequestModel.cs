@@ -11,12 +11,14 @@ namespace Smidge.Models
     {
         protected RequestModel(string valueName, IUrlManager urlManager, IHttpContextAccessor httpContextAccessor, IRequestHelper requestHelper)
         {
-            if (string.IsNullOrWhiteSpace(valueName)) throw new ArgumentException("message", nameof(valueName));
+            if (string.IsNullOrWhiteSpace(valueName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(valueName));
             if (urlManager is null) throw new ArgumentNullException(nameof(urlManager));
             if (httpContextAccessor is null) throw new ArgumentNullException(nameof(httpContextAccessor));
             if (requestHelper is null)throw new ArgumentNullException(nameof(requestHelper));
 
-            var request = httpContextAccessor.HttpContext.Request;
+            var httpContext = httpContextAccessor.HttpContext
+                ?? throw new InvalidOperationException($"{nameof(RequestModel)} can only be created during an active HTTP request but no {nameof(HttpContext)} is available.");
+            var request = httpContext.Request;
 
             //default 
             LastFileWriteTime = DateTime.MinValue;
