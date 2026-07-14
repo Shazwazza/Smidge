@@ -16,7 +16,7 @@ namespace Smidge.Controllers
     /// This is the inner-most endpoint filter so that its short-circuit behaviour is equivalent to the
     /// previous MVC action filter that had the highest <c>Order</c>.
     /// </remarks>
-    public sealed class CompositeFileCacheEndpointFilter : IEndpointFilter
+    internal sealed class CompositeFileCacheEndpointFilter : IEndpointFilter
     {
         private readonly ISmidgeFileSystem _fileSystem;
 
@@ -71,7 +71,7 @@ namespace Smidge.Controllers
     /// <summary>
     /// Checks the request headers to see if the response has been modified, if it has not a 304 is returned and the request is short circuited
     /// </summary>
-    public sealed class CheckNotModifiedEndpointFilter : IEndpointFilter
+    internal sealed class CheckNotModifiedEndpointFilter : IEndpointFilter
     {
         private readonly IHasher _hasher;
 
@@ -106,7 +106,7 @@ namespace Smidge.Controllers
     /// <summary>
     /// Adds the correct caching expiry headers when the request is not in debug
     /// </summary>
-    public sealed class AddExpiryHeadersEndpointFilter : IEndpointFilter
+    internal sealed class AddExpiryHeadersEndpointFilter : IEndpointFilter
     {
         private readonly IHasher _hasher;
         private readonly IBundleManager _bundleManager;
@@ -166,7 +166,7 @@ namespace Smidge.Controllers
     /// <summary>
     /// Adds the compression headers
     /// </summary>
-    public sealed class AddCompressionHeaderEndpointFilter : IEndpointFilter
+    internal sealed class AddCompressionHeaderEndpointFilter : IEndpointFilter
     {
         private readonly IRequestHelper _requestHelper;
         private readonly IBundleManager _bundleManager;

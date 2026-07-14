@@ -12,7 +12,7 @@ namespace Smidge.Nuglify
     /// This was previously an MVC controller. For Smidge 5 it is a lightweight POCO handler invoked directly
     /// from a minimal API endpoint.
     /// </remarks>
-    public sealed class NuglifySourceMapHandler
+    internal sealed class NuglifySourceMapHandler
     {
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly ILogger<NuglifySourceMapHandler> _logger;

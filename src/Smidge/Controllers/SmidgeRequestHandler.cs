@@ -24,7 +24,7 @@ namespace Smidge.Controllers
     /// This was previously an MVC controller. For Smidge 5 it is a lightweight POCO handler invoked directly
     /// from minimal API endpoints, so Smidge no longer requires MVC.
     /// </remarks>
-    public sealed class SmidgeRequestHandler
+    internal sealed class SmidgeRequestHandler
     {
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> s_locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
