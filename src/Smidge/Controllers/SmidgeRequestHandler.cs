@@ -211,9 +211,29 @@ namespace Smidge.Controllers
             }
 
             using var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath);
-            IEnumerable<IFileInfo> files = file.ParsedPath.Names.Select(filePath =>
-                _fileSystem.CacheFileSystem.GetRequiredFileInfo(
-                    $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}"));
+
+            // Resolve each requested file from the cache without throwing. The composite URL contains client
+            // supplied file hashes, so a stale cache (e.g. after an app restart when using the in-memory cache)
+            // or a deliberately malformed request can reference files that don't exist. Previously this threw a
+            // FileNotFoundException which surfaced as an unhandled 500 and could be triggered repeatedly (a DoS
+            // vector - see issue #199). Instead we return a graceful 404 when any requested file is missing.
+            var files = new List<IFileInfo>(file.ParsedPath.Names.Count());
+            foreach (var filePath in file.ParsedPath.Names)
+            {
+                var fileInfo = _fileSystem.CacheFileSystem.GetFileInfo(
+                    $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}");
+
+                if (!fileInfo.Exists)
+                {
+                    _logger.LogWarning(
+                        "The requested composite file {CompositeFile} references a file {FilePath} that does not exist in the cache. Returning 404.",
+                        cacheFilePath,
+                        filePath);
+                    return Results.NotFound();
+                }
+
+                files.Add(fileInfo);
+            }
 
             using Stream resultStream = await GetCombinedStreamAsync(files, bundleContext);
             Stream compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);

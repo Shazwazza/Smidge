@@ -37,6 +37,8 @@ namespace Smidge.InMemory
             return fileInfo;
         }
 
+        public IFileInfo GetFileInfo(string filePath) => _fileProvider.GetFileInfo(filePath);
+
         private string GetCompositeFilePath(string cacheBusterValue, CompressionType type, string filesetKey) 
             => $"{cacheBusterValue}/{type}/{filesetKey + ".s"}";
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Smidge.Cache;
 using Smidge.Models;
 
@@ -14,10 +15,12 @@ namespace Smidge.Nuglify
     public sealed class NuglifySourceMapHandler
     {
         private readonly ISmidgeFileSystem _fileSystem;
+        private readonly ILogger<NuglifySourceMapHandler> _logger;
 
-        public NuglifySourceMapHandler(ISmidgeFileSystem fileSystem)
+        public NuglifySourceMapHandler(ISmidgeFileSystem fileSystem, ILogger<NuglifySourceMapHandler> logger)
         {
             _fileSystem = fileSystem;
+            _logger = logger;
         }
 
         public IResult SourceMap(BundleRequestModel bundle)
@@ -27,7 +30,13 @@ namespace Smidge.Nuglify
                 return Results.NotFound();
             }
 
-            var sourceMapFile = _fileSystem.CacheFileSystem.GetRequiredFileInfo(bundle.GetSourceMapFilePath());
+            // Look up the source map without throwing. A source map is only produced for bundles that were
+            // actually minified (e.g. not for files already named *.min.*), and the browser typically requests
+            // it lazily (when dev tools are opened) which can be well after the bundle was created. In all of
+            // those cases the map may legitimately be absent, so we must return a 404 rather than letting the
+            // file system throw a FileNotFoundException that surfaces as an unhandled 500. See issues #199 / #185.
+            var sourceMapFilePath = bundle.GetSourceMapFilePath();
+            var sourceMapFile = _fileSystem.CacheFileSystem.GetFileInfo(sourceMapFilePath);
 
             if (sourceMapFile.Exists)
             {
@@ -43,6 +52,7 @@ namespace Smidge.Nuglify
                 }
             }
 
+            _logger.LogDebug("No source map exists for bundle {Bundle} at cache path {SourceMapPath}", bundle.FileKey, sourceMapFilePath);
             return Results.NotFound();
         }
     }

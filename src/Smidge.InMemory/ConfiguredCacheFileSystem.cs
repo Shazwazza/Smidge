@@ -54,6 +54,9 @@ namespace Smidge.InMemory
         public IFileInfo GetRequiredFileInfo(string filePath)
             => _wrapped.GetRequiredFileInfo(filePath);
 
+        public IFileInfo GetFileInfo(string filePath)
+            => _wrapped.GetFileInfo(filePath);
+
         public Task WriteFileAsync(string filePath, string contents)
             => _wrapped.WriteFileAsync(filePath, contents);
 
