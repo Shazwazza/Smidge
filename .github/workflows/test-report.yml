@@ -7,6 +7,10 @@ on:
 jobs:
   report:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
     - uses: dorny/test-reporter@v1.9.1
       with:
