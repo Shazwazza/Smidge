@@ -16,6 +16,9 @@ on:
       - develop
       - 'release/*'
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
