@@ -6,8 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Smidge.Cache;
@@ -19,14 +18,13 @@ namespace Smidge.Controllers
 {
 
     /// <summary>
-    /// Controller for handling minified/combined responses
+    /// Handles requests for minified/combined responses.
     /// </summary>
-    [AddCompressionHeader(Order = 0)]
-    [AddExpiryHeaders(Order = 1)]
-    [CheckNotModified(Order = 2)]
-    [CompositeFileCacheFilter(Order = 3)]
-    [AllowAnonymous]
-    public class SmidgeController : Controller
+    /// <remarks>
+    /// This was previously an MVC controller. For Smidge 5 it is a lightweight POCO handler invoked directly
+    /// from minimal API endpoints, so Smidge no longer requires MVC.
+    /// </remarks>
+    internal sealed class SmidgeRequestHandler
     {
         private static readonly ConcurrentDictionary<string, SemaphoreSlim> s_locks = new ConcurrentDictionary<string, SemaphoreSlim>();
 
@@ -38,22 +36,13 @@ namespace Smidge.Controllers
         private readonly ILogger _logger;
         private readonly CacheBusterResolver _cacheBusterResolver;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="fileSystemHelper"></param>
-        /// <param name="bundleManager"></param>
-        /// <param name="fileSetGenerator"></param>
-        /// <param name="processorFactory"></param>
-        /// <param name="preProcessManager"></param>
-        /// <param name="logger"></param>
-        public SmidgeController(
+        public SmidgeRequestHandler(
             ISmidgeFileSystem fileSystemHelper,
             IBundleManager bundleManager,
             IBundleFileSetGenerator fileSetGenerator,
             PreProcessPipelineFactory processorFactory,
             IPreProcessManager preProcessManager,
-            ILogger<SmidgeController> logger,
+            ILogger<SmidgeRequestHandler> logger,
             CacheBusterResolver cacheBusterResolver)
         {
             _fileSystem = fileSystemHelper ?? throw new ArgumentNullException(nameof(fileSystemHelper));
@@ -68,19 +57,16 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for named bundles
         /// </summary>
-        /// <param name="bundleModel">The bundle model</param>
-        /// <returns></returns>       
-        public async Task<IActionResult> Bundle(
-            [FromServices] BundleRequestModel bundleModel)
+        public async Task<IResult> Bundle(BundleRequestModel bundleModel)
         {
             if (!bundleModel.IsBundleFound || !_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
             {
-                return NotFound();
+                return Results.NotFound();
             }
 
-            if (TryGetBundle(bundleModel, out IActionResult actionResult, out string cacheFilePath))
+            if (TryGetBundle(bundleModel, out IResult result, out string cacheFilePath))
             {
-                return actionResult;
+                return result;
             }
 
             SemaphoreSlim bundleLock = s_locks.GetOrAdd(foundBundle.Name, s => new SemaphoreSlim(1, 1));
@@ -88,9 +74,9 @@ namespace Smidge.Controllers
             try
             {
                 // Double check, might be available now
-                if (TryGetBundle(bundleModel, out actionResult, out _))
+                if (TryGetBundle(bundleModel, out result, out _))
                 {
-                    return actionResult;
+                    return result;
                 }
 
                 //the bundle doesn't exist so we'll go get the files, process them and create the bundle
@@ -104,13 +90,13 @@ namespace Smidge.Controllers
 
                 if (files.Length == 0)
                 {
-                    return NotFound();
+                    return Results.NotFound();
                 }
 
                 Options.BundleOptions bundleOptions = foundBundle.GetBundleOptions(_bundleManager, bundleModel.Debug);
 
                 // Validate the cache buster in the case where the file wasn't eagerly created by the view,
-                // and the request is coming in directly to the controller action.
+                // and the request is coming in directly to the handler.
                 string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
                 Type cacheBusterType = bundleOptions.GetCacheBusterType();
                 ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
@@ -125,7 +111,7 @@ namespace Smidge.Controllers
                             cacheBusterValue,
                             bundleModel.Bundle.Name,
                             cacheBusterType);
-                        return BadRequest();
+                        return Results.BadRequest();
                     }
                 }
 
@@ -159,14 +145,14 @@ namespace Smidge.Controllers
                                                                       resultStream);
 
                 //save the resulting compressed file, if compression is not enabled it will just save the non compressed format
-                // this persisted file will be used in the CheckNotModifiedAttribute which will short circuit the request and return
+                // this persisted file will be used in the CheckNotModifiedEndpointFilter which will short circuit the request and return
                 // the raw file if it exists for further requests to this path
                 await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFilePath, compressedStream);
 
                 _logger.LogDebug($"Processed bundle '{bundleModel.FileKey}' in {watch.ElapsedMilliseconds}ms");
 
                 //return the stream
-                return File(compressedStream, bundleModel.Mime);
+                return Results.Stream(compressedStream, bundleModel.Mime);
             }
             finally
             {
@@ -181,14 +167,11 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for composite files (non-named bundles)
         /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> Composite(
-             [FromServices] CompositeFileModel file)
+        public async Task<IResult> Composite(CompositeFileModel file)
         {
             if (!file.IsBundleFound || !file.ParsedPath.Names.Any())
             {
-                return NotFound();
+                return Results.NotFound();
             }
 
             string cacheBusterValue = file.ParsedPath.CacheBusterValue;
@@ -198,18 +181,18 @@ namespace Smidge.Controllers
                 // this is already processed, return it
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
                 {
-                    // If physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
-                    // FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
-                    return PhysicalFile(cacheFile.PhysicalPath, file.Mime);
+                    // If physical path is available then it's the physical file system, in which case we'll deliver the file with the physical file result
+                    // which uses IHttpSendFileFeature which is a native host option for sending static files
+                    return Results.File(cacheFile.PhysicalPath, file.Mime);
                 }
                 else
                 {
-                    return File(cacheFile.CreateReadStream(), file.Mime);
+                    return Results.Stream(cacheFile.CreateReadStream(), file.Mime);
                 }
             }
 
             // Validate the cache buster in the case where the file wasn't eagerly created by the view,
-            // and the request is coming in directly to the controller action.
+            // and the request is coming in directly to the handler.
             Type cacheBusterType = _bundleManager.GetDefaultBundleOptions(file.Debug).GetCacheBusterType();
             ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
             if (cacheBuster is not TimestampCacheBuster timestampCacheBuster || !timestampCacheBuster.TimestampBased)
@@ -223,24 +206,44 @@ namespace Smidge.Controllers
                         cacheBusterValue,
                         cacheFilePath,
                         cacheBusterType);
-                    return BadRequest();
+                    return Results.BadRequest();
                 }
             }
 
             using var bundleContext = new BundleContext(cacheBusterValue, file, cacheFilePath);
-            IEnumerable<IFileInfo> files = file.ParsedPath.Names.Select(filePath =>
-                _fileSystem.CacheFileSystem.GetRequiredFileInfo(
-                    $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}"));
+
+            // Resolve each requested file from the cache without throwing. The composite URL contains client
+            // supplied file hashes, so a stale cache (e.g. after an app restart when using the in-memory cache)
+            // or a deliberately malformed request can reference files that don't exist. Previously this threw a
+            // FileNotFoundException which surfaced as an unhandled 500 and could be triggered repeatedly (a DoS
+            // vector - see issue #199). Instead we return a graceful 404 when any requested file is missing.
+            var files = new List<IFileInfo>(file.ParsedPath.Names.Count());
+            foreach (var filePath in file.ParsedPath.Names)
+            {
+                var fileInfo = _fileSystem.CacheFileSystem.GetFileInfo(
+                    $"{file.ParsedPath.CacheBusterValue}/{filePath + file.Extension}");
+
+                if (!fileInfo.Exists)
+                {
+                    _logger.LogWarning(
+                        "The requested composite file {CompositeFile} references a file {FilePath} that does not exist in the cache. Returning 404.",
+                        cacheFilePath,
+                        filePath);
+                    return Results.NotFound();
+                }
+
+                files.Add(fileInfo);
+            }
 
             using Stream resultStream = await GetCombinedStreamAsync(files, bundleContext);
             Stream compressedStream = await Compressor.CompressAsync(file.Compression, resultStream);
 
             await CacheCompositeFileAsync(_fileSystem.CacheFileSystem, cacheFilePath, compressedStream);
 
-            return File(compressedStream, file.Mime);
+            return Results.Stream(compressedStream, file.Mime);
         }
 
-        private bool TryGetBundle(BundleRequestModel bundleModel, out IActionResult actionResult, out string cacheFilePath)
+        private bool TryGetBundle(BundleRequestModel bundleModel, out IResult result, out string cacheFilePath)
         {
             // TODO: Here or further internally we need to validate the arbitrary value.
             string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
@@ -254,19 +257,19 @@ namespace Smidge.Controllers
 
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
                 {
-                    //if physical path is available then it's the physical file system, in which case we'll deliver the file with the PhysicalFileResult
-                    //FilePathResult uses IHttpSendFileFeature which is a native host option for sending static files                    
-                    actionResult = PhysicalFile(cacheFile.PhysicalPath, bundleModel.Mime);
+                    //if physical path is available then it's the physical file system, in which case we'll deliver the file with the physical file result
+                    //which uses IHttpSendFileFeature which is a native host option for sending static files
+                    result = Results.File(cacheFile.PhysicalPath, bundleModel.Mime);
                     return true;
                 }
                 else
                 {
-                    actionResult = File(cacheFile.CreateReadStream(), bundleModel.Mime);
+                    result = Results.Stream(cacheFile.CreateReadStream(), bundleModel.Mime);
                     return true;
                 }
             }
 
-            actionResult = null;
+            result = null;
             return false;
         }
 
@@ -282,9 +285,6 @@ namespace Smidge.Controllers
         /// <summary>
         /// Combines files into a single stream
         /// </summary>
-        /// <param name="files"></param>
-        /// <param name="bundleContext"></param>
-        /// <returns></returns>
         private async Task<Stream> GetCombinedStreamAsync(IEnumerable<IFileInfo> files, BundleContext bundleContext)
         {
             //TODO: Here we need to be able to prepend/append based on a "BundleContext" (or similar)

@@ -25,13 +25,13 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Solution_File: Smidge.sln
+      Solution_File: Smidge.slnx
       Test_Proj: test/Smidge.Tests/Smidge.Tests.csproj
       Configuration: Release
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -42,11 +42,10 @@ jobs:
       shell: pwsh
 
     - name: Setup .NET Core SDK
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.x
-          8.0.x
+          10.0.x
 
     - name: Install GitVersion
       uses: gittools/actions/gitversion/setup@v3.0.3

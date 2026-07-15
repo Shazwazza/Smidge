@@ -12,15 +12,6 @@
   <ItemGroup>
     <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-    <PackageReference Include="Dazinator.Extensions.FileProviders" Version="2.0.0" />
-    <!-- Due to a security issue we need an explicit ref https://github.com/dotnet/announcements/issues/178 -->
-    <PackageReference Include="System.Text.Encodings.Web" Version="8.0.0" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <!-- Due to a security issue we need an explicit ref https://github.com/dotnet/announcements/issues/178 -->
-    <PackageReference Include="System.Text.Encodings.Web" Version="6.0.1" />
-  </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\assets\logo-nuget.png" Link="logo-nuget.png" Pack="true" PackagePath="" />
   </ItemGroup>

@@ -48,6 +48,8 @@ namespace Smidge.Cache
             return fileInfo;
         }
 
+        public IFileInfo GetFileInfo(string filePath) => _fileProvider.GetFileInfo(filePath);
+
         private string GetCompositeFilePath(string cacheBusterValue, CompressionType type, string filesetKey) => $"{cacheBusterValue}/{type}/{filesetKey}.s";
 
         public Task ClearCachedCompositeFileAsync(string cacheBusterValue, CompressionType type, string filesetKey)
