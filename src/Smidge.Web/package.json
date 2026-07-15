@@ -3,6 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "devDependencies": {
-    "uglify-js": "^2.7.0"
+    "uglify-js": "^3.19.3"
   }
 }
