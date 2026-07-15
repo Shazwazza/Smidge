@@ -58,7 +58,7 @@ namespace Smidge
 
                 file.Pipeline ??= pipeline;
 
-                var filePaths = _fileSystem.GetMatchingFiles(file.FilePath);
+                var filePaths = _fileSystem.GetMatchingFiles(file.FilePath, file.DependencyType);
 
                 foreach (var f in filePaths)
                 {

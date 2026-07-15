@@ -65,7 +65,7 @@ namespace Smidge
                     continue;
                 }
 
-                var filePaths = _fileSystemHelper.GetMatchingFiles(f.FilePath);
+                var filePaths = _fileSystemHelper.GetMatchingFiles(f.FilePath, f.DependencyType);
                 foreach (var p in filePaths)
                 {
                     var subFile = f.Duplicate(_requestHelper.Content(p));
