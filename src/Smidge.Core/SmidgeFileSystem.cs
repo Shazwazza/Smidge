@@ -63,7 +63,12 @@ namespace Smidge
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> GetMatchingFiles(string filePattern)
+        public IEnumerable<string> GetMatchingFiles(string filePattern) => GetMatchingFiles(filePattern, null);
+
+        /// <inheritdoc />
+        public IEnumerable<string> GetMatchingFiles(string filePattern, WebFileType fileType) => GetMatchingFiles(filePattern, (WebFileType?)fileType);
+
+        private IEnumerable<string> GetMatchingFiles(string filePattern, WebFileType? fileType)
         {
             if (filePattern.Contains(SmidgeConstants.SchemeDelimiter))
                 return new []{ filePattern };
@@ -71,8 +76,17 @@ namespace Smidge
             var ext = Path.GetExtension(filePattern);
             if (string.IsNullOrWhiteSpace(ext))
             {
-                // if there's no extention we can assume it's a directory, so normalize
-                filePattern = $"{filePattern}/*.*";
+                // if there's no extension we can assume it's a directory, so normalize.
+                // Constrain the glob to the bundle's file type extension so that generated
+                // artifacts (e.g. .gz or .map files) or files of the wrong type aren't pulled
+                // into the bundle and handed to the wrong pre-processor.
+                var dirGlob = fileType switch
+                {
+                    WebFileType.Js => "*.js",
+                    WebFileType.Css => "*.css",
+                    _ => "*.*"
+                };
+                filePattern = $"{filePattern}/{dirGlob}";
             }
 
             // normalize for virtual paths

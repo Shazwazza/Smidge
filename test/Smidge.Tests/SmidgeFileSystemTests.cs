@@ -1,10 +1,15 @@
 using System;
 using Moq;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 using Smidge.Cache;
+using Smidge.Models;
+using Dazinator.Extensions.FileProviders;
+using Dazinator.Extensions.FileProviders.InMemory;
+using Dazinator.Extensions.FileProviders.InMemory.Directory;
 
 namespace Smidge.Tests
 {
@@ -111,6 +116,43 @@ namespace Smidge.Tests
             //Actual:   ~/Js/Test1.js/Js\Test1.js
 
             Assert.Equal("~/Js/Test1.js", result);
+        }
+
+        [Fact]
+        public void GetMatchingFiles_Directory_Constrains_To_FileType()
+        {
+            // A directory bundle should only pick up files that match its web file type,
+            // not generated artifacts (.gz, .map) or files of the wrong type.
+            var root = new InMemoryDirectory();
+            var dir = root.GetOrAddFolder("Js").GetOrAddFolder("Bundle2");
+            dir.AddFile(new StringFileInfo("var a=1;", "b1.js"));
+            dir.AddFile(new StringFileInfo("var b=2;", "b2.js"));
+            dir.AddFile(new StringFileInfo("gzip-bytes", "b1.js.gz"));
+            dir.AddFile(new StringFileInfo("/*map*/", "b1.js.map"));
+            dir.AddFile(new StringFileInfo(".x{}", "styles.css"));
+
+            var fileProvider = new InMemoryFileProvider(root);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+
+            var fs = new SmidgeFileSystem(
+                fileProvider,
+                new DefaultFileProviderFilter(),
+                Mock.Of<ICacheFileSystem>(),
+                websiteInfo.Object);
+
+            var jsFiles = fs.GetMatchingFiles("~/Js/Bundle2", WebFileType.Js).ToList();
+            Assert.Equal(2, jsFiles.Count);
+            Assert.Contains("~/Js/Bundle2/b1.js", jsFiles);
+            Assert.Contains("~/Js/Bundle2/b2.js", jsFiles);
+
+            var cssFiles = fs.GetMatchingFiles("~/Js/Bundle2", WebFileType.Css).ToList();
+            Assert.Single(cssFiles);
+            Assert.Contains("~/Js/Bundle2/styles.css", cssFiles);
+
+            // Back-compat: the untyped overload still matches everything in the directory.
+            var all = fs.GetMatchingFiles("~/Js/Bundle2").ToList();
+            Assert.Equal(5, all.Count);
         }
     }
 }
