@@ -110,6 +110,11 @@ namespace Smidge
 
         private void ValidateFile(IWebFile file)
         {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file), "Web file cannot be null");
+            }
+
             if (file.Order < 0)
             {
                 throw new NotSupportedException("The Order of a web file cannot be less than zero");
