@@ -9,11 +9,11 @@
     <File Path=".github/workflows/build.yml" />
     <File Path=".github/workflows/test-report.yml" />
     <File Path=".gitignore" />
-    <File Path="GitVersion.yml.bak" />
     <File Path="LICENSE" />
     <File Path="Nuget.config" />
     <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Build.targets" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Smidge.Core/Smidge.Core.csproj" />
