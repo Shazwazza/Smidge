@@ -1,0 +1,15 @@
+<Project>
+
+  <Target Name="WritePackageVersion" DependsOnTargets="MinVer">
+    <WriteLinesToFile
+      Condition="'$(PackageVersionOutputFile)' != ''"
+      File="$(PackageVersionOutputFile)"
+      Lines="PackageVersion=$(PackageVersion)"
+      Overwrite="true" />
+    <Message
+      Condition="'$(PackageVersionOutputFile)' == ''"
+      Importance="High"
+      Text="$(PackageVersion)" />
+  </Target>
+
+</Project>
