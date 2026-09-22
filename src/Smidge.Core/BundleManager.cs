@@ -157,15 +157,16 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, CssFile file)
         {
-            if (TryGetValue(bundleName, out Bundle collection))
-            {
-                _logger.LogDebug($"Adding {WebFileType.Css} file '{file.FilePath}' to bundle '{bundleName}'");
-                collection.Files.Add(file);
-            }
-            else
-            {
-                Create(bundleName, file);
-            }
+            if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
+            // Atomically get or create the bundle then add the file under the bundle's own lock.
+            // This avoids the check-then-act race that previously existed between TryGetValue/Create
+            // and the non-thread-safe List<T>.Add when multiple requests register into the same
+            // bundle concurrently (see issue #228).
+            Bundle collection = _bundles.GetOrAdd(bundleName, _ => new Bundle(bundleName, new List<IWebFile>()));
+            _logger.LogDebug($"Adding {WebFileType.Css} file '{file.FilePath}' to bundle '{bundleName}'");
+            collection.AddFile(file);
         }
 
         /// <summary>
@@ -175,15 +176,16 @@ namespace Smidge
         /// <param name="file"></param>
         public void AddToBundle(string bundleName, JavaScriptFile file)
         {
-            if (TryGetValue(bundleName, out Bundle collection))
-            {
-                _logger.LogDebug($"Adding {WebFileType.Js} file '{file.FilePath}' to bundle '{bundleName}'");
-                collection.Files.Add(file);
-            }
-            else
-            {
-                Create(bundleName, file);
-            }
+            if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
+            if (file == null) throw new ArgumentNullException(nameof(file));
+
+            // Atomically get or create the bundle then add the file under the bundle's own lock.
+            // This avoids the check-then-act race that previously existed between TryGetValue/Create
+            // and the non-thread-safe List<T>.Add when multiple requests register into the same
+            // bundle concurrently (see issue #228).
+            Bundle collection = _bundles.GetOrAdd(bundleName, _ => new Bundle(bundleName, new List<IWebFile>()));
+            _logger.LogDebug($"Adding {WebFileType.Js} file '{file.FilePath}' to bundle '{bundleName}'");
+            collection.AddFile(file);
         }
 
         /// <summary>
@@ -202,3 +204,4 @@ namespace Smidge
         }
     }
 }
+
