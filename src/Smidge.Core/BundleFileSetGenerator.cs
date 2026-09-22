@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using Smidge.Core;
 using Smidge.FileProcessors;
 using Smidge.Models;
@@ -15,13 +16,16 @@ namespace Smidge
     {
         private readonly FileProcessingConventions _conventions;
         private readonly ISmidgeFileSystem _fileSystem;
+        private readonly ILogger<BundleFileSetGenerator> _logger;
         
         public BundleFileSetGenerator(
             ISmidgeFileSystem fileSystem,
-            FileProcessingConventions conventions)
+            FileProcessingConventions conventions,
+            ILogger<BundleFileSetGenerator> logger)
         {
             _conventions = conventions ?? throw new ArgumentNullException(nameof(conventions));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -54,6 +58,12 @@ namespace Smidge
             
             foreach (var file in files)
             {
+                if (file == null)
+                {
+                    _logger.LogWarning("A null {WebFile} entry was found in the bundle's file list and will be skipped. This may indicate a thread-safety issue when the bundle's files were registered.", nameof(IWebFile));
+                    continue;
+                }
+
                 ValidateFile(file);
 
                 file.Pipeline ??= pipeline;

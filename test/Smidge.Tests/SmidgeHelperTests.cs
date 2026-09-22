@@ -62,7 +62,8 @@ namespace Smidge.Tests
                 Mock.Of<ILogger<PreProcessManager>>());
             _fileSetGenerator = new BundleFileSetGenerator(
                 _fileSystemHelper, 
-                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()));
+                new FileProcessingConventions(_smidgeOptions.Object, new List<IFileProcessingConvention>()),
+                Mock.Of<ILogger<BundleFileSetGenerator>>());
         }
 
         [Fact]
