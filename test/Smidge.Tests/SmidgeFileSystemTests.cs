@@ -154,5 +154,134 @@ namespace Smidge.Tests
             var all = fs.GetMatchingFiles("~/Js/Bundle2").ToList();
             Assert.Equal(5, all.Count);
         }
+
+        /// <summary>
+        /// Regression test for https://github.com/Shazwazza/Smidge/issues/197 (RFC: globbing
+        /// pattern support). Reproduces the reporter's exact bundle-file declaration scenario -
+        /// a recursive glob such as <c>~/assets/css/**.css</c> or <c>~/assets/css/**/*.css</c> -
+        /// against a nested directory tree with mixed file extensions, verified through
+        /// <see cref="SmidgeFileSystem.GetMatchingFiles(string, WebFileType)"/> (the same method
+        /// <c>BundleFileSetGenerator</c> uses to build a bundle's file list). Exercised against a
+        /// non-physical (in-memory) provider, which is the fallback matching branch of
+        /// <see cref="DefaultFileProviderFilter"/>.
+        /// </summary>
+        [Theory]
+        [InlineData("~/assets/css/**.css")] // exact literal syntax from the reported issue
+        [InlineData("~/assets/css/**/*.css")] // idiomatic Microsoft.Extensions.FileSystemGlobbing syntax
+        public void GetMatchingFiles_Recursive_Glob_Matches_Nested_Css_Files_NonPhysical_Provider(string pattern)
+        {
+            var root = new InMemoryDirectory();
+            var css = root.GetOrAddFolder("assets").GetOrAddFolder("css");
+            css.AddFile(new StringFileInfo(".a{}", "a.css"));
+            css.AddFile(new StringFileInfo("var a=1;", "a.js"));
+            var sub = css.GetOrAddFolder("sub");
+            sub.AddFile(new StringFileInfo(".b{}", "b.css"));
+            sub.AddFile(new StringFileInfo("var b=1;", "b.js"));
+            var subsub = sub.GetOrAddFolder("subsub");
+            subsub.AddFile(new StringFileInfo(".c{}", "c.css"));
+
+            var fileProvider = new InMemoryFileProvider(root);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+
+            var fs = new SmidgeFileSystem(
+                fileProvider,
+                new DefaultFileProviderFilter(),
+                Mock.Of<ICacheFileSystem>(),
+                websiteInfo.Object);
+
+            var cssFiles = fs.GetMatchingFiles(pattern, WebFileType.Css).ToList();
+
+            Assert.Equal(3, cssFiles.Count);
+            Assert.Contains("~/assets/css/a.css", cssFiles);
+            Assert.Contains("~/assets/css/sub/b.css", cssFiles);
+            Assert.Contains("~/assets/css/sub/subsub/c.css", cssFiles);
+            Assert.DoesNotContain(cssFiles, f => f.EndsWith(".js"));
+        }
+
+        /// <summary>
+        /// Same scenario as <see cref="GetMatchingFiles_Recursive_Glob_Matches_Nested_Css_Files_NonPhysical_Provider"/>
+        /// but against a real <see cref="PhysicalFileProvider"/>, which is the branch of
+        /// <see cref="DefaultFileProviderFilter"/> that uses the built-in
+        /// <see cref="Microsoft.Extensions.FileSystemGlobbing.Matcher"/> and is what real
+        /// ASP.NET Core apps hit in production.
+        /// </summary>
+        [Theory]
+        [InlineData("~/assets/css/**.css")]
+        [InlineData("~/assets/css/**/*.css")]
+        public void GetMatchingFiles_Recursive_Glob_Matches_Nested_Css_Files_Physical_Provider(string pattern)
+        {
+            var tempRoot = Path.Combine(Path.GetTempPath(), "smidge-tests-" + Guid.NewGuid());
+            Directory.CreateDirectory(Path.Combine(tempRoot, "assets", "css", "sub", "subsub"));
+            try
+            {
+                File.WriteAllText(Path.Combine(tempRoot, "assets", "css", "a.css"), ".a{}");
+                File.WriteAllText(Path.Combine(tempRoot, "assets", "css", "a.js"), "var a=1;");
+                File.WriteAllText(Path.Combine(tempRoot, "assets", "css", "sub", "b.css"), ".b{}");
+                File.WriteAllText(Path.Combine(tempRoot, "assets", "css", "sub", "b.js"), "var b=1;");
+                File.WriteAllText(Path.Combine(tempRoot, "assets", "css", "sub", "subsub", "c.css"), ".c{}");
+
+                var fileProvider = new PhysicalFileProvider(tempRoot);
+                var websiteInfo = new Mock<IWebsiteInfo>();
+                websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+
+                var fs = new SmidgeFileSystem(
+                    fileProvider,
+                    new DefaultFileProviderFilter(),
+                    Mock.Of<ICacheFileSystem>(),
+                    websiteInfo.Object);
+
+                var cssFiles = fs.GetMatchingFiles(pattern, WebFileType.Css).ToList();
+
+                Assert.Equal(3, cssFiles.Count);
+                Assert.Contains("~/assets/css/a.css", cssFiles);
+                Assert.Contains("~/assets/css/sub/b.css", cssFiles);
+                Assert.Contains("~/assets/css/sub/subsub/c.css", cssFiles);
+                Assert.DoesNotContain(cssFiles, f => f.EndsWith(".js"));
+            }
+            finally
+            {
+                Directory.Delete(tempRoot, true);
+            }
+        }
+
+        /// <summary>
+        /// Confirms a single-level (non-recursive) glob like <c>~/assets/css/*.css</c> only
+        /// matches files directly in that directory, and that a bare directory (no glob at
+        /// all) still pulls in everything of the bundle's type at every depth (existing
+        /// behavior from #225) - i.e. adding recursive glob support doesn't change either of
+        /// these existing, adjacent behaviors.
+        /// </summary>
+        [Fact]
+        public void GetMatchingFiles_NonRecursive_Glob_And_Bare_Directory_Behavior_Unchanged()
+        {
+            var root = new InMemoryDirectory();
+            var css = root.GetOrAddFolder("assets").GetOrAddFolder("css");
+            css.AddFile(new StringFileInfo(".a{}", "a.css"));
+            var sub = css.GetOrAddFolder("sub");
+            sub.AddFile(new StringFileInfo(".b{}", "b.css"));
+
+            var fileProvider = new InMemoryFileProvider(root);
+            var websiteInfo = new Mock<IWebsiteInfo>();
+            websiteInfo.Setup(x => x.GetBasePath()).Returns(string.Empty);
+
+            var fs = new SmidgeFileSystem(
+                fileProvider,
+                new DefaultFileProviderFilter(),
+                Mock.Of<ICacheFileSystem>(),
+                websiteInfo.Object);
+
+            // Single-star, single directory level: only the top-level file.
+            var singleLevel = fs.GetMatchingFiles("~/assets/css/*.css", WebFileType.Css).ToList();
+            Assert.Single(singleLevel);
+            Assert.Contains("~/assets/css/a.css", singleLevel);
+
+            // Bare directory: matches everything of the bundle's type, but (like the explicit
+            // single-star glob above) only at that directory's own level - it is normalized to
+            // "{dir}/*.css", not a recursive "**/*.css" - so nested files are NOT included.
+            var bareDir = fs.GetMatchingFiles("~/assets/css", WebFileType.Css).ToList();
+            Assert.Single(bareDir);
+            Assert.Contains("~/assets/css/a.css", bareDir);
+        }
     }
 }

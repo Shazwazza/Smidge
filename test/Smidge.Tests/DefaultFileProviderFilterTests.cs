@@ -1,7 +1,10 @@
 using Dazinator.Extensions.FileProviders;
 using Dazinator.Extensions.FileProviders.InMemory;
 using Dazinator.Extensions.FileProviders.InMemory.Directory;
+using System;
+using System.IO;
 using System.Linq;
+using Microsoft.Extensions.FileProviders;
 using Xunit;
 
 namespace Smidge.Tests
@@ -51,6 +54,8 @@ namespace Smidge.Tests
         [InlineData("/*/*.js", 2)]
         [InlineData("/jquery-1.12.2.js", 1)]
         [InlineData("/dir1", 5)]
+        [InlineData("/**.css", 3)] // RFC's literal (non-idiomatic) recursive syntax
+        [InlineData("/**.js", 2)]
         public void Matches_Files_In_Folders(string pattern, int count)
         {
             var root = new InMemoryDirectory();            
@@ -69,6 +74,80 @@ namespace Smidge.Tests
 
             Assert.Equal(count, filesFound.Count);
 
+        }
+
+        /// <summary>
+        /// Regression coverage for https://github.com/Shazwazza/Smidge/issues/197 (RFC: globbing
+        /// pattern support) exercised against a real <see cref="PhysicalFileProvider"/>, which is
+        /// the branch of <see cref="DefaultFileProviderFilter"/> that uses the built-in
+        /// <see cref="Microsoft.Extensions.FileSystemGlobbing.Matcher"/> and is what real ASP.NET Core
+        /// apps hit in production (the other tests in this file only exercise the non-physical
+        /// fallback matcher via <see cref="InMemoryFileProvider"/>).
+        /// </summary>
+        [Theory]
+        [InlineData("/**/*.css", 3)] // recursive glob, correct Matcher syntax
+        [InlineData("/dir1/*.css", 1)] // single directory level
+        [InlineData("/**/*.js", 2)]
+        public void Matches_Files_With_Physical_File_Provider(string pattern, int count)
+        {
+            var tempRoot = Path.Combine(Path.GetTempPath(), "smidge-tests-" + Guid.NewGuid());
+            Directory.CreateDirectory(Path.Combine(tempRoot, "dir1", "dir2"));
+            try
+            {
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "a.css"), "a{}");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "b.js"), "b");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "dir2", "c.css"), "c{}");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "dir2", "d.css"), "d{}");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "dir2", "e.js"), "e");
+
+                var fileProvider = new PhysicalFileProvider(tempRoot);
+                var defaultFileFilter = new DefaultFileProviderFilter();
+
+                var filesFound = defaultFileFilter.GetMatchingFiles(fileProvider, pattern).ToList();
+
+                Assert.Equal(count, filesFound.Count);
+            }
+            finally
+            {
+                Directory.Delete(tempRoot, true);
+            }
+        }
+
+        /// <summary>
+        /// Regression test for https://github.com/Shazwazza/Smidge/issues/197 (RFC: globbing
+        /// pattern support): verifies the reporter's exact literal pattern syntax
+        /// (<c>**.css</c>, with no slash between the recursive wildcard and the extension)
+        /// already matches recursively against a real <see cref="PhysicalFileProvider"/>, and
+        /// that the idiomatic <c>Microsoft.Extensions.FileSystemGlobbing</c> equivalent
+        /// (<c>**/*.css</c>) works the same way.
+        /// </summary>
+        [Fact]
+        public void Matches_Files_Recursively_With_Issue197_Literal_DoubleStar_Extension_Syntax()
+        {
+            var tempRoot = Path.Combine(Path.GetTempPath(), "smidge-tests-" + Guid.NewGuid());
+            Directory.CreateDirectory(Path.Combine(tempRoot, "dir1", "dir2"));
+            try
+            {
+                File.WriteAllText(Path.Combine(tempRoot, "a.css"), "a{}");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "b.css"), "b{}");
+                File.WriteAllText(Path.Combine(tempRoot, "dir1", "dir2", "c.css"), "c{}");
+
+                var fileProvider = new PhysicalFileProvider(tempRoot);
+                var defaultFileFilter = new DefaultFileProviderFilter();
+
+                // Document current behavior for the RFC's literal (non-idiomatic) pattern.
+                // .NET's Matcher treats "**.css" equivalently to "**/*.css" - it already works.
+                var filesFound = defaultFileFilter.GetMatchingFiles(fileProvider, "/**.css").ToList();
+                Assert.Equal(3, filesFound.Count);
+
+                // The correct/idiomatic pattern must work regardless.
+                var correctSyntax = defaultFileFilter.GetMatchingFiles(fileProvider, "/**/*.css").ToList();
+                Assert.Equal(3, correctSyntax.Count);
+            }
+            finally
+            {
+                Directory.Delete(tempRoot, true);
+            }
         }
     }
 }

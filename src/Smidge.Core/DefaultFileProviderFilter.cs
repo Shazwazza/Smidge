@@ -58,6 +58,11 @@ namespace Smidge
                 string splitter = filePattern.Contains("**/")
                     ? "**/"
                     : filePattern.Contains("*/") ? "*/"
+                    // "**.ext" (recursive wildcard directly followed by an extension, with no
+                    // path separator) is the syntax used by Microsoft.Extensions.FileSystemGlobbing.Matcher
+                    // and is also how this pattern is commonly written (see #197), so recognize it
+                    // as an alias for "**/*.ext" instead of falling through to a literal file lookup.
+                    : filePattern.Contains("**") ? "**"
                     : null;
 
                 var recursiveParts = filePattern.Split(splitter);
@@ -69,10 +74,13 @@ namespace Smidge
                 {
                     var folder = recursiveParts[0].TrimEnd('/');
                     var fileName = recursiveParts[1];
-                    var fileNameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
-                    var extension = Path.GetExtension(fileName);
 
-                    return GetFilesInFolder(fileProvider, folder, extension, 0, splitter == "**/" ? 2 : 1);
+                    // For the "**" splitter, the remainder (e.g. ".css") already *is* the
+                    // extension to match; Path.GetExtension would otherwise return "" for a
+                    // leading-dot-only string like ".css" (it's treated like a dotfile name).
+                    var extension = splitter == "**" ? fileName : Path.GetExtension(fileName);
+
+                    return GetFilesInFolder(fileProvider, folder, extension, 0, splitter == "*/" ? 1 : 2);
                 }
                 else
                 {
