@@ -102,14 +102,21 @@ namespace Smidge.Controllers
                 ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
                 if (cacheBuster is not TimestampCacheBuster timestampCacheBuster || !timestampCacheBuster.TimestampBased)
                 {
-                    if (cacheBusterValue != cacheBuster.GetValue())
+                    string expectedCacheBusterValue = cacheBuster.GetValue();
+                    if (cacheBusterValue != expectedCacheBusterValue)
                     {
-                        // We cannot let this continue, someone is trying to spoof the cache buster value,
+                        // We cannot let this continue, the request may be trying to spoof the cache buster value,
                         // which can lead to lots of arbitrary files being created on the server.
+                        // Note: a mismatch here is also the expected/benign result of a client or CDN requesting a
+                        // stale URL that was generated before the configured cache buster value changed (e.g. after
+                        // a deployment that updated a "Version" setting used by ConfigCacheBuster) - it does not
+                        // necessarily indicate malicious activity, and should stop occurring on its own once any
+                        // stale cached pages referencing the old value expire or are refreshed.
                         _logger.LogWarning(
-                            "An invalid cache buster value {cacheBusterValue} was detected for the bundle {bundleName} which was not produced by the registered cache buster type {cacheBusterType}",
+                            "An invalid cache buster value {cacheBusterValue} was detected for the bundle {bundleName} which does not match the current value {expectedCacheBusterValue} produced by the registered cache buster type {cacheBusterType}. The request has been rejected; this can be expected after a deployment changes the configured cache buster value and a client or CDN requests a stale URL generated before the change, but may also indicate an attempt to spoof the cache buster",
                             cacheBusterValue,
                             bundleModel.Bundle.Name,
+                            expectedCacheBusterValue,
                             cacheBusterType);
                         return Results.BadRequest();
                     }
@@ -197,14 +204,21 @@ namespace Smidge.Controllers
             ICacheBuster cacheBuster = _cacheBusterResolver.GetCacheBuster(cacheBusterType);
             if (cacheBuster is not TimestampCacheBuster timestampCacheBuster || !timestampCacheBuster.TimestampBased)
             {
-                if (cacheBusterValue != cacheBuster.GetValue())
+                string expectedCacheBusterValue = cacheBuster.GetValue();
+                if (cacheBusterValue != expectedCacheBusterValue)
                 {
-                    // We cannot let this continue, someone is trying to spoof the cache buster value,
+                    // We cannot let this continue, the request may be trying to spoof the cache buster value,
                     // which can lead to lots of arbitrary files being created on the server.
+                    // Note: a mismatch here is also the expected/benign result of a client or CDN requesting a
+                    // stale URL that was generated before the configured cache buster value changed (e.g. after
+                    // a deployment that updated a "Version" setting used by ConfigCacheBuster) - it does not
+                    // necessarily indicate malicious activity, and should stop occurring on its own once any
+                    // stale cached pages referencing the old value expire or are refreshed.
                     _logger.LogWarning(
-                        "An invalid cache buster value {cacheBusterValue} was detected for the composite file {compositeFile} which was not produced by the registered cache buster type {cacheBusterType}",
+                        "An invalid cache buster value {cacheBusterValue} was detected for the composite file {compositeFile} which does not match the current value {expectedCacheBusterValue} produced by the registered cache buster type {cacheBusterType}. The request has been rejected; this can be expected after a deployment changes the configured cache buster value and a client or CDN requests a stale URL generated before the change, but may also indicate an attempt to spoof the cache buster",
                         cacheBusterValue,
                         cacheFilePath,
+                        expectedCacheBusterValue,
                         cacheBusterType);
                     return Results.BadRequest();
                 }
