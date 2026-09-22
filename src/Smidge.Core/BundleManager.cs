@@ -35,9 +35,11 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files");
+            var validFiles = FilterNullFiles(bundleName, WebFileType.Js, jsFiles);
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
+            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {validFiles.Count} files");
+
+            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -47,9 +49,11 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files");
+            var validFiles = FilterNullFiles(bundleName, WebFileType.Css, cssFiles);
 
-            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
+            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {validFiles.Count} files");
+
+            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -73,16 +77,18 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {jsFiles.Length} files and a custom pipeline");
+            var validFiles = FilterNullFiles(bundleName, WebFileType.Js, jsFiles);
 
-            foreach (var file in jsFiles)
+            _logger.LogDebug($"Creating {WebFileType.Js} bundle '{bundleName}' with {validFiles.Count} files and a custom pipeline");
+
+            foreach (var file in validFiles)
             {
                 if (file.Pipeline == null)
                 {
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(jsFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -92,16 +98,18 @@ namespace Smidge
             if (string.IsNullOrWhiteSpace(bundleName)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(bundleName));
             if (bundleName.Contains('.')) throw new ArgumentException("A bundle name cannot contain a '.' character");
 
-            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {cssFiles.Length} files and a custom pipeline");
+            var validFiles = FilterNullFiles(bundleName, WebFileType.Css, cssFiles);
 
-            foreach (var file in cssFiles)
+            _logger.LogDebug($"Creating {WebFileType.Css} bundle '{bundleName}' with {validFiles.Count} files and a custom pipeline");
+
+            foreach (var file in validFiles)
             {
                 if (file.Pipeline == null)
                 {
                     file.Pipeline = pipeline;
                 }
             }
-            var collection = new Bundle(bundleName, new List<IWebFile>(cssFiles));
+            var collection = new Bundle(bundleName, new List<IWebFile>(validFiles));
             _bundles.TryAdd(bundleName, collection);
             return collection;
         }
@@ -202,6 +210,34 @@ namespace Smidge
 
             return collection;
         }
+
+        private List<TFile> FilterNullFiles<TFile>(string bundleName, WebFileType type, IEnumerable<TFile> files)
+            where TFile : class, IWebFile
+        {
+            var validFiles = new List<TFile>();
+            var nullFileCount = 0;
+
+            foreach (var file in files)
+            {
+                if (file == null)
+                {
+                    nullFileCount++;
+                    continue;
+                }
+
+                validFiles.Add(file);
+            }
+
+            if (nullFileCount > 0)
+            {
+                _logger.LogWarning(
+                    "Skipped {NullFileCount} null {WebFileType} file entries while creating bundle '{BundleName}'. This may indicate invalid bundle registration.",
+                    nullFileCount,
+                    type,
+                    bundleName);
+            }
+
+            return validFiles;
+        }
     }
 }
-
