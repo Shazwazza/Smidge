@@ -175,7 +175,8 @@ namespace Smidge
 
             var bundle = _bundleManager.GetBundle(bundleName) ?? throw new BundleNotFoundException(bundleName);
 
-            if (bundle.Files.Count == 0)
+            var bundleFiles = bundle.GetFilesSnapshot();
+            if (bundleFiles.Count == 0)
             {
                 return Enumerable.Empty<string>();
             }
@@ -194,7 +195,7 @@ namespace Smidge
                 var files = _fileSetGenerator.GetOrderedFileSet(bundle,
                     _processorFactory.CreateDefault(
                         //the file type in the bundle will always be the same
-                        bundle.Files[0].DependencyType));
+                        bundleFiles[0].DependencyType));
                 result.AddRange(files.Select(d => _urlManager.AppendCacheBuster(_requestHelper.Content(d), debug, cacheBusterValue)));
                 return result;
             }
