@@ -85,7 +85,7 @@ namespace Smidge.Controllers
                 IWebFile[] files = _fileSetGenerator.GetOrderedFileSet(foundBundle,
                         _processorFactory.CreateDefault(
                             //the file type in the bundle will always be the same
-                            foundBundle.GetFilesSnapshot()[0].DependencyType))
+                            foundBundle.Files[0].DependencyType))
                     .ToArray();
 
                 if (files.Length == 0)

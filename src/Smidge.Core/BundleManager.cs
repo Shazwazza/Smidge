@@ -133,7 +133,7 @@ namespace Smidge
         /// <param name="type"></param>
         /// <returns></returns>
         public IEnumerable<string> GetBundleNames(WebFileType type)
-            => _bundles.Where(x => x.Value.GetFilesSnapshot().Any(f => f.DependencyType == type)).Select(x => x.Key);
+            => _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Key);
 
         /// <summary>
         /// Returns all bundles registered
@@ -141,7 +141,7 @@ namespace Smidge
         /// <param name="type"></param>
         /// <returns></returns>
         public IEnumerable<Bundle> GetBundles(WebFileType type)
-            => _bundles.Where(x => x.Value.GetFilesSnapshot().Any(f => f.DependencyType == type)).Select(x => x.Value);
+            => _bundles.Where(x => x.Value.Files.Any(f => f.DependencyType == type)).Select(x => x.Value);
 
         /// <summary>
         /// Checks if the bundle exists by name

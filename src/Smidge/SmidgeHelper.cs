@@ -175,7 +175,7 @@ namespace Smidge
 
             var bundle = _bundleManager.GetBundle(bundleName) ?? throw new BundleNotFoundException(bundleName);
 
-            var bundleFiles = bundle.GetFilesSnapshot();
+            var bundleFiles = bundle.Files;
             if (bundleFiles.Count == 0)
             {
                 return Enumerable.Empty<string>();

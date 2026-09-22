@@ -39,7 +39,7 @@ namespace Smidge
             if (bundle == null) throw new ArgumentNullException(nameof(bundle));
             if (pipeline == null) throw new ArgumentNullException(nameof(pipeline));
 
-            var ordered = GetOrderedFileSet(bundle.GetFilesSnapshot(), pipeline);
+            var ordered = GetOrderedFileSet(bundle.Files, pipeline);
 
             //call the registered callback if any is set
             return bundle.OrderingCallback == null ? ordered : bundle.OrderingCallback(ordered);
