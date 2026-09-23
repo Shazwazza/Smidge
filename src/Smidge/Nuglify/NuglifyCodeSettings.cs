@@ -21,13 +21,19 @@ namespace Smidge.Nuglify
         /// </summary>
         public SourceMapType SourceMapType { get; set; } = SourceMapType.Default;
 
-        public NuglifyCodeSettings()
+        public NuglifyCodeSettings() : this(null)
         {
-            CodeSettings = new CodeSettings();
         }
+
         public NuglifyCodeSettings(CodeSettings codeSettings)
         {
             CodeSettings = codeSettings ?? new CodeSettings();
+            if (codeSettings == null)
+            {
+                // NUglify incorrectly reports valid JavaScript regex literals such as the
+                // escape pattern used by Ace's Verilog mode as JS1013.
+                CodeSettings.SetIgnoreErrors(new[] { "JS1013" });
+            }
         }
     }
 }
