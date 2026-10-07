@@ -94,7 +94,7 @@ namespace Smidge
 
             //Nuglify services
             services.AddSingleton<ISourceMapDeclaration, SourceMapDeclaration>();
-            services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings(new NuglifyCodeSettings(null), new CssSettings()));
+            services.AddSingleton<NuglifySettings>(provider => nuglifySettings ?? new NuglifySettings());
 
             //conventions
             services.AddSingleton<FileProcessingConventions>();
