@@ -24,6 +24,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     env:
       Solution_File: Smidge.slnx
       Test_Proj: test/Smidge.Tests/Smidge.Tests.csproj
@@ -75,6 +78,10 @@ jobs:
         Get-Content $PackageVersionOutputFile >> $Env:GITHUB_ENV
       shell: pwsh
 
+    - name: Export version
+      id: version
+      run: echo "version=${{ env.PackageVersion }}" >> "$GITHUB_OUTPUT"
+
     # This will do a rebuild
     - name: Pack
       if: success()
@@ -91,3 +98,66 @@ jobs:
       with:
         name: smidge-nuget-${{ env.PackageVersion }}
         path:  ${{ github.workspace }}/_NugetOutput/*.*
+
+  # Opt-in publish: only runs for v* tags and pauses for approval via the protected 'nuget' environment.
+  # See .github/RELEASING.md for the one-time setup.
+  publish:
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    runs-on: ubuntu-latest
+
+    environment:
+      name: nuget
+      url: https://www.nuget.org/packages/Smidge/${{ needs.build.outputs.version }}
+
+    permissions:
+      contents: write  # create the GitHub release
+      id-token: write  # NuGet trusted publishing (OIDC)
+
+    env:
+      PackageVersion: ${{ needs.build.outputs.version }}
+
+    steps:
+    - name: Download packages
+      uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      with:
+        name: smidge-nuget-${{ env.PackageVersion }}
+        path: ${{ github.workspace }}/_NugetOutput
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+      with:
+        dotnet-version: 10.0.x
+
+    - name: NuGet login (trusted publishing)
+      id: nuget-login
+      uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+      with:
+        user: ${{ vars.NUGET_USER }}
+
+    - name: Push to NuGet
+      # Symbol packages (.snupkg) next to each .nupkg are pushed automatically
+      run: |
+        dotnet nuget push "${{ github.workspace }}/_NugetOutput/*.nupkg" \
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}" \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+
+    - name: Create GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ github.ref_name }}
+      run: |
+        prerelease=""
+        if [[ "$PackageVersion" == *-* ]]; then prerelease="--prerelease"; fi
+        if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+          gh release upload "$TAG" _NugetOutput/*.nupkg _NugetOutput/*.snupkg --clobber --repo "$GITHUB_REPOSITORY"
+        else
+          gh release create "$TAG" _NugetOutput/*.nupkg _NugetOutput/*.snupkg \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$TAG" \
+            --generate-notes \
+            --verify-tag \
+            $prerelease
+        fi
