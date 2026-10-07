@@ -124,6 +124,24 @@ This can be done at a global/default level, at the bundle level or at an individ
 
 __[See Custom Pre-Processing Pipeline](https://github.com/Shazwazza/Smidge/wiki/Custom-pre-processing) for information about customizing the pre-process pipeline__
 
+### Minification settings
+
+JS and CSS are minified with [NUglify](https://github.com/trullock/NUglify). You can pass `NuglifySettings` to `AddSmidge` to change how that works:
+
+```cs
+services.AddSmidge(Configuration.GetSection("smidge"), new NuglifySettings
+{
+    // Set to false to turn off JS and CSS minification
+    EnableMinification = true,
+    // UseOriginal (default): if NUglify reports errors for a file, log a warning
+    // (with the file path, error code, line and column) and use the unminified content.
+    // Throw: fail the bundle request with an exception that contains the same details.
+    ErrorBehavior = NuglifyErrorBehavior.UseOriginal
+});
+```
+
+`JsCodeSettings` and `CssCodeSettings` can also be set to customize the NUglify `CodeSettings` and `CssSettings`.
+
 ### URLs
 
 There's a couple of methods you can use to retrieve the URLs that Smidge will generate when rendering the `<link>` or `<script>` html tags. This might be handy in case you need to load in these assets manually (i.e. lazy load scripts, etc...):

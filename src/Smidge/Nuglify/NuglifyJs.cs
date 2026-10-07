@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUglify;
 using NUglify.Helpers;
 using NUglify.JavaScript;
@@ -19,12 +21,19 @@ namespace Smidge.Nuglify
         private readonly NuglifySettings _settings;
         private readonly ISourceMapDeclaration _sourceMapDeclaration;
         private readonly IRequestHelper _requestHelper;
+        private readonly ILogger _logger;
 
         public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration, IRequestHelper requestHelper)
+            : this(settings, sourceMapDeclaration, requestHelper, NullLogger<NuglifyJs>.Instance)
+        {
+        }
+
+        public NuglifyJs(NuglifySettings settings, ISourceMapDeclaration sourceMapDeclaration, IRequestHelper requestHelper, ILogger<NuglifyJs> logger)
         {
             _settings = settings;
             _sourceMapDeclaration = sourceMapDeclaration;
             _requestHelper = requestHelper;
+            _logger = logger ?? (ILogger)NullLogger.Instance;
         }
 
         /// <inheritdoc />
@@ -45,6 +54,9 @@ namespace Smidge.Nuglify
 
             if (fileProcessContext.WebFile.DependencyType == WebFileType.Css)
                 throw new InvalidOperationException("Cannot use " + nameof(NuglifyJs) + " with a css file source");
+
+            if (!_settings.EnableMinification)
+                return next(fileProcessContext);
 
             var nuglifyJsCodeSettings = _settings.JsCodeSettings;
 
@@ -86,8 +98,13 @@ namespace Smidge.Nuglify
 
             if (result.HasErrors)
             {
-                throw new InvalidOperationException(
-                    string.Join(",", result.Errors.Select(x => x.ToString())));
+                var message = NuglifyErrorFormatter.Format(nameof(NuglifyJs), fileProcessContext.WebFile.FilePath, result.Errors);
+                if (_settings.ErrorBehavior == NuglifyErrorBehavior.Throw)
+                    throw new InvalidOperationException(message);
+
+                // The unminified content is used as-is, so no source map output is tracked for this file.
+                _logger.LogWarning("{Message}. The original file content will be used without minification.", message);
+                return next(fileProcessContext);
             }
 
             fileProcessContext.Update(result.Code);

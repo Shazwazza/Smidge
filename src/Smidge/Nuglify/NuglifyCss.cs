@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NUglify;
 using NUglify.Css;
 using Smidge.FileProcessors;
@@ -13,11 +15,18 @@ namespace Smidge.Nuglify
     {
         private readonly NuglifySettings _settings;
         private readonly IRequestHelper _requestHelper;
+        private readonly ILogger _logger;
 
         public NuglifyCss(NuglifySettings settings, IRequestHelper requestHelper)
+            : this(settings, requestHelper, NullLogger<NuglifyCss>.Instance)
+        {
+        }
+
+        public NuglifyCss(NuglifySettings settings, IRequestHelper requestHelper, ILogger<NuglifyCss> logger)
         {
             _settings = settings;
             _requestHelper = requestHelper;
+            _logger = logger ?? (ILogger)NullLogger.Instance;
         }
 
         /// <inheritdoc />
@@ -27,14 +36,20 @@ namespace Smidge.Nuglify
         {
             if (fileProcessContext.WebFile.DependencyType == WebFileType.Js)
                 throw new InvalidOperationException("Cannot use " + nameof(NuglifyCss) + " with a js file source");
-            
+
+            if (!_settings.EnableMinification)
+                return next(fileProcessContext);
+
             var result = NuglifyProcess(fileProcessContext, _settings.CssCodeSettings);
 
             if (result.HasErrors)
             {
-                //TODO: need to format this exception message nicely
-                throw new InvalidOperationException(
-                    string.Join(",", result.Errors.Select(x => x.Message)));
+                var message = NuglifyErrorFormatter.Format(nameof(NuglifyCss), fileProcessContext.WebFile.FilePath, result.Errors);
+                if (_settings.ErrorBehavior == NuglifyErrorBehavior.Throw)
+                    throw new InvalidOperationException(message);
+
+                _logger.LogWarning("{Message}. The original file content will be used without minification.", message);
+                return next(fileProcessContext);
             }
 
             fileProcessContext.Update(result.Code);
