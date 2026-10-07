@@ -18,8 +18,8 @@ namespace Smidge.Nuglify
             CssCodeSettings = cssSettings ?? new CssSettings();
         }
 
-        public INuglifyCodeSettings JsCodeSettings { get; set; }
-        public CssSettings CssCodeSettings { get; set; }
+        public INuglifyCodeSettings JsCodeSettings { get; init; }
+        public CssSettings CssCodeSettings { get; init; }
 
         /// <summary>
         /// Gets/sets whether JS and CSS files are minified. Default is true.
@@ -27,12 +27,12 @@ namespace Smidge.Nuglify
         /// <remarks>
         /// When false, the NUglify pre-processors pass the file content through unchanged.
         /// </remarks>
-        public bool EnableMinification { get; set; } = true;
+        public bool EnableMinification { get; init; } = true;
 
         /// <summary>
         /// Gets/sets what happens when NUglify reports errors while minifying a file.
         /// Default is <see cref="NuglifyErrorBehavior.UseOriginal"/>.
         /// </summary>
-        public NuglifyErrorBehavior ErrorBehavior { get; set; } = NuglifyErrorBehavior.UseOriginal;
+        public NuglifyErrorBehavior ErrorBehavior { get; init; } = NuglifyErrorBehavior.UseOriginal;
     }
 }

@@ -104,8 +104,10 @@ namespace Smidge.Tests
         [Fact]
         public async Task Js_With_Errors_Throws_With_File_And_Position_When_Configured()
         {
-            var settings = GetJsSettings();
-            settings.ErrorBehavior = NuglifyErrorBehavior.Throw;
+            var settings = new NuglifySettings(new NuglifyCodeSettings { SourceMapType = SourceMapType.None }, new CssSettings())
+            {
+                ErrorBehavior = NuglifyErrorBehavior.Throw
+            };
             var processor = new NuglifyJs(settings, Mock.Of<ISourceMapDeclaration>(), GetRequestHelper());
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
