@@ -12,7 +12,6 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 
 
 ## News
-* [5.1.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v5.1.0) - NUglify errors no longer fail the whole bundle, plus an option to turn minification off
 * [5.0.0 is out!](https://shazwazza.com/post/smidge-5-is-out/)
 * [4.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v4.0.0)
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
