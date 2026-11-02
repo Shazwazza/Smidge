@@ -5,13 +5,15 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Smidge.svg)](https://www.nuget.org/packages/smidge)
 
-A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.Net (.NET Standard)**
+A lightweight __runtime__ CSS/JavaScript file minification, combination, compression & management library for **ASP.NET Core (.NET 10)**
 
 ---
 _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](https://github.com/sponsors/Shazwazza/) ❤️_
 
 
 ## News
+* [5.1.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v5.1.0) - NUglify errors no longer fail the whole bundle, plus an option to turn minification off
+* [5.0.0 is out!](https://shazwazza.com/post/smidge-5-is-out/)
 * [4.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v4.0.0)
 * [3.0.0 is out](https://github.com/Shazwazza/Smidge/releases/tag/v3.0.0)
 * [2.0.0 is out!](https://shazwazza.com/post/smidge-plus-nuglify-bundling-minification-and-source-maps/)
@@ -22,17 +24,19 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 * Minification (via [NUglify](https://github.com/trullock/NUglify)), combination, compression for JS/CSS files
 * Properly configured client side caching, persistent server side caching (no rebundling unnecessarily)
 * Fluent syntax for creating and configuring bundles
+* Bundle files by path, folder or glob pattern, including recursive patterns like `~/css/**/*.css`
 * Debug/Production configurations for each bundle
 * Cache busting - and you can customize/replace how it works
 * JS source maps (built in, powered by NUglify)
 * File watchers to auto invalidate/refresh a processed bundle
 * Extensible - you can completely customize the pre-processor pipeline and create your own processors and for any file type
+* No MVC dependency - bundles are served with minimal API endpoints
 
 ## Quick Start
 
 1. Install from Nuget: 
 	```
-	Install-Package Smidge
+	dotnet add package Smidge
 	```
 1. Add Smidge config to appsettings.json:
 	```json
@@ -43,9 +47,9 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 	```
 1. Add smidge to your services:
 	```csharp	
-	services.AddSmidge(Configuration.GetSection("smidge"));
+	builder.Services.AddSmidge(builder.Configuration.GetSection("smidge"));
 	```
-1. Create a bundle in your configure method:
+1. Create a bundle after building your app:
 	```csharp	
 	app.UseSmidge(bundles =>
 	{
@@ -63,6 +67,20 @@ _❤️ If you use and like Smidge please consider [becoming a GitHub Sponsor](h
 
 __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for full configuration details__
 
+## Upgrading from 4.x
+
+Smidge 5 is a major release, so there are a few things to account for:
+
+* Smidge now targets .NET 10.
+* NUglify is now built in and is the only minifier. Remove the `Smidge.Nuglify` package and any `AddSmidgeNuglify()`/`UseSmidgeNuglify()` calls - `AddSmidge()` and `UseSmidge()` handle it all now.
+* The old built-in `JsMinifier` and `CssMinifier` are gone. If you referenced them in a custom pipeline, use `NuglifyJs` and `NuglifyCss` instead.
+* `Bundle.Files` is now `IReadOnlyList<IWebFile>`. Use `Bundle.AddFile(IWebFile)` if you need to add files programmatically.
+* A few old MVC handler and filter types are now internal.
+
+NUglify is stricter than the old 4.x minifiers, so a file with a CSS or JS syntax error that used to slip through can now be reported. From 5.1.0, Smidge logs a warning that tells you the file, line and column, and serves that file unminified instead of failing the whole bundle. See [Minification settings](#minification-settings) to change that.
+
+The [Smidge 5 blog post](https://shazwazza.com/post/smidge-5-is-out/) and the [5.0.0 release notes](https://github.com/Shazwazza/Smidge/releases/tag/v5.0.0) have all the details.
+
 ## Usage
 
 ### Pre-defined bundles
@@ -70,11 +88,15 @@ __[See Installation](https://github.com/Shazwazza/Smidge/wiki/installation) for 
 Define your bundles during startup:
 
 ```csharp
-services.UseSmidge(bundles =>
+app.UseSmidge(bundles =>
 {
    //Defining using file/folder paths:
    
    bundles.CreateJs("test-bundle-2", "~/Js/Bundle2", "~/Js/OtherFolder/*.js");
+   
+   //Or with a recursive glob pattern:
+   
+   bundles.CreateCss("site", "~/assets/css/**/*.css");
    
    //Or defining using JavaScriptFile's or CssFile's
    //this allows you to custom the pipeline per file
