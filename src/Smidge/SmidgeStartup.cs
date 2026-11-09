@@ -20,6 +20,7 @@ using Smidge.Options;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 [assembly: InternalsVisibleTo("Smidge.Tests")]
 
@@ -125,7 +126,7 @@ namespace Smidge
             {
                 endpoints.MapGet(
                         options.Value.UrlOptions.CompositeFilePath + "/{file}",
-                        ([FromServices] CompositeFileModel file, [FromServices] SmidgeRequestHandler handler) => handler.Composite(file))
+                        ([FromServices] CompositeFileModel file, [FromServices] SmidgeRequestHandler handler, CancellationToken cancellationToken) => handler.Composite(file, cancellationToken))
                     .AddEndpointFilter<AddCompressionHeaderEndpointFilter>()
                     .AddEndpointFilter<AddExpiryHeadersEndpointFilter>()
                     .AddEndpointFilter<CheckNotModifiedEndpointFilter>()
@@ -133,7 +134,7 @@ namespace Smidge
 
                 endpoints.MapGet(
                         options.Value.UrlOptions.BundleFilePath + "/{bundle}",
-                        ([FromServices] BundleRequestModel bundle, [FromServices] SmidgeRequestHandler handler) => handler.Bundle(bundle))
+                        ([FromServices] BundleRequestModel bundle, [FromServices] SmidgeRequestHandler handler, CancellationToken cancellationToken) => handler.Bundle(bundle, cancellationToken))
                     .AddEndpointFilter<AddCompressionHeaderEndpointFilter>()
                     .AddEndpointFilter<AddExpiryHeadersEndpointFilter>()
                     .AddEndpointFilter<CheckNotModifiedEndpointFilter>()
