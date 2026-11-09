@@ -250,7 +250,7 @@ namespace Smidge.Controllers
             IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, model.Compression, model.FileKey, out cacheFilePath);
             if (cacheFile.Exists)
             {
-                _logger.LogDebug($"Returning file '{model.FileKey}' from cache");
+                _logger.LogDebug("Returning file '{FileKey}' from cache", model.FileKey);
 
 
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
