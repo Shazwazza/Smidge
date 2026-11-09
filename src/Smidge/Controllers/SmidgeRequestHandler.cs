@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -26,7 +25,7 @@ namespace Smidge.Controllers
     /// </remarks>
     internal sealed class SmidgeRequestHandler
     {
-        private static readonly ConcurrentDictionary<string, SemaphoreSlim> s_locks = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private static readonly KeyedAsyncLock s_locks = new KeyedAsyncLock();
 
         private readonly ISmidgeFileSystem _fileSystem;
         private readonly IBundleManager _bundleManager;
@@ -57,24 +56,22 @@ namespace Smidge.Controllers
         /// <summary>
         /// Handles requests for named bundles
         /// </summary>
-        public async Task<IResult> Bundle(BundleRequestModel bundleModel)
+        public async Task<IResult> Bundle(BundleRequestModel bundleModel, CancellationToken cancellationToken = default)
         {
             if (!bundleModel.IsBundleFound || !_bundleManager.TryGetValue(bundleModel.FileKey, out Bundle foundBundle))
             {
                 return Results.NotFound();
             }
 
-            if (TryGetBundle(bundleModel, out IResult result, out string cacheFilePath))
+            if (TryGetCachedFile(bundleModel, out IResult result, out string cacheFilePath))
             {
                 return result;
             }
 
-            SemaphoreSlim bundleLock = s_locks.GetOrAdd(foundBundle.Name, s => new SemaphoreSlim(1, 1));
-            await bundleLock.WaitAsync();
-            try
+            using (await s_locks.AcquireAsync("bundle:" + foundBundle.Name, cancellationToken))
             {
                 // Double check, might be available now
-                if (TryGetBundle(bundleModel, out result, out _))
+                if (TryGetCachedFile(bundleModel, out result, out _))
                 {
                     return result;
                 }
@@ -161,43 +158,30 @@ namespace Smidge.Controllers
                 //return the stream
                 return Results.Stream(compressedStream, bundleModel.Mime);
             }
-            finally
-            {
-                // Remove the lock from the dictionary and release the lock.
-                if (s_locks.TryRemove(foundBundle.Name, out SemaphoreSlim lck))
-                {
-                    lck.Release();
-                }
-            }
         }
 
         /// <summary>
         /// Handles requests for composite files (non-named bundles)
         /// </summary>
-        public async Task<IResult> Composite(CompositeFileModel file)
+        public async Task<IResult> Composite(CompositeFileModel file, CancellationToken cancellationToken = default)
         {
             if (!file.IsBundleFound || !file.ParsedPath.Names.Any())
             {
                 return Results.NotFound();
             }
 
-            string cacheBusterValue = file.ParsedPath.CacheBusterValue;
-            IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, file.Compression, file.FileKey, out string cacheFilePath);
-            if (cacheFile.Exists)
+            if (TryGetCachedFile(file, out IResult result, out string cacheFilePath))
             {
-                // this is already processed, return it
-                if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
-                {
-                    // If physical path is available then it's the physical file system, in which case we'll deliver the file with the physical file result
-                    // which uses IHttpSendFileFeature which is a native host option for sending static files
-                    return Results.File(cacheFile.PhysicalPath, file.Mime);
-                }
-                else
-                {
-                    return Results.Stream(cacheFile.CreateReadStream(), file.Mime);
-                }
+                return result;
             }
 
+            using var compositeLock = await s_locks.AcquireAsync("composite:" + cacheFilePath, cancellationToken);
+            if (TryGetCachedFile(file, out result, out _))
+            {
+                return result;
+            }
+
+            string cacheBusterValue = file.ParsedPath.CacheBusterValue;
             // Validate the cache buster in the case where the file wasn't eagerly created by the view,
             // and the request is coming in directly to the handler.
             Type cacheBusterType = _bundleManager.GetDefaultBundleOptions(file.Debug).GetCacheBusterType();
@@ -257,28 +241,28 @@ namespace Smidge.Controllers
             return Results.Stream(compressedStream, file.Mime);
         }
 
-        private bool TryGetBundle(BundleRequestModel bundleModel, out IResult result, out string cacheFilePath)
+        private bool TryGetCachedFile(RequestModel model, out IResult result, out string cacheFilePath)
         {
             // TODO: Here or further internally we need to validate the arbitrary value.
-            string cacheBusterValue = bundleModel.ParsedPath.CacheBusterValue;
+            string cacheBusterValue = model.ParsedPath.CacheBusterValue;
 
             //now we need to determine if this bundle has already been created
-            IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, bundleModel.Compression, bundleModel.FileKey, out cacheFilePath);
+            IFileInfo cacheFile = _fileSystem.CacheFileSystem.GetCachedCompositeFile(cacheBusterValue, model.Compression, model.FileKey, out cacheFilePath);
             if (cacheFile.Exists)
             {
-                _logger.LogDebug($"Returning bundle '{bundleModel.FileKey}' from cache");
+                _logger.LogDebug($"Returning file '{model.FileKey}' from cache");
 
 
                 if (!string.IsNullOrWhiteSpace(cacheFile.PhysicalPath))
                 {
                     //if physical path is available then it's the physical file system, in which case we'll deliver the file with the physical file result
                     //which uses IHttpSendFileFeature which is a native host option for sending static files
-                    result = Results.File(cacheFile.PhysicalPath, bundleModel.Mime);
+                    result = Results.File(cacheFile.PhysicalPath, model.Mime);
                     return true;
                 }
                 else
                 {
-                    result = Results.Stream(cacheFile.CreateReadStream(), bundleModel.Mime);
+                    result = Results.Stream(cacheFile.CreateReadStream(), model.Mime);
                     return true;
                 }
             }
