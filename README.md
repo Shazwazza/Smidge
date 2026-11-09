@@ -1,4 +1,5 @@
 [![Smidge Build](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml/badge.svg)](https://github.com/Shazwazza/Smidge/actions/workflows/build.yml)
+[![Greptile: The War on Bugs](https://www.greptile.com/badge.svg)](https://www.greptile.com/?utm_source=oss_badge&utm_medium=readme&utm_campaign=greptile_for_open_source)
 
 ![Smidge](assets/logosmall.png?raw=true) Smidge
 ======
